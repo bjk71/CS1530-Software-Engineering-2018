@@ -15,7 +15,8 @@ public class GameWindow {
 
         new GameWindow();
 
-        _frame.setSize(400, 500);
+        // _frame.setSize(400, 500);
+        _frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         _frame.setVisible(true);
         _frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         _ttt.setLayout(new GridLayout(3, 3));
