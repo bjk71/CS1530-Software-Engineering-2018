@@ -13,9 +13,14 @@ public class GameWindow {
         JMenuBar  _menuBar  = new JMenuBar();
         JMenu     _menuFile = new JMenu("File");
         JMenu     _menuGame = new JMenu("Game");
+        JMenuItem _saveGame = new JMenuItem("Save");
+        JMenuItem _fileExit = new JMenuItem("Exit");
         JMenuItem _newGame  = new JMenuItem("New Game");
+        JMenuItem _loadGame = new JMenuItem("Load Game");
+        JMenuItem _exitGame = new JMenuItem("Exit Game");
 
-        ActionListener newGameListener = new NewGameListener();
+        ActionListener newGameListener  = new NewGameListener();
+        ActionListener exitGameListener = new ExitGameListener();
         
 
         new GameWindow();
@@ -27,8 +32,14 @@ public class GameWindow {
         _frame.setLayout(new GridLayout(0, 1));
 
         _newGame.addActionListener(newGameListener);
+        _exitGame.addActionListener(exitGameListener);
+
+        _menuFile.add(_saveGame);
+        _menuFile.add(_fileExit);
 
         _menuGame.add(_newGame);
+        _menuGame.add(_loadGame);
+        _menuGame.add(_exitGame);
 
         _menuBar.add(_menuFile);
         _menuBar.add(_menuGame);
@@ -41,6 +52,15 @@ public class GameWindow {
             _game = new Game();
             
             _frame.add(_game, BorderLayout.NORTH);
+            _frame.validate();
+            _frame.repaint();
+        }
+    }
+
+    private static class ExitGameListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+            _frame.remove(_game);
             _frame.validate();
             _frame.repaint();
         }
