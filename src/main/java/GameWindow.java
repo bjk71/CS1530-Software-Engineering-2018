@@ -6,8 +6,10 @@ import java.io.*;
 
 public class GameWindow {
     
-    public static JFrame _frame = new JFrame("CS1530 Poker Game");
-    public static Game   _game  = null;
+    public static JFrame  _frame   = new JFrame("CS1530 Poker Game");
+    public static Title   _title   = new Title();
+    public static Game    _game    = null;
+    public static boolean gameOpen = false;
 
     public static void main(String[] args) {
         JMenuBar  _menuBar  = new JMenuBar();
@@ -22,11 +24,10 @@ public class GameWindow {
         ActionListener newGameListener  = new NewGameListener();
         ActionListener exitGameListener = new ExitGameListener();
         
-
         new GameWindow();
 
-        _frame.setSize(800, 600);
-        // _frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        _frame.setSize(1600, 900);
+        _frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         _frame.setVisible(true);
         _frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         _frame.setLayout(new GridLayout(0, 1));
@@ -43,26 +44,40 @@ public class GameWindow {
 
         _menuBar.add(_menuFile);
         _menuBar.add(_menuGame);
+
         _frame.setJMenuBar(_menuBar);
+        _frame.add(_title);
     }
 
     private static class NewGameListener implements ActionListener {
     
         public void actionPerformed(ActionEvent e) {
-            _game = new Game();
-            
-            _frame.add(_game, BorderLayout.NORTH);
-            _frame.validate();
-            _frame.repaint();
+            if(gameOpen == false)
+            {
+                _game = new Game();
+                
+                _frame.remove(_title);
+                _frame.add(_game, BorderLayout.NORTH);
+                _frame.validate();
+                _frame.repaint();
+
+                gameOpen = true;
+            }
         }
     }
 
     private static class ExitGameListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            _frame.remove(_game);
-            _frame.validate();
-            _frame.repaint();
+            if(gameOpen == true)
+            {
+                _frame.remove(_game);
+                _frame.add(_title);
+                _frame.validate();
+                _frame.repaint();    
+
+                gameOpen = false;
+            }
         }
     }
 }

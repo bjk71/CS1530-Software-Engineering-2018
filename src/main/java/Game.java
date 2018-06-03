@@ -7,15 +7,14 @@ public class Game extends JPanel {
     private final Color pokerGreen = new Color(71, 113, 72);
 
     public Game() {
-        JTextArea _sampleTextArea = new JTextArea();
-        _sampleTextArea.setText("Game");
-        _sampleTextArea.setBackground(pokerGreen);
+        JLabel _sampleLabel = new JLabel("Game");
+
+        _sampleLabel.setBackground(pokerGreen);
 
         setBackground(pokerGreen);
         setVisible(true);
-        setSize(300, 300);
 
-        add(_sampleTextArea);
+        add(_sampleLabel);
     }
 
     public Game(File saveFile) {
