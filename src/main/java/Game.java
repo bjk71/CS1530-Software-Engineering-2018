@@ -78,19 +78,31 @@ public class Game extends JPanel {
         
 		
         //Make Labels and distribute starting cards
+		
+		//For the table section
 		String tableLabel = "The Table: ";
 		JLabel _tableLabel = new JLabel(tableLabel);
 		_tableLabel.setFont(new Font("Courier", Font.PLAIN, 28));
 		_tableAndUserTB[0][0].add(_tableLabel, BorderLayout.NORTH);
+		
+		//display the pot value
+		int pot = 0;
+		JLabel _pot = new JLabel("");
+		_pot.setText(String.valueOf(pot));
+		_pot.setFont(new Font("Courier", Font.PLAIN, 28));
+		_tableAndUserTB[0][0].add(_pot, BorderLayout.NORTH);
+		
 		for(int i=0; i<5; i++){
 			communityCards[i] = theDeck.draw();
 			displayCard(_tableAndUserTB[0][1], communityCards[i]);
 		}
 		
+		//For the players section
 		for(int i=0; i<thePlayers.length; i++){
 			Card[] temp = new Card[5];
 			temp[0] = theDeck.draw();
 			temp[1] = theDeck.draw();
+			//user
 			if(i == 0){
 				String yourLabel = userName + ": ";
 				JLabel _yourLabel = new JLabel(yourLabel);
@@ -98,15 +110,33 @@ public class Game extends JPanel {
 				_tableAndUserTB[1][0].add(_yourLabel, BorderLayout.NORTH);
 				
 				thePlayers[i] = new Player(userName, temp, 1000, true);
+				
+				//display users cash
+				int yourCash = thePlayers[i].getCash();
+				JLabel _yourCash = new JLabel("");
+				_yourCash.setText(String.valueOf(yourCash));
+				_yourCash.setFont(new Font("Courier", Font.PLAIN, 28));
+				_tableAndUserTB[1][0].add(_yourCash, BorderLayout.NORTH);
+				
 				displayCard(_tableAndUserTB[1][1], temp[0]);
 				displayCard(_tableAndUserTB[1][1], temp[1]);
-			} else {
+			} 
+			//AI
+			else {
 				String theirLabel = "aiName: ";
 				JLabel _theirLabel = new JLabel(theirLabel);
 				_theirLabel.setFont(new Font("Courier", Font.PLAIN, 28));
 				_aiPlayersTB[i-1][0].add(_theirLabel, BorderLayout.NORTH);
 				
 				thePlayers[i] = new Player("aiName", temp, 1000, false);
+				
+				//display AI cash
+				int theirCash = thePlayers[i].getCash();
+				JLabel _theirCash = new JLabel("");
+				_theirCash.setText(String.valueOf(theirCash));
+				_theirCash.setFont(new Font("Courier", Font.PLAIN, 28));
+				_aiPlayersTB[i-1][0].add(_theirCash, BorderLayout.NORTH);
+				
 				displayCard(_aiPlayersTB[i-1][1], cardBack);
 				displayCard(_aiPlayersTB[i-1][1], cardBack);
 			}
