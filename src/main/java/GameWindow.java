@@ -6,10 +6,11 @@ import java.io.*;
 
 public class GameWindow {
     
-    public static JFrame  _frame   = new JFrame("CS1530 Poker Game");
-    public static Title   _title   = new Title();
-    public static Game    _game    = null;
-    public static boolean gameOpen = false;
+    public static JFrame  	_frame   	= new JFrame("CS1530 Poker Game");
+    public static Title   	_title   	= new Title();
+	public static GameStart _gameStart  = new GameStart();
+    public static Game    	_game    	= null;
+    public static boolean 	gameOpen 	= false;
 
     public static void main(String[] args) {
         JMenuBar  _menuBar  = new JMenuBar();
@@ -65,7 +66,7 @@ public class GameWindow {
                 _game = new Game();
                 
                 _frame.remove(_title);
-                _frame.add(_game, BorderLayout.NORTH);
+                _frame.add(_gameStart, BorderLayout.NORTH);
                 _frame.validate();
                 _frame.repaint();
 
