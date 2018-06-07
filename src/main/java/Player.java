@@ -21,5 +21,9 @@ public class Player{
 	public Card[] getCards(){
 		return this.cards;
 	}
+	
+	public int getCash(){
+		return this.cash;
+	}
 		
 }
