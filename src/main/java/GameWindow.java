@@ -48,6 +48,8 @@ public class GameWindow {
 
         _frame.setJMenuBar(_menuBar);
         _frame.add(_title);
+		
+		_frame.setVisible(true);
     }
 
     private static class ExitListener implements ActionListener {
@@ -70,7 +72,11 @@ public class GameWindow {
                 _frame.repaint();
 
                 gameOpen = true;
-            }
+            } else {
+				// TODO
+				// Are you sure you want to leave the current game?
+				
+			}
         }
     }
 
