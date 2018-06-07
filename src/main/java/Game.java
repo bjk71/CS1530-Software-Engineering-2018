@@ -10,15 +10,15 @@ public class Game extends JPanel {
 	private Deck theDeck;
 	private Card[] communityCards;
 	private Player[] thePlayers;
+	private int pot = 0;
 	
+	//Passed in
+	private String userName = "DJ";
+	private int numOfComputerPlayers = 4;
+		
 	Card cardBack;
 
     public Game() {
-		//Passed in
-		String userName = "DJ";
-		int numOfComputerPlayers = 4;
-		
-		
 		//Variables
 		theDeck = new Deck();
 		communityCards = new Card[5];
@@ -86,9 +86,8 @@ public class Game extends JPanel {
 		_tableAndUserTB[0][0].add(_tableLabel, BorderLayout.NORTH);
 		
 		//display the pot value
-		int pot = 0;
 		JLabel _pot = new JLabel("");
-		_pot.setText(String.valueOf(pot));
+		_pot.setText("$" + String.valueOf(pot));
 		_pot.setFont(new Font("Courier", Font.PLAIN, 28));
 		_tableAndUserTB[0][0].add(_pot, BorderLayout.NORTH);
 		
@@ -114,7 +113,7 @@ public class Game extends JPanel {
 				//display users cash
 				int yourCash = thePlayers[i].getCash();
 				JLabel _yourCash = new JLabel("");
-				_yourCash.setText(String.valueOf(yourCash));
+				_yourCash.setText("$" + String.valueOf(yourCash));
 				_yourCash.setFont(new Font("Courier", Font.PLAIN, 28));
 				_tableAndUserTB[1][0].add(_yourCash, BorderLayout.NORTH);
 				
@@ -133,7 +132,7 @@ public class Game extends JPanel {
 				//display AI cash
 				int theirCash = thePlayers[i].getCash();
 				JLabel _theirCash = new JLabel("");
-				_theirCash.setText(String.valueOf(theirCash));
+				_theirCash.setText("$" + String.valueOf(theirCash));
 				_theirCash.setFont(new Font("Courier", Font.PLAIN, 28));
 				_aiPlayersTB[i-1][0].add(_theirCash, BorderLayout.NORTH);
 				
