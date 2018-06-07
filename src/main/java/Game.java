@@ -17,7 +17,6 @@ public class Game extends JPanel {
 	private Card cardBack;
 	
     public Game() {
-	
 		initalizeStartGrid();
 		setVisible(true);
 	}
