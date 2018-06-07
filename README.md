@@ -1,4 +1,6 @@
 # CS1530-project
+## Pocket Rockets
+Ben Kurzyna, Zack Mattis, Dylan Miao, DJ Rowe
 
 ### Issues & Branches
 
