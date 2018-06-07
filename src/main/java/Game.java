@@ -264,7 +264,7 @@ public class Game extends JPanel {
 	}
 
 	private String[] getAINames(int num, String playerName) {
-        String[] namesList  = {"Daniel", "Erik", "Antonio", "Fedor","Phil", "Johnathan", "Scott", "Phil", "Brian"};
+        String[] namesList  = {"Daniel", "Erik", "Antonio", "Fedor","Phil", "Johnathan", "Scott", "Elton", "Brian"};
         String[] returnList = new String[num];
         int      listLength = 0;
         int      index      = 0;
