@@ -6,7 +6,7 @@ import javax.imageio.*;
 
 public class Card{
     private String name;
-    private Image face;
+    private Image  face;
     
     public Card(String name, Image face){
         this.name = name;
