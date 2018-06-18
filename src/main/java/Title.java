@@ -1,6 +1,5 @@
 import java.awt.*;
 import javax.swing.*;
-import java.io.*;
 
 public class Title extends JPanel {
 
