@@ -1,7 +1,8 @@
 import java.awt.*;
 import javax.swing.*;
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+
 import javax.imageio.*;
 import java.awt.event.*;
 
@@ -278,6 +279,33 @@ public class Game extends JPanel {
         }
 
         return returnList;
+    }
+
+    private void determineBestHand(){
+        //Determine which players to consider
+        ArrayList<Player> remainingPlayers = new ArrayList<Player>();
+        for(Player p : thePlayers){
+            if(p.isActive()){
+                remainingPlayers.add(p);
+            }
+        }
+
+        //Check if only one player remains
+        if(remainingPlayers.size() == 1){
+            distributePot(remainingPlayers.get(0));
+            return;
+        }
+
+        //Determine best hand
+    }
+
+    private void distributePot(Player winner){
+        for(Player p : thePlayers){
+            if(p.equals(winner)){
+                p.adjustCash(pot);
+                pot = 0;
+            }
+        }
     }
     
 }

@@ -1,8 +1,4 @@
 import java.awt.*;
-import javax.swing.*;
-import java.io.*;
-import java.util.*;
-import javax.imageio.*;
 
 public class Card{
 	private String name;
