@@ -254,7 +254,49 @@ public class Game extends JPanel {
         add(_bot);
         revalidate();
         repaint();
+
+        playGame();
         
+    }
+
+    private void playGame() {
+
+        TurnAction minAction = null;
+        int i, j, k;
+        int playersLeft;
+
+        while (playersLeft >= 2) {                    //play game while at least 2 players have chips
+            startHand(); //TODO: Reinit Deck + Give each player Cards
+            minAction = null;
+            for (i=0; i<4; i++) {                       //pre-flop, flop, turn, river
+                if (i=1){           //flop
+                    for (k=0; k<3; k++){
+                        communityCards[k] = theDeck.pop();
+                    }
+                } else if (i=2){    //turn
+                    communityCards[3] = theDeck.pop();
+                } else if (i=3) {   //river
+                    commmunityCards[4] = theDeck.pop();
+                }
+                for (j=0; j<thePlayers.length; j++){    //number of players
+                    if (!thePlayers[j].isPlayingHand()) continue;   //skip if not in hand (folded)
+                    
+                    minAction = TurnObj.turn(thePlayers[j], minAction); // TODO
+                    //Need to update Player.setPlayingHand(false) if they folded
+                    //Send Player + Current minimum Action
+                    //Return New minimum Action
+                }
+
+            }
+
+            WinObj.handCompare(communityCards, thePlayers); //TODO: determine who won
+            //NEED TO UPDATE playersLeft variable if someone runs out of chips + remove them from players Array
+            endHand(); //TODO: update UI, pot, clear community cards, and hands; Reset all players to playing --> Player.setPlayingHand(true) 
+
+        }
+
+    //TODO: DISPLAY WINNER IN SWING
+
     }
     
     private void displayCard(JPanel loc, Card card){
@@ -279,5 +321,7 @@ public class Game extends JPanel {
 
         return returnList;
     }
+
+    private void endHand(){} // TODO
     
 }
