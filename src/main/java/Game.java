@@ -8,38 +8,43 @@ import java.awt.event.*;
 public class Game extends JPanel {
 
     private final Color POKER_GREEN = new Color(71, 113, 72);
-    private final Color WHITE = new Color (255, 255, 255);
-    private Deck theDeck;
-    private Card[] communityCards;
-    private Player[] thePlayers;
-    private int pot = 0;
-        
-    private Card cardBack;
+    private final Color WHITE       = new Color(255, 255, 255);
+
+    private Player[] players    = null;
+    private Deck     deck       = null;
+    private Card[]   tableCards = null;
+    private Card     cardBack   = null;
+    private int      pot        = 0;
     
+
     public Game() {
         initalizeStartGrid();
         setVisible(true);
     }
     
-    
+
     public Game(File saveFile) {
       // initialize game settings from save file
     }
     
     
-    
     private void initalizeStartGrid(){    
-        //JPanels
-        JPanel _startTitle = new JPanel();
-        JPanel _playerName = new JPanel();
-        JPanel _numOpponents = new JPanel();
-        JPanel _startButton = new JPanel();
-        
-        JPanel _playerNamePanel = new JPanel();
-        JPanel _numOpponentsPanel = new JPanel();
+        JPanel             _startTitle        = new JPanel();
+        JPanel             _playerName        = new JPanel();
+        JPanel             _numOpponents      = new JPanel();
+        JPanel             _startButton       = new JPanel();
+        JPanel             _playerNamePanel   = new JPanel();
+        JPanel             _numOpponentsPanel = new JPanel();
+
+        JLabel             _titleLabel        = new JLabel();        
+        JButton            _startGame         = new JButton();
+        JLabel             _playerNameLabel   = new JLabel();
+        JTextField         _playerNameInput   = new JTextField();
+        JLabel             _numOppLabel       = new JLabel();
+        JComboBox<Integer> _numOpp            = new JComboBox<>();
+
         _playerNamePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         _numOpponentsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
         
         setLayout(new GridLayout(4,1));
         
@@ -52,13 +57,6 @@ public class Game extends JPanel {
         _startButton.setBackground(POKER_GREEN);
         _playerNamePanel.setBackground(POKER_GREEN);
         _numOpponentsPanel.setBackground(POKER_GREEN);
-        
-        JLabel _titleLabel = new JLabel();        
-        JButton _startGame = new JButton();
-        JLabel _playerNameLabel = new JLabel();
-        JTextField _playerNameInput = new JTextField();
-        JLabel _numOppLabel = new JLabel();
-        JComboBox<Integer> _numOpp = new JComboBox<>();
         
         _titleLabel.setForeground(WHITE);
         _titleLabel.setFont(new Font("Courier", Font.PLAIN, 60));
@@ -92,16 +90,15 @@ public class Game extends JPanel {
         _startGame.setPreferredSize(new Dimension( 300, 100 ));
         _startGame.setVerticalAlignment(SwingConstants.CENTER);
         _startGame.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                //TODO REGEX user input
-                String name = _playerNameInput.getText();
-                int numOpponents = (int) _numOpp.getSelectedItem();
+            public void actionPerformed(ActionEvent e) {
+                //TODO: REGEX user input
+                String name         = _playerNameInput.getText();
+                int    numOpponents = (int) _numOpp.getSelectedItem();
+
                 removeAll();
                 createNewGame (name, numOpponents);
-                
             }
         });
-        
         
         _startTitle.add(_titleLabel);
         _playerName.add(_playerNameLabel);
@@ -113,15 +110,26 @@ public class Game extends JPanel {
         add(_startTitle);
         add(_playerName);
         add(_numOpponents);
-        add(_startButton);
-                
+        add(_startButton);       
     }
     
-    private void createNewGame(String userName, int numOfComputerPlayers){
-        //Variables
-        theDeck = new Deck();
-        communityCards = new Card[5];
-        thePlayers = new Player[numOfComputerPlayers + 1];
+    /**
+     * Create new game objects and and initialize players.
+     * @param userName Player name.
+     * @param numOfAI  Number of AI players to initialize.
+     */
+    private void createNewGame(String userName, int numOfAI) {
+        JPanel     _top            = new JPanel();
+        JPanel     _bot            = new JPanel();
+        JPanel[]   _aiPlayers      = new JPanel[numOfAI];
+        JPanel[]   _tableAndUser   = new JPanel[2];
+        JPanel[][] _aiPlayersTB    = new JPanel[numOfAI][2];
+        JPanel[][] _tableAndUserTB = new JPanel[2][2];
+
+        JLabel     _tableLabel     = new JLabel("Pot: ");
+        JLabel     _pot            = new JLabel("");
+
+        String[]   aiPlayerNames   = getAINames(numOfAI, userName);
         
         try {
             Image back = ImageIO.read(this.getClass().getResource("/back.png"));
@@ -129,27 +137,20 @@ public class Game extends JPanel {
         } catch (IOException ioex) {
             System.exit(1);
         }
-        
-        
-        //Panels
-        JPanel _top = new JPanel();
-        JPanel _bot = new JPanel();
-        JPanel[] _aiPlayers = new JPanel[numOfComputerPlayers];
-        JPanel[] _tableAndUser = new JPanel[2];
-        JPanel[][] _aiPlayersTB = new JPanel[numOfComputerPlayers][2];
-        JPanel[][] _tableAndUserTB = new JPanel[2][2];
-        
-        String[]   aiPlayerNames   = getAINames(numOfComputerPlayers, userName);     
+
+        deck       = new Deck();
+        tableCards = new Card[5];
+        players    = new Player[numOfAI + 1];
         
         setLayout(new GridLayout(2, 1));
-        _top.setLayout(new GridLayout(1, numOfComputerPlayers, 50, 100));
+        _top.setLayout(new GridLayout(1, numOfAI, 50, 100));
         _bot.setLayout(new GridLayout(1, 2, 50, 100));
         
         setBackground(POKER_GREEN);
         _top.setBackground(POKER_GREEN);
         _bot.setBackground(POKER_GREEN);
         
-        for(int i = 0; i<numOfComputerPlayers; i++){
+        for(int i = 0; i < numOfAI; i++) {
             _aiPlayers[i] = new JPanel();
             _top.add(_aiPlayers[i]);
             _aiPlayers[i].setBackground(POKER_GREEN);
@@ -163,7 +164,7 @@ public class Game extends JPanel {
             _aiPlayersTB[i][1].setBackground(POKER_GREEN);
         }
         
-        for(int i = 0; i<2; i++){
+        for(int i = 0; i < 2; i++) {
             _tableAndUser[i] = new JPanel();
             _bot.add(_tableAndUser[i]);
             _tableAndUser[i].setBackground(POKER_GREEN);
@@ -176,100 +177,108 @@ public class Game extends JPanel {
             _tableAndUserTB[i][0].setBackground(POKER_GREEN);
             _tableAndUserTB[i][1].setBackground(POKER_GREEN);
         }
-        
-        
-        //Make Labels and distribute starting cards
-        
-        //For the table section
-        String tableLabel = "Pot: ";
-        JLabel _tableLabel = new JLabel(tableLabel);
+
+        // Make Labels and distribute starting cards
         _tableLabel.setForeground(WHITE);
         _tableLabel.setFont(new Font("Courier", Font.PLAIN, 28));
         _tableAndUserTB[0][0].add(_tableLabel, BorderLayout.NORTH);
         
-        //display the pot value
-        JLabel _pot = new JLabel("");
+        // Display the pot value
         _pot.setForeground(WHITE);
         _pot.setText("$" + String.valueOf(pot));
         _pot.setFont(new Font("Courier", Font.PLAIN, 28));
         _tableAndUserTB[0][0].add(_pot, BorderLayout.NORTH);
         
-        for(int i=0; i<5; i++){
-            communityCards[i] = theDeck.draw();
-            displayCard(_tableAndUserTB[0][1], communityCards[i]);
+        for(int i = 0; i < 5; i++) {
+            tableCards[i] = deck.draw();
+            displayCard(_tableAndUserTB[0][1], tableCards[i]);
         }
         
-        //For the players section
-        for(int i=0; i<thePlayers.length; i++){
-            Card[] temp = new Card[5];
-            temp[0] = theDeck.draw();
-            temp[1] = theDeck.draw();
-            //user
-            if(i == 0){
-                String yourLabel = userName + ": ";
-                JLabel _yourLabel = new JLabel(yourLabel);
-                _yourLabel.setForeground(WHITE);
-                _yourLabel.setFont(new Font("Courier", Font.PLAIN, 28));
-                _tableAndUserTB[1][0].add(_yourLabel, BorderLayout.NORTH);
+        // Initialize players
+        for(int i = 0; i < players.length; i++) {
+            Card[] playerHand   = new Card[2];
+            JLabel _playerLabel = null;
+            JLabel _playerCash  = null;
+            int    playerCash   = 0;
+
+            playerHand[0] = deck.draw();
+            playerHand[1] = deck.draw();
+
+            if(i == 0) { // Initialize human player
+                players[i]   = new Player(userName, playerHand, 1000, true);
+                _playerLabel = new JLabel(userName + ": ");
+                playerCash   = players[i].getCash();
+                _playerCash  = new JLabel("");
+
+                _playerLabel.setForeground(WHITE);
+                _playerLabel.setFont(new Font("Courier", Font.PLAIN, 28));
+                _tableAndUserTB[1][0].add(_playerLabel, BorderLayout.NORTH);
                 
-                thePlayers[i] = new Player(userName, temp, 1000, true);
+                // Display player's cash
+                _playerCash.setForeground(WHITE);
+                _playerCash.setText("$" + String.valueOf(playerCash));
+                _playerCash.setFont(new Font("Courier", Font.PLAIN, 28));
+                _tableAndUserTB[1][0].add(_playerCash, BorderLayout.NORTH);
                 
-                //display users cash
-                int yourCash = thePlayers[i].getCash();
-                JLabel _yourCash = new JLabel("");
-                _yourCash.setForeground(WHITE);
-                _yourCash.setText("$" + String.valueOf(yourCash));
-                _yourCash.setFont(new Font("Courier", Font.PLAIN, 28));
-                _tableAndUserTB[1][0].add(_yourCash, BorderLayout.NORTH);
+                displayCard(_tableAndUserTB[1][1], playerHand[0]);
+                displayCard(_tableAndUserTB[1][1], playerHand[1]);
+            } else { // Initialize AI player
+                String aiName = aiPlayerNames[i - 1];
+
+                players[i]   = new Player(aiName, playerHand, 1000, true);
+                _playerLabel = new JLabel(aiName + ": ");
+                playerCash   = players[i].getCash();
+                _playerCash  = new JLabel("");
                 
-                displayCard(_tableAndUserTB[1][1], temp[0]);
-                displayCard(_tableAndUserTB[1][1], temp[1]);
-            } 
-            //AI
-            else {
-                String aiName   = aiPlayerNames[i - 1];
-                JLabel _aiLabel = new JLabel(aiName + ": ");
-                
-                _aiLabel.setForeground(WHITE);
-                _aiLabel.setFont(new Font("Courier", Font.PLAIN, 28));
-                _aiPlayersTB[i-1][0].add(_aiLabel, BorderLayout.NORTH);
-                
-                thePlayers[i] = new Player(aiName, temp, 1000, false);
-                
-                //display AI cash
-                int theirCash = thePlayers[i].getCash();
-                JLabel _theirCash = new JLabel("");
-                _theirCash.setForeground(WHITE);
-                _theirCash.setText("$" + String.valueOf(theirCash));
-                _theirCash.setFont(new Font("Courier", Font.PLAIN, 28));
-                _aiPlayersTB[i-1][0].add(_theirCash, BorderLayout.NORTH);
+                _playerLabel.setForeground(WHITE);
+                _playerLabel.setFont(new Font("Courier", Font.PLAIN, 28));
+                _aiPlayersTB[i-1][0].add(_playerLabel, BorderLayout.NORTH);
+                                
+                // Display AI's cash
+                _playerCash.setForeground(WHITE);
+                _playerCash.setText("$" + String.valueOf(playerCash));
+                _playerCash.setFont(new Font("Courier", Font.PLAIN, 28));
+                _aiPlayersTB[i-1][0].add(_playerCash, BorderLayout.NORTH);
                 
                 displayCard(_aiPlayersTB[i-1][1], cardBack);
                 displayCard(_aiPlayersTB[i-1][1], cardBack);
             }
         }
         
-        //Display
+        // Add panels and repaint
         add(_top);
         add(_bot);
         revalidate();
         repaint();
-        
     }
     
-    private void displayCard(JPanel loc, Card card){
-        Image  resizedCard = card.getFace().getScaledInstance(75, 105,  java.awt.Image.SCALE_SMOOTH);
-        JLabel cardDisplay = new JLabel(new ImageIcon(resizedCard));
-        loc.add(cardDisplay, BorderLayout.SOUTH);
+    
+    /**
+     * Display card in JPanel container.
+     * @param _loc Panel to display card in.
+     * @param card Card to display.
+     */
+    private void displayCard(JPanel _loc, Card card){
+        Image  resizedCard  = card.getFace().getScaledInstance(75, 105,  java.awt.Image.SCALE_SMOOTH);
+        JLabel _cardDisplay = new JLabel(new ImageIcon(resizedCard));
+
+        _loc.add(_cardDisplay, BorderLayout.SOUTH);
     }
 
-    private String[] getAINames(int num, String playerName) {
+
+    /**
+     * Return up to nine random names for AI players. Checks against playerName to ensure uniqueness.
+     * @param  numOfAI    The number of AI player names to return.
+     * @param  playerName Player name to check AI names against.
+     * @return           String array of AI player names.
+     */
+    private String[] getAINames(int numOfAI, String playerName) {
         String[] namesList  = {"Daniel", "Erik", "Antonio", "Fedor","Phil", "Johnathan", "Scott", "Elton", "Brian"};
-        String[] returnList = new String[num];
+        String[] returnList = new String[numOfAI];
         int      listLength = 0;
         int      index      = 0;
         
-        while(listLength < num) {
+        while(listLength < numOfAI) {
             if(!namesList[index].equals(playerName)) {
                 returnList[listLength] = namesList[index];
                 listLength++;
@@ -279,5 +288,5 @@ public class Game extends JPanel {
 
         return returnList;
     }
-    
+
 }
