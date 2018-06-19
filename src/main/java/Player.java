@@ -4,14 +4,14 @@ public class Player{
 	private Card[] cards;
 	private int cash;
 	private boolean isUser;
-	private boolean active;
+	private boolean inHand;
 	
 	public Player(String name, Card[] cards, int cash, boolean isUser){
 		this.name = name;
 		this.cards = cards;
 		this.cash = cash;
 		this.isUser = isUser;
-		this.active = true;
+		this.inHand = true;
 	}
 	
 	public String getName(){
@@ -21,6 +21,10 @@ public class Player{
 	public Card[] getCards(){
 		return this.cards;
 	}
+
+	public void setCards(Card[] newHand){
+		this.cards = newHand;
+	}
 	
 	public int getCash(){
 		return this.cash;
@@ -29,16 +33,16 @@ public class Player{
 	public void adjustCash(int amount){
 		this.cash += amount;
 		if(this.cash < 0){
-			this.active = false;
+			this.inHand = false;
 		}
 	}
 
-	public void setActive(boolean a){
-		this.active = a;
+	public boolean isPlayingHand(){
+		return this.inHand;
 	}
 
-	public boolean isActive(){
-		return this.active;
+	public void setPlayingHand(boolean inHand){
+		this.inHand = inHand;
 	}
 		
 }
