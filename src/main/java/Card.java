@@ -9,8 +9,8 @@ public class Card{
 	public Card(String name, Image face){
 		this.name = name.toUpperCase();
 		this.face = face;
-		this.value = name.substring(0, name.length() - 1).toUpperCase();
-		this.suit = name.substring(name.length() - 1).toUpperCase();
+		this.value = this.name.substring(0, name.length() - 1);
+		this.suit = this.name.substring(name.length() - 1);
 	}
 	
 	public String getName(){
