@@ -32,7 +32,7 @@ public class GameUtils{
         int highestHighCard2 = 0;
         int highestHighCard3 = 0;
         int highestHighCard4 = 0;
-        //int highestHighCard5 = 0;
+        int highestHighCard5 = 0;
         String bestHand;
         String suit;
 
@@ -51,7 +51,6 @@ public class GameUtils{
 
         //Rather than always having to check to arrays, combine community cards with each players'
         for(Player p : remainingPlayers){
-            //TODO: Make sure only non null cards are added to new array
             ArrayList<Card> allAvailableCards = new ArrayList<Card>();
             allAvailableCards.addAll(Arrays.asList(communityCards));
             allAvailableCards.addAll(Arrays.asList(p.getCards()));
@@ -65,7 +64,7 @@ public class GameUtils{
         //Royal/Straight Flush?-------------------------------------------------------------------------
         for(Player p : remainingPlayers){
             suit = containsFlush(p.getCards());
-            int highCard = containsStraight(p.getCards());
+            int highCard = containsStraight(p.getCards(), suit);
             if(!suit.equals("") && highCard >= highestHighCard){
                 if(highCard > highestHighCard){
                     highestHighCard =  highCard;
@@ -189,14 +188,49 @@ public class GameUtils{
         for(Player p : remainingPlayers){
             suit = containsFlush(p.getCards());
             if(!suit.equals("")){
-                //TODO: What if they have the same high card
-                int highCard = determineHighCard(p.getCards(), suit);
-                if(highCard > highestHighCard){
-                    highestHighCard =  highCard;
-                    playersWithBestHand = new ArrayList<Player>();
+                int[] highCards = determineHighCard(p.getCards(), suit);
+                if(highCards[0] >= highestHighCard){
+                    if(highCards[0] > highestHighCard){
+                        highestHighCard =  highCards[0];
+                        highestHighCard2 = highCards[1];
+                        highestHighCard3 = highCards[2];
+                        highestHighCard4 = highCards[3];
+                        highestHighCard5 = highCards[4];
+                        playersWithBestHand = new ArrayList<Player>();
+                        playersWithBestHand.add(p);
+                    } else if(highCards[1] >= highestHighCard2){
+                        if(highCards[1] > highestHighCard2){
+                            highestHighCard2 = highCards[1];
+                            highestHighCard3 = highCards[2];
+                            highestHighCard4 = highCards[3];
+                            highestHighCard5 = highCards[4];
+                            playersWithBestHand = new ArrayList<Player>();
+                            playersWithBestHand.add(p);
+                        } else if(highCards[2] >= highestHighCard3){
+                            if(highCards[2] > highestHighCard3){
+                                highestHighCard3 = highCards[2];
+                                highestHighCard4 = highCards[3];
+                                highestHighCard5 = highCards[4];
+                                playersWithBestHand = new ArrayList<Player>();
+                                playersWithBestHand.add(p);
+                            } else if(highCards[3] >= highestHighCard4){
+                                if(highCards[3] > highestHighCard4){
+                                    highestHighCard4 = highCards[3];
+                                    highestHighCard5 = highCards[4];
+                                    playersWithBestHand = new ArrayList<Player>();
+                                    playersWithBestHand.add(p);
+                                } else if(highCards[4] >= highestHighCard5){
+                                    if(highCards[4] > highestHighCard5){
+                                        highestHighCard5 = highCards[4];
+                                        playersWithBestHand = new ArrayList<Player>();
+                                    }
+                                
+                                    playersWithBestHand.add(p);
+                                }
+                            }
+                        }
+                    }
                 }
-
-                playersWithBestHand.add(p);
             }
         }
 
@@ -416,16 +450,53 @@ public class GameUtils{
 
         //High Card?------------------------------------------------------------------------------------
         highestHighCard = 0;
+        highestHighCard2 = 0;
+        highestHighCard3 = 0;
+        highestHighCard4 = 0;
+        highestHighCard5 = 0;
         for(Player p : remainingPlayers){
-            int highCard = determineHighCard(p.getCards());
-            //TODO: What if they have the same high card
-            if(highCard >= highestHighCard){
-                if(highCard > highestHighCard){
-                    highestHighCard =  highCard;
+            int[] highCards = determineHighCard(p.getCards());
+            if(highCards[0] >= highestHighCard){
+                if(highCards[0] > highestHighCard){
+                    highestHighCard =  highCards[0];
+                    highestHighCard2 = highCards[1];
+                    highestHighCard3 = highCards[2];
+                    highestHighCard4 = highCards[3];
+                    highestHighCard5 = highCards[4];
                     playersWithBestHand = new ArrayList<Player>();
+                    playersWithBestHand.add(p);
+                } else if(highCards[1] >= highestHighCard2){
+                    if(highCards[1] > highestHighCard2){
+                        highestHighCard2 = highCards[1];
+                        highestHighCard3 = highCards[2];
+                        highestHighCard4 = highCards[3];
+                        highestHighCard5 = highCards[4];
+                        playersWithBestHand = new ArrayList<Player>();
+                        playersWithBestHand.add(p);
+                    } else if(highCards[2] >= highestHighCard3){
+                        if(highCards[2] > highestHighCard3){
+                            highestHighCard3 = highCards[2];
+                            highestHighCard4 = highCards[3];
+                            highestHighCard5 = highCards[4];
+                            playersWithBestHand = new ArrayList<Player>();
+                            playersWithBestHand.add(p);
+                        } else if(highCards[3] >= highestHighCard4){
+                            if(highCards[3] > highestHighCard4){
+                                highestHighCard4 = highCards[3];
+                                highestHighCard5 = highCards[4];
+                                playersWithBestHand = new ArrayList<Player>();
+                                playersWithBestHand.add(p);
+                            } else if(highCards[4] >= highestHighCard5){
+                                if(highCards[4] > highestHighCard5){
+                                    highestHighCard5 = highCards[4];
+                                    playersWithBestHand = new ArrayList<Player>();
+                                }
+                            
+                                playersWithBestHand.add(p);
+                            }
+                        }
+                    }
                 }
-
-                playersWithBestHand.add(p);
             }
         }
 
@@ -449,33 +520,50 @@ public class GameUtils{
         return "No Winner!!"; //This shoud be impossible
     }
 
-    private int determineHighCard(Card[] hand){
+    private int[] determineHighCard(Card[] hand){
         return this.determineHighCard(hand, "");
     }
 
     //Determines highest value within passed in array of cards
-    private int determineHighCard(Card[] hand, String suit){
-        int highCard = -1;
-        for(Card card : hand){
-            int val;
-            if(card.getValue().equals("A")){
-                val = 14;
-            } else if(card.getValue().equals("K")){
-                val = 13;
-            } else if(card.getValue().equals("Q")){
-                val = 12;
-            } else if(card.getValue().equals("J")){
-                val = 11;
-            } else {
-                val = Integer.parseInt(card.getValue());
+    private int[] determineHighCard(Card[] hand, String suit){
+        int[] returnArr = new int[7];
+        for(int i = 0; i < hand.length; i++){
+            Card card = hand[i];
+            if( suit.equals("") || suit.equals(card.getSuit()) ){
+                if(card.getValue().equals("A")){
+                    returnArr[i] = 14;
+                } else if(card.getValue().equals("K")){
+                    returnArr[i] = 13;
+                } else if(card.getValue().equals("Q")){
+                    returnArr[i] = 12;
+                } else if(card.getValue().equals("J")){
+                    returnArr[i] = 11;
+                } else {
+                    returnArr[i] = Integer.parseInt(card.getValue());
+                }
             }
+            
+        }
 
-            if( val > highCard && (suit.equals(card.getSuit()) || suit.equals("")) ){
-                highCard = val;
+        //Insertion Sort (cuz its a small array)
+        for(int i = 1; i < returnArr.length; i++){
+            int k = i;
+            while(k > 0 && returnArr[k] > returnArr[k-1]){
+                int temp = returnArr[k];
+                returnArr[k] = returnArr[k-1];
+                returnArr[k-1] = temp;
+                k--;
             }
         }
 
-        return highCard;
+        //Make sure at least 5 valid card values are being returned, else return all values -1
+        for(int i = 0; i < 5; i++){
+            if(returnArr[i] == 0){
+                return new int[]{-1, -1, -1, -1, -1};
+            }
+        }
+        
+        return returnArr;
     }
 
     //Determines if passed in array of cards contains a flush, returns suit if it does, empty string if not
@@ -508,21 +596,29 @@ public class GameUtils{
 
     //Determines if passed in array of cards contains a Straight, returns high card value if it does, -1 if not
     private int containsStraight(Card[] hand){
+        return this.containsStraight(hand, "");
+    }
+
+    //Determines if passed in array of cards contains a Straight of specified suit,
+    //returns high card value if it does, -1 if not
+    private int containsStraight(Card[] hand, String suit){
         int[] values = new int[14];
         int numInArow = 0;
         int returnVal = -2;
         for(Card card : hand){
-            if(card.getValue().equals("A")){
-                values[0] = 1;
-                values[13] = 1;
-            } else if(card.getValue().equals("K")){
-                values[12] = 1;
-            } else if(card.getValue().equals("Q")){
-                values[11] = 1;
-            } else if(card.getValue().equals("J")){
-                values[10] = 1;
-            } else {
-                values[Integer.parseInt(card.getValue()) - 1] = 1;
+            if( suit.equals("") || suit.equals(card.getSuit()) ){
+                if(card.getValue().equals("A")){
+                    values[0] = 1;
+                    values[13] = 1;
+                } else if(card.getValue().equals("K")){
+                    values[12] = 1;
+                } else if(card.getValue().equals("Q")){
+                    values[11] = 1;
+                } else if(card.getValue().equals("J")){
+                    values[10] = 1;
+                } else {
+                    values[Integer.parseInt(card.getValue()) - 1] = 1;
+                }
             }
         }
 
