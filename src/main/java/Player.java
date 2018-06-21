@@ -7,8 +7,10 @@ public class Player{
 	private JLabel  _cash;
 	private boolean isUser;
 	private boolean inHand;
+
+	private JPanel  _cardLoc;
 	
-	public Player(String name, Card[] cards, int cash, boolean isUser){
+	public Player(String name, Card[] cards, int cash, JLabel _cash, boolean isUser){
 		this.name   = name;
 		this.cards  = cards;
 		this.cash   = cash;
@@ -53,6 +55,24 @@ public class Player{
 	private void setLabel()
 	{
 		this._cash.setText("$" + Integer.toString(this.cash));
+	}
+
+	public void setCardPanel(JPanel _cardLoc) {
+		this._cardLoc = _cardLoc;
+	}
+
+	public JPanel getCardPanel() {
+		return this._cardLoc;
+	}
+
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("Name: " + name);
+		sb.append(", Cards: " + cards[0].getName() + " " + cards[1].getName());
+		sb.append(", Cash: " + cash);
+
+		return sb.toString();
 	}
 		
 }

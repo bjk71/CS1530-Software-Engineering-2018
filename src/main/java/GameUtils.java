@@ -52,8 +52,8 @@ public class GameUtils{
         //Rather than always having to check to arrays, combine community cards with each players'
         for(Player p : remainingPlayers){
             ArrayList<Card> allAvailableCards = new ArrayList<Card>();
-            allAvailableCards.addAll(Arrays.asList(communityCards));
             allAvailableCards.addAll(Arrays.asList(p.getCards()));
+            allAvailableCards.addAll(Arrays.asList(communityCards));
 
             Card[] hand = new Card[allAvailableCards.size()];
             hand = allAvailableCards.toArray(hand);
