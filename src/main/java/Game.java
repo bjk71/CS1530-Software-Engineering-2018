@@ -135,7 +135,6 @@ public class Game extends JPanel {
         String[]   aiPlayerNames   = utils.getAINames(numOfAI, userName);
 		
 		writeStartFile(userName, aiPlayerNames);
-		writeHandFile();
         
         try {
             Image back = ImageIO.read(this.getClass().getResource("/back.png"));
@@ -148,7 +147,7 @@ public class Game extends JPanel {
         tableCards = new Card[5];
         players    = new Player[numOfAI + 1];
         
-        setLayout(new GridLayout(2, 1));
+        setLayout(new GridLayout(3, 1));
         _top.setLayout(new GridLayout(1, numOfAI, 50, 100));
         _bot.setLayout(new GridLayout(1, 2, 50, 100));
         
@@ -202,7 +201,7 @@ public class Game extends JPanel {
         // Save location of table cards
         _tablePanel = _tableAndUserTB[0][1];
 		
-		writeCardsFile("deck", tableCards);
+		// writeCardsFile("deck", tableCards);
         
         //For the players section
         for(int i=0; i<players.length; i++){
@@ -219,13 +218,13 @@ public class Game extends JPanel {
                 _playerCash  = new JLabel();
                 players[i]   = new Player(userName, playerHand, 1000, _playerCash, true);
                 playerCash   = players[i].getCash();
+				
+				writeCardsFile(players[i]);
 
                 _playerLabel.setForeground(WHITE);
                 _playerLabel.setFont(new Font("Courier", Font.PLAIN, 28));
                 _tableAndUserTB[1][0].add(_playerLabel, BorderLayout.NORTH);
                                 
-                writeCardsFile(userName, players[i].getCards());
-
                 // Display user's cash
                 _playerCash.setForeground(WHITE);
                 _playerCash.setText("$" + String.valueOf(players[i].getCash()));
@@ -248,12 +247,14 @@ public class Game extends JPanel {
                 players[i]   = new Player(aiName, playerHand, 1000, _playerCash, true);
                 playerCash   = players[i].getCash();
                 System.out.println(players[i]);
+				
+				writeCardsFile(players[i]);
                 
                 _playerLabel.setForeground(WHITE);
                 _playerLabel.setFont(new Font("Courier", Font.PLAIN, 28));
                 _aiPlayersTB[i-1][0].add(_playerLabel, BorderLayout.NORTH);
 
-                writeCardsFile(aiName, players[i].getCards());
+                // writeCardsFile(aiName, players[i].getCards());
                                 
                 // Display AI's cash
                 _playerCash.setForeground(WHITE);
@@ -265,458 +266,62 @@ public class Game extends JPanel {
                 displayCard(_aiPlayersTB[i-1][1], cardBack);
 
                 players[i].setCardPanel(_aiPlayersTB[i-1][1]);
+
+                //displayCard(_aiPlayersTB[i-1][1], playerHand[0]);
+                //displayCard(_aiPlayersTB[i-1][1], playerHand[1]);
             }
         }
         
         // Add panels and repaint
         add(_top);
         add(_bot);
-
-        playGameSwitch(1);
         
-		writeEndFile(utils.determineBestHand(players, tableCards, pot));
-		
         revalidate();
         repaint();
+
+        // playGame();
+        // playPreFlop();
+
+        playGameSwitch(1);
     }
-    
-    
-    /**
-     * Display card in JPanel container.
-     * @param _loc Panel to display card in.
-     * @param card Card to display.
-     */
-    private void displayCard(JPanel _loc, Card card){
-        Image  resizedCard  = card.getFace().getScaledInstance(75, 105,  java.awt.Image.SCALE_SMOOTH);
-        JLabel _cardDisplay = new JLabel(new ImageIcon(resizedCard));
 
-        _loc.add(_cardDisplay, BorderLayout.SOUTH);
-    }
-	
-	/*
-	 * Opens the external file and writes the intro.
-	 * File that is opened is called "output.txt".
-	 * @param	UserName		The input name from the player.
-	 * @param	aiPlayerNames	The selected AI names.
-	*/
-	private void writeStartFile(String userName, String[] aiPlayerNames){
-		//Write the intro to the External File
-		File outputFile = new File("output.txt");
-		
-		BufferedWriter bw = null;
-		FileWriter fw = null;
+    private void playGame() {
 
-		try {
-			String firstLine = "Game Started - ";
-			String secondLine = "Player name is: ";
-			String thirdLine = "AI player names: ";
+        Action minAction = null;
+        int i, j, k;
+        int playersLeft = 0;
+
+        while (playersLeft >= 2) {                    //play game while at least 2 players have chips
+            // startHand(); //TODO: Reinit Deck + Give each player Cards
+            minAction = null;
 			
-			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-			Date date = new Date();
-
-			fw = new FileWriter(outputFile);
-			bw = new BufferedWriter(fw);
+			writeHandFile();
 			
-			//writes first line - gives date and time
-			bw.write(firstLine);
-			bw.write(dateFormat.format(date));
-			bw.newLine();
-			
-			//second line - gives player name
-			bw.write(secondLine);
-			bw.write(userName);
-			bw.newLine();
-			
-			//third line - gives ai players names
-			bw.write(thirdLine);
-			bw.write(Arrays.toString(aiPlayerNames));
-			bw.newLine();
-			
-		}  catch (IOException e) {
-
-			e.printStackTrace();
-
-		} finally {
-
-			try {
-
-				if (bw != null)
-					bw.close();
-
-				if (fw != null)
-					fw.close();
-
-			} catch (IOException ex) {
-
-				ex.printStackTrace();
-
-			}
-		}
-	}
-	
-	/*
-	 * Opens the external file and writes Hand #
-	*/
-	private void writeHandFile(){
-		try{
-			File outputFile = new File("output.txt");
-			
-			//Here true is to append the content to file
-			FileWriter fw = new FileWriter(outputFile,true);
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			//Hand #
-			bw.write("Hand: " + turnNum);
-			bw.newLine();
-			
-			//Closing BufferedWriter Stream
-			bw.close();
-
-		}  catch (IOException e) {
-
-			e.printStackTrace();
-
-		}
-	}
-	
-	/*
-	 * Opens the external file and writes the Cards Dealt.
-	 * @param	cardHolder		Who has the cards - can be the pot.
-	 * @param	cardsHeld		The cards that ar being held.
-	*/
-	private void writeCardsFile(String cardHolder, Card[] playerHand){
-		try{
-			File outputFile = new File("output.txt");
-			
-			//Here true is to append the content to file
-			FileWriter fw = new FileWriter(outputFile,true);
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			bw.write(cardHolder + ": " + playerHand);
-			bw.newLine();
-			
-			
-			//Closing BufferedWriter Stream
-			bw.close();
-
-		}  catch (IOException e) {
-
-			e.printStackTrace();
-
-		}		
-	}
-	
-	/*
-	 * Opens the external file and writes the Player action.
-	 * @param	playerName		The input name from the player / AI.
-	 * @param	playerAction	The action taken by the player.
-	 * playerAction - 0: 		player checks
-	 * playerAction - 1;		player folds
-	 * playerAction - 2; 		player bets
-	 * playerAction - 3;		player calls
-	*/
-	private void writeActionFile(String playerName, int playerAction){
-		
-		try{
-			File outputFile = new File("output.txt");
-			
-			//Here true is to append the content to file
-			FileWriter fw = new FileWriter(outputFile,true);
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			if (playerAction == 0){
-				bw.write(playerName + " checks");
-				bw.newLine();
-			}
-			if (playerAction == 1){
-				bw.write(playerName + " folds");
-				bw.newLine();
-			}
-			if (playerAction == 2){
-				bw.write(playerName + " bets");
-				bw.newLine();
-			}
-			if (playerAction == 3){
-				bw.write(playerName + " calls");
-				bw.newLine();
-			}
-			
-			
-			//Closing BufferedWriter Stream
-			bw.close();
-
-		}  catch (IOException e) {
-
-			e.printStackTrace();
-
-		}	
-	}
-	
-	/*
-	 * Opens the external file and writes the Ending of Hand.
-	 * @param	endResult		The ending result for the game
-	*/
-	private void writeEndFile(String endResult){
-		
-		try{
-			File outputFile = new File("output.txt");
-			
-			//Here true is to append the content to file
-			FileWriter fw = new FileWriter(outputFile,true);
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			bw.write(endResult);
-			bw.newLine();
-			
-			
-			//Closing BufferedWriter Stream
-			bw.close();
-
-		}  catch (IOException e) {
-
-			e.printStackTrace();
-
-		}
-	}
-
-    private String determineBestHand(){
-        ArrayList<Player> remainingPlayers = new ArrayList<Player>();
-        ArrayList<Player> playersWithBestHand = new ArrayList<Player>();
-        int highestHighCard = 0;
-        int highestHighCard2 = 0;
-        String bestHand;
-        String suit;
-
-        for(Player p : players){
-            if(p.isPlayingHand()){
-                remainingPlayers.add(p);
-            }
-        }
-
-        //Check if only one player remains
-        if(remainingPlayers.size() == 1){
-            distributePot(remainingPlayers);
-            return remainingPlayers.get(0).getName() + " has won as the last man Standing!";
-        }
-
-        //Rather than always having to check to arrays, combine community cards with each players'
-        for(Player p : remainingPlayers){
-            //TODO: Make sure only non null cards are added to new array
-            ArrayList<Card> allAvailableCards = new ArrayList<Card>();
-            allAvailableCards.addAll(Arrays.asList(tableCards));
-            allAvailableCards.addAll(Arrays.asList(p.getCards()));
-
-            Card[] hand = new Card[allAvailableCards.size()];
-            hand = allAvailableCards.toArray(hand);
-            p.setCards(hand);
-        }
-
-        //Determine best hand
-        //Royal/Straight Flush?-------------------------------------------------------------------------
-        for(Player p : remainingPlayers){
-            suit = containsFlush(p.getCards());
-            int highCard = containsStraight(p.getCards());
-            if(!suit.equals("") && highCard >= highestHighCard){
-                if(highCard > highestHighCard){
-                    highestHighCard =  highCard;
-                    playersWithBestHand = new ArrayList<Player>();
+            for (i=0; i<4; i++) {                       //pre-flop, flop, turn, river
+                if (i==1){           //flop
+                    for (k=0; k<3; k++){
+                        tableCards[k] = deck.draw();
+                    }
+                } else if (i==2){    //turn
+                    tableCards[3] = deck.draw();
+                } else if (i==3) {   //river
+                    tableCards[4] = deck.draw();
+                }
+                for (j=0; j<players.length; j++){    //number of players
+                    if (!players[j].isPlayingHand()) continue;   //skip if not in hand (folded)
+                    
+                    // minAction = Turn.turn(players[j], minAction); // TODO
+                    //Need to update Player.setPlayingHand(false) if they folded
+                    //Send Player + Current minimum Action
+                    //Return New minimum Action
                 }
 
-                playersWithBestHand.add(p);
             }
-        }
-
-        if(playersWithBestHand.size() > 0){
-            if(highestHighCard == 14){ //Ace
-                bestHand = "a Royal Flush!!!";
-            } else if(highestHighCard == 13){ //King
-                bestHand = "a King's High Straight Flush!!";
-            } else if(highestHighCard == 12){ //Queen
-                bestHand = "a Queen's High Straight Flush!!";
-            } else if(highestHighCard == 11){ //Jack
-                bestHand = "a Jack's High Straight Flush!!";
-            } else {
-                bestHand = "a " + highestHighCard + "'s High Straight Flush!!";
-            }
-
-            distributePot(playersWithBestHand);
-            return buildResultsString(playersWithBestHand, bestHand);
-        }
-
-        //Four of a kind?-------------------------------------------------------------------------------
-        highestHighCard = 0;
-        for(Player p : remainingPlayers){
-            int highCard = containsNOfAKind(p.getCards(), 4);
-            if(highCard >= highestHighCard){
-                if(highCard > highestHighCard){
-                    highestHighCard =  highCard;
-                    playersWithBestHand = new ArrayList<Player>();
-                }
-
-                playersWithBestHand.add(p);
-            }
-        }
-
-        if(playersWithBestHand.size() > 0){
-            if(highestHighCard == 14){ //Ace
-                bestHand = "four Ace's!!";
-            } else if(highestHighCard == 13){ //King
-                bestHand = "four Kings!!";
-            } else if(highestHighCard == 12){ //Queen
-                bestHand = "four Queens!!";
-            } else if(highestHighCard == 11){ //Jack
-                bestHand = "four Jacks!!";
-            } else {
-                bestHand = "four " + highestHighCard + "'s!!";
-            }
-
-            distributePot(playersWithBestHand);
-            return buildResultsString(playersWithBestHand, bestHand);
-        }
-
-        //Full House?-----------------------------------------------------------------------------------
-        highestHighCard = 0;
-        for(Player p : remainingPlayers){
-            int[] highCards = containsFullHouse(p.getCards());
-            if(highCards[0] >= highestHighCard){
-                if(highCards[0] > highestHighCard){
-                    highestHighCard =  highCards[0];
-                    highestHighCard2 = highCards[1];
-                    playersWithBestHand = new ArrayList<Player>();
-                } else if(highCards[1] > highestHighCard2){
-                    highestHighCard2 = highCards[1];
-                    playersWithBestHand = new ArrayList<Player>();
-                }
-
-                playersWithBestHand.add(p);
-            }
-        }
-
-        if(playersWithBestHand.size() > 0){
-            if(highestHighCard == 14){ //Ace
-                bestHand = "a full house, Ace's full of ";
-            } else if(highestHighCard == 13){ //King
-                bestHand = "a full house, Kings full of ";
-            } else if(highestHighCard == 12){ //Queen
-                bestHand = "a full house, Queens full of ";
-            } else if(highestHighCard == 11){ //Jack
-                bestHand = "a full house, Jacks full of ";
-            } else {
-                bestHand = "a full house, " + highestHighCard + "'s full of ";
-            }
-
-            if(highestHighCard2 == 14){ //Ace
-                bestHand += "Ace's!!";
-            } else if(highestHighCard2 == 13){ //King
-                bestHand += "Kings!!";
-            } else if(highestHighCard2 == 12){ //Queen
-                bestHand += "Queens!!";
-            } else if(highestHighCard2 == 11){ //Jack
-                bestHand += "Jacks!!";
-            } else {
-                bestHand += highestHighCard2 + "'s!!";
-            }
-
-            distributePot(playersWithBestHand);
-            return buildResultsString(playersWithBestHand, bestHand);
-        }
-
-        //Flush?----------------------------------------------------------------------------------------
-        highestHighCard = 0;
-        suit = "";
-        for(Player p : remainingPlayers){
-            suit = containsFlush(p.getCards());
-            if(!suit.equals("")){
-                int highCard = determineHighCard(p.getCards(), suit);
-                if(highCard > highestHighCard){
-                    highestHighCard =  highCard;
-                    playersWithBestHand = new ArrayList<Player>();
-                }
-
-                playersWithBestHand.add(p);
-            }
-        }
-
-        if(playersWithBestHand.size() > 0){
-            if(highestHighCard == 14){ //Ace
-                bestHand = "an Ace High Flush!";
-            } else if(highestHighCard == 13){ //King
-                bestHand = "a King's High Flush!";
-            } else if(highestHighCard == 12){ //Queen
-                bestHand = "a Queen's High Flush!";
-            } else if(highestHighCard == 11){ //Jack
-                bestHand = "a Jack's High Flush!";
-            } else {
-                bestHand = "a " + highestHighCard + "'s High Flush!";
-            }
-
-            distributePot(playersWithBestHand);
-            return buildResultsString(playersWithBestHand, bestHand);
-        }
-
-        //Straight?-------------------------------------------------------------------------------------
-        highestHighCard = 0;
-        for(Player p : remainingPlayers){
-            int highCard = containsStraight(p.getCards());
-            if(highCard >= highestHighCard){
-                if(highCard > highestHighCard){
-                    highestHighCard =  highCard;
-                    playersWithBestHand = new ArrayList<Player>();
-                }
-
-                playersWithBestHand.add(p);
-            }
-        }
-
-        if(playersWithBestHand.size() > 0){
-            if(highestHighCard == 14){ //Ace
-                bestHand = "an Ace High Straight!";
-            } else if(highestHighCard == 13){ //King
-                bestHand = "a King's High Straight!";
-            } else if(highestHighCard == 12){ //Queen
-                bestHand = "a Queen's High Straight!";
-            } else if(highestHighCard == 11){ //Jack
-                bestHand = "a Jack's High Straight!";
-            } else {
-                bestHand = "a " + highestHighCard + "'s High Straight!";
-            }
-
-            distributePot(playersWithBestHand);
-            return buildResultsString(playersWithBestHand, bestHand);
-        }
-
-        //Three of a Kind?------------------------------------------------------------------------------
-        highestHighCard = 0;
-        for(Player p : remainingPlayers){
-            int highCard = containsNOfAKind(p.getCards(), 3);
-            if(highCard >= highestHighCard){
-                if(highCard > highestHighCard){
-                    highestHighCard =  highCard;
-                    playersWithBestHand = new ArrayList<Player>();
-                }
-
-                playersWithBestHand.add(p);
-            }
-        }
 
             // WinObj.handCompare(tableCards, players); //TODO: determine who won
             //NEED TO UPDATE playersLeft variable if someone runs out of chips + remove them from players Array
-            endHand(); //TODO: update UI, pot, clear community cards, and hands; Reset all players to playing --> Player.setPlayingHand(true) 
-        if(playersWithBestHand.size() > 0){
-            if(highestHighCard == 14){ //Ace
-                bestHand = "three Ace's!";
-            } else if(highestHighCard == 13){ //King
-                bestHand = "three Kings!";
-            } else if(highestHighCard == 12){ //Queen
-                bestHand = "three Queens!";
-            } else if(highestHighCard == 11){ //Jack
-                bestHand = "three Jacks!";
-            } else {
-                bestHand = "three " + highestHighCard + "'s!";
-            }
+            // endHand(); //TODO: update UI, pot, clear community cards, and hands; Reset all players to playing --> Player.setPlayingHand(true) 
 
-            distributePot(playersWithBestHand);
-            return buildResultsString(playersWithBestHand, bestHand);
         }
 
         //TODO: DISPLAY WINNER IN SWING
@@ -993,6 +598,8 @@ public class Game extends JPanel {
             if(userAction.getValue() > 0 && players[i].isPlayingHand()) {
                 players[i].setPlayingHand(false);
                 System.out.println("user " + userAction.toString() + ", ai " + i + " folded");
+				writeActionFile(userAction.toString(), 1);
+				
             }
         }
     }
@@ -1014,247 +621,238 @@ public class Game extends JPanel {
         revalidate();
         repaint(); 
     }
+    
+    
+    /**
+     * Display card in JPanel container.
+     * @param _loc Panel to display card in.
+     * @param card Card to display.
+     */
+    private void displayCard(JPanel _loc, Card card){
+        Image  resizedCard  = card.getFace().getScaledInstance(75, 105,  java.awt.Image.SCALE_SMOOTH);
+        JLabel _cardDisplay = new JLabel(new ImageIcon(resizedCard));
 
-    private int determineHighCard(Card[] hand){
-        return this.determineHighCard(hand, "");
+        _loc.add(_cardDisplay, BorderLayout.SOUTH);
     }
-
-    //Determines highest value within passed in array of cards
-    private int determineHighCard(Card[] hand, String suit){
-        int highCard = -1;
-        for(Card card : hand){
-            int val;
-            if(card.getValue().equals("A")){
-                val = 14;
-            } else if(card.getValue().equals("K")){
-                val = 13;
-            } else if(card.getValue().equals("Q")){
-                val = 12;
-            } else if(card.getValue().equals("J")){
-                val = 11;
-            } else {
-                val = Integer.parseInt(card.getValue());
-            }
-
-            if( val > highCard && (suit.equals(card.getSuit()) || suit.equals("")) ){
-                highCard = val;
-            }
-        }
-
-        return highCard;
-    }
-
-    //Determines if passed in array of cards contains a flush, returns suit if it does, empty string if not
-    private String containsFlush(Card[] hand){
-        //Clubs = 0, Diamonds = 1, Hearts = 2, Spades = 3
-        int[] suits = {0,0,0,0};
-        for(Card card : hand){
-            if(card.getSuit().equals("C")){
-                suits[0]++;
-            } else if(card.getSuit().equals("D")){
-                suits[1]++;
-            } else if(card.getSuit().equals("H")){
-                suits[2]++;
-            } else if(card.getSuit().equals("S")){
-                suits[3]++;
-            }
-        }
-
-        if(suits[0] >= 5){
-            return "C";
-        } else if(suits[1] >= 5){
-            return "D";
-        } else if(suits[2] >= 5){
-            return "H";
-        } else if(suits[3] >= 5){
-            return "S";
-        }
-        return "";
-    }
-
-    //Determines if passed in array of cards contains a Straight, returns high card value if it does, -1 if not
-    private int containsStraight(Card[] hand){
-        int[] values = new int[14];
-        int numInArow = 0;
-        int returnVal = -2;
-        for(Card card : hand){
-            if(card.getValue().equals("A")){
-                values[0] = 1;
-                values[13] = 1;
-            } else if(card.getValue().equals("K")){
-                values[12] = 1;
-            } else if(card.getValue().equals("Q")){
-                values[11] = 1;
-            } else if(card.getValue().equals("J")){
-                values[10] = 1;
-            } else {
-                values[Integer.parseInt(card.getValue()) - 1] = 1;
-            }
-        }
-
-        for(int i = 0; i < 14; i++){
-            if(values[i] == 1){
-                numInArow++;
-            } else {
-                numInArow = 0;
-            }
-
-            if(numInArow >= 5){
-                returnVal = i;
-            }
-        }
-        return returnVal + 1; //To offest the array starting at 0, returning a 10 means high card is 10, not jack
-    }
-
-    //Determines if passed in array of cards contains a full house, 
-    //returns array containing {three of a kind, two of a kind} if it does, {-1, -1} if not
-    private int[] containsFullHouse(Card[] hand){
-        int[] values = new int[15];
-        int[] returnArr = {-1, -1};
-        for(Card card : hand){
-            if(card.getValue().equals("A")){
-                values[14]++;
-            } else if(card.getValue().equals("K")){
-                values[13]++;
-            } else if(card.getValue().equals("Q")){
-                values[12]++;
-            } else if(card.getValue().equals("J")){
-                values[11]++;
-            } else {
-                values[Integer.parseInt(card.getValue())]++;
-            }
-        }
-
-        for(int i = 2; i < 15; i++){
-            if(values[i] == 3){
-                returnArr[0] = i;
-            }
-        }
-
-        for(int i = 2; i < 15; i++){
-            if(values[i] >= 2 && i != returnArr[0]){
-                returnArr[1] = i;
-            }
-        }
-
-        if(returnArr[0] == -1 || returnArr[1] == -1){
-            returnArr[0] = -1;
-            returnArr[1] = -1;
-        }
-        return returnArr;
-    }
-
-    //Determines if passed in array of cards contains two pairs, 
-    //returns array containing {larger pair, smaller pair} if it does, {-1, -1} if not
-    private int[] containsTwoPair(Card[] hand){
-        int[] values = new int[15];
-        int[] returnArr = {-1, -1};
-        for(Card card : hand){
-            if(card.getValue().equals("A")){
-                values[14]++;
-            } else if(card.getValue().equals("K")){
-                values[13]++;
-            } else if(card.getValue().equals("Q")){
-                values[12]++;
-            } else if(card.getValue().equals("J")){
-                values[11]++;
-            } else {
-                values[Integer.parseInt(card.getValue())]++;
-            }
-        }
-
-        for(int i = 2; i < 15; i++){
-            if(values[i] == 2){
-                returnArr[0] = i;
-            }
-        }
-
-        for(int i = 2; i < 15; i++){
-            if(values[i] == 2 && i != returnArr[0]){
-                returnArr[1] = i;
-            }
-        }
-
-        if(returnArr[0] == -1 || returnArr[1] == -1){
-            returnArr[0] = -1;
-            returnArr[1] = -1;
-        }
-        return returnArr;
-    }
-
-    //Determines if passed in array of cards contains a exactly N of any card, 
-    //returns the cards value if it does, -1 if not
-    private int containsNOfAKind(Card[] hand, int N){
-        int[] values = new int[15];
-        int returnVal = -1;
-        for(Card card : hand){
-            if(card.getValue().equals("A")){
-                values[14]++;
-            } else if(card.getValue().equals("K")){
-                values[13]++;
-            } else if(card.getValue().equals("Q")){
-                values[12]++;
-            } else if(card.getValue().equals("J")){
-                values[11]++;
-            } else {
-                values[Integer.parseInt(card.getValue())]++;
-            }
-        }
-
-        for(int i = 2; i < 15; i++){
-            if(values[i] == N){
-                returnVal = i;
-            }
-        }
-
-        return returnVal;
-    }
-
-    //Makes the display string describing the outcome of the game
-    private String buildResultsString(ArrayList<Player> winners, String winningHand){
-        StringBuilder resultStrBuilder = new StringBuilder();
-        String deliminator = "";
-        for(int i = 0; i < winners.size(); i++){
-            resultStrBuilder.append(deliminator).append(winners.get(i).getName());
-            
-            deliminator = ", ";
-            if(i == winners.size() - 2){
-                if(winners.size() == 2){
-                    deliminator = " and ";
-                } else {
-                    deliminator = ", and ";
-                }
-            }
-        }
-
-        if(winners.size() == 1){
-            resultStrBuilder.append(" won with ").append(winningHand);
-        } else if(winners.size() == 2){
-            resultStrBuilder.append(" both won with ").append(winningHand);
-        } else {
-            resultStrBuilder.append(" all won with ").append(winningHand);
-        }
-
+	
+	/*
+	 * Opens the external file and writes the intro.
+	 * File that is opened is called "output.txt".
+	 * @param	UserName		The input name from the player.
+	 * @param	aiPlayerNames	The selected AI names.
+	*/
+	private void writeStartFile(String userName, String[] aiPlayerNames){
+		//Write the intro to the External File
+		File outputFile = new File("output.txt");
 		
+		BufferedWriter bw = null;
+		FileWriter fw = null;
+
+		try {
+			String firstLine = "Game Started - ";
+			String secondLine = "Player name is: ";
+			String thirdLine = "AI player names: ";
+			
+			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			Date date = new Date();
+
+			fw = new FileWriter(outputFile);
+			bw = new BufferedWriter(fw);
+			
+			//writes first line - gives date and time
+			bw.write(firstLine);
+			bw.write(dateFormat.format(date));
+			bw.newLine();
+			
+			//second line - gives player name
+			bw.write(secondLine);
+			bw.write(userName);
+			bw.newLine();
+			
+			//third line - gives ai players names
+			bw.write(thirdLine);
+			bw.write(Arrays.toString(aiPlayerNames));
+			bw.newLine();
+			
+		}  catch (IOException e) {
+
+			e.printStackTrace();
+
+		} finally {
+
+			try {
+
+				if (bw != null)
+					bw.close();
+
+				if (fw != null)
+					fw.close();
+
+			} catch (IOException ex) {
+
+				ex.printStackTrace();
+
+			}
+		}
+	}
+	
+	/*
+	 * Opens the external file and writes Hand #
+	*/
+	private void writeHandFile(){
+		try{
+			File outputFile = new File("output.txt");
+			
+			//Here true is to append the content to file
+			FileWriter fw = new FileWriter(outputFile,true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			//Hand #
+			bw.write("Hand: " + turnNum);
+			bw.newLine();
+			
+			//Closing BufferedWriter Stream
+			bw.close();
+
+		}  catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+	}
+	
+	/*
+	 * Opens the external file and writes the Cards Dealt.
+	 * @param	players			The info for the current player.
+	*/
+	private void writeCardsFile(Player players){
+		try{
+			File outputFile = new File("output.txt");
+			
+			//Here true is to append the content to file
+			FileWriter fw = new FileWriter(outputFile,true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			//System.out.println(players);
+			
+			String playersToString = players.toString();
+			
+			bw.write(playersToString);
+			bw.newLine();
+			
+			
+			//Closing BufferedWriter Stream
+			bw.close();
+
+		}  catch (IOException e) {
+
+			e.printStackTrace();
+
+		}		
+	}
+	
+	/*
+	 * Opens the external file and writes the Cards Dealt.
+	 * @param	cardHolder		Who has the cards - can be the pot.
+	 * @param	cardsHeld		The cards that ar being held.
+	*/
+	private void writeDeckCardsFile(Card deckCards){
+		try{
+			File outputFile = new File("output.txt");
+			
+			//Here true is to append the content to file
+			FileWriter fw = new FileWriter(outputFile,true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			//System.out.println(players);
+			
+			String deckCardsToString = deckCards.toString();
+			
+			bw.write(deckCardsToString);
+			
+			//Closing BufferedWriter Stream
+			bw.close();
+
+		}  catch (IOException e) {
+
+			e.printStackTrace();
+
+		}		
+	}
+	
+	/*
+	 * Opens the external file and writes the Player action.
+	 * @param	playerName		The input name from the player / AI.
+	 * @param	playerAction	The action taken by the player.
+	 * playerAction - 0: 		player checks
+	 * playerAction - 1;		player folds
+	 * playerAction - 2; 		player bets
+	 * playerAction - 3;		player calls
+	*/
+	private void writeActionFile(String playerName, int playerAction){
 		
-        return resultStrBuilder.toString();
-    }
+		try{
+			File outputFile = new File("output.txt");
+			
+			//Here true is to append the content to file
+			FileWriter fw = new FileWriter(outputFile,true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			bw.newLine();
+			
+			if (playerAction == 0){
+				bw.write(playerName + " checks");
+				bw.newLine();
+			}
+			if (playerAction == 1){
+				bw.write(playerName + " folds");
+				bw.newLine();
+			}
+			if (playerAction == 2){
+				bw.write(playerName + " bets");
+				bw.newLine();
+			}
+			if (playerAction == 3){
+				bw.write(playerName + " calls");
+				bw.newLine();
+			}
+			
+			
+			//Closing BufferedWriter Stream
+			bw.close();
 
-    //Divide up the pot among the winner(s), and set it back to 0
-    private void distributePot(ArrayList<Player> winners){
-        int winningsAmount = pot/winners.size();
-        for(Player p : players){
-            if(winners.contains(p)){
-                p.adjustCash(winningsAmount);
-            }
-        }
+		}  catch (IOException e) {
 
-        pot = 0;
-        return;
-    }
+			e.printStackTrace();
 
-    private void endHand(){} // TODO
+		}	
+	}
+	
+	/*
+	 * Opens the external file and writes the Ending of Hand.
+	 * @param	endResult		The ending result for the game
+	*/
+	private void writeEndFile(String endResult){
+		
+		try{
+			File outputFile = new File("output.txt");
+			
+			//Here true is to append the content to file
+			FileWriter fw = new FileWriter(outputFile,true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			bw.write(endResult);
+			bw.newLine();
+			
+			
+			//Closing BufferedWriter Stream
+			bw.close();
 
-    private void startHand() {} //TODO
+		}  catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+	}
     
 }
