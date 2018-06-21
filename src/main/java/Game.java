@@ -271,6 +271,49 @@ public class Game extends JPanel {
         
         revalidate();
         repaint();
+
+        playGame();
+        
+    }
+
+    private void playGame() {
+
+        Action minAction = null;
+        int i, j, k;
+        int playersLeft;
+
+        while (playersLeft >= 2) {                    //play game while at least 2 players have chips
+            startHand(); //TODO: Reinit Deck + Give each player Cards
+            minAction = null;
+            for (i=0; i<4; i++) {                       //pre-flop, flop, turn, river
+                if (i==1){           //flop
+                    for (k=0; k<3; k++){
+                        tableCards[k] = deck.draw();
+                    }
+                } else if (i==2){    //turn
+                    tableCards[3] = deck.draw();
+                } else if (i==3) {   //river
+                    tableCards[4] = deck.draw();
+                }
+                for (j=0; j<players.length; j++){    //number of players
+                    if (!players[j].isPlayingHand()) continue;   //skip if not in hand (folded)
+                    
+                    minAction = TurnObj.turn(players[j], minAction); // TODO
+                    //Need to update Player.setPlayingHand(false) if they folded
+                    //Send Player + Current minimum Action
+                    //Return New minimum Action
+                }
+
+            }
+
+            WinObj.handCompare(tableCards, players); //TODO: determine who won
+            //NEED TO UPDATE playersLeft variable if someone runs out of chips + remove them from players Array
+            endHand(); //TODO: update UI, pot, clear community cards, and hands; Reset all players to playing --> Player.setPlayingHand(true) 
+
+        }
+
+    //TODO: DISPLAY WINNER IN SWING
+
     }
     
     
@@ -895,5 +938,8 @@ public class Game extends JPanel {
         pot = 0;
         return;
     }
+    private void endHand(){} // TODO
+
+    private void startHand() {} //TODO
     
 }
