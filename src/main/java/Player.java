@@ -1,8 +1,10 @@
+import javax.swing.*;
 
 public class Player{
 	private String  name;
 	private Card[]  cards;
 	private int     cash;
+	private JLabel  _cash;
 	private boolean isUser;
 	private boolean inHand;
 	
@@ -10,6 +12,7 @@ public class Player{
 		this.name   = name;
 		this.cards  = cards;
 		this.cash   = cash;
+		this._cash  = _cash;
 		this.isUser = isUser;
 		this.inHand = true;
 	}
@@ -35,6 +38,8 @@ public class Player{
 		if(this.cash < 0){
 			this.inHand = false;
 		}
+
+		setLabel();
 	}
 
 	public boolean isPlayingHand(){
@@ -44,4 +49,10 @@ public class Player{
 	public void setPlayingHand(boolean inHand){
 		this.inHand = inHand;
 	}
+
+	private void setLabel()
+	{
+		this._cash.setText("$" + Integer.toString(this.cash));
+	}
+		
 }
