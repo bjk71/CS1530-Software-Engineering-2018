@@ -2,9 +2,9 @@ import java.awt.*;
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
-
 import javax.imageio.*;
 import java.awt.event.*;
+import java.text.*;
 
 public class Game extends JPanel {
     private final Color POKER_GREEN = new Color(71, 113, 72);
@@ -15,9 +15,8 @@ public class Game extends JPanel {
     private Card[]   tableCards = null;
     private Card     cardBack   = null;
     private int      pot        = 0;
-    // private int      round      = 1;
-
     private JPanel   _tablePanel = null;
+	private int		 turnNum	= 0;
     
 
     public Game() {
@@ -134,6 +133,8 @@ public class Game extends JPanel {
 
         GameUtils  utils           = new GameUtils();
         String[]   aiPlayerNames   = utils.getAINames(numOfAI, userName);
+		
+		writeStartFile(userName, aiPlayerNames);
         
         try {
             Image back = ImageIO.read(this.getClass().getResource("/back.png"));
@@ -199,6 +200,8 @@ public class Game extends JPanel {
         }
         // Save location of table cards
         _tablePanel = _tableAndUserTB[0][1];
+		
+		// writeCardsFile("deck", tableCards);
         
         //For the players section
         for(int i=0; i<players.length; i++){
@@ -215,6 +218,8 @@ public class Game extends JPanel {
                 _playerCash  = new JLabel();
                 players[i]   = new Player(userName, playerHand, 1000, _playerCash, true);
                 playerCash   = players[i].getCash();
+				
+				writeCardsFile(players[i]);
 
                 _playerLabel.setForeground(WHITE);
                 _playerLabel.setFont(new Font("Courier", Font.PLAIN, 28));
@@ -242,10 +247,14 @@ public class Game extends JPanel {
                 players[i]   = new Player(aiName, playerHand, 1000, _playerCash, true);
                 playerCash   = players[i].getCash();
                 System.out.println(players[i]);
+				
+				writeCardsFile(players[i]);
                 
                 _playerLabel.setForeground(WHITE);
                 _playerLabel.setFont(new Font("Courier", Font.PLAIN, 28));
                 _aiPlayersTB[i-1][0].add(_playerLabel, BorderLayout.NORTH);
+
+                // writeCardsFile(aiName, players[i].getCards());
                                 
                 // Display AI's cash
                 _playerCash.setForeground(WHITE);
@@ -273,14 +282,6 @@ public class Game extends JPanel {
         // playGame();
         // playPreFlop();
 
-        //TESTING_________________________________________________________________________
-        // JLabel _results = new JLabel(utils.determineBestHand(players, tableCards, pot));
-        // _results.setForeground(WHITE);
-        // _results.setFont(new Font("Courier", Font.PLAIN, 28));
-        // _results.setHorizontalAlignment(SwingConstants.CENTER);
-        // add(_results, BorderLayout.SOUTH);
-        //________________________________________________________________________________
-        
         playGameSwitch(1);
     }
 
@@ -291,8 +292,11 @@ public class Game extends JPanel {
         int playersLeft = 0;
 
         while (playersLeft >= 2) {                    //play game while at least 2 players have chips
-            startHand(); //TODO: Reinit Deck + Give each player Cards
+            // startHand(); //TODO: Reinit Deck + Give each player Cards
             minAction = null;
+			
+			writeHandFile();
+			
             for (i=0; i<4; i++) {                       //pre-flop, flop, turn, river
                 if (i==1){           //flop
                     for (k=0; k<3; k++){
@@ -316,7 +320,7 @@ public class Game extends JPanel {
 
             // WinObj.handCompare(tableCards, players); //TODO: determine who won
             //NEED TO UPDATE playersLeft variable if someone runs out of chips + remove them from players Array
-            endHand(); //TODO: update UI, pot, clear community cards, and hands; Reset all players to playing --> Player.setPlayingHand(true) 
+            // endHand(); //TODO: update UI, pot, clear community cards, and hands; Reset all players to playing --> Player.setPlayingHand(true) 
 
         }
 
@@ -594,6 +598,8 @@ public class Game extends JPanel {
             if(userAction.getValue() > 0 && players[i].isPlayingHand()) {
                 players[i].setPlayingHand(false);
                 System.out.println("user " + userAction.toString() + ", ai " + i + " folded");
+				writeActionFile(userAction.toString(), 1);
+				
             }
         }
     }
@@ -616,7 +622,6 @@ public class Game extends JPanel {
         repaint(); 
     }
     
-    
     /**
      * Display card in JPanel container.
      * @param _loc Panel to display card in.
@@ -628,9 +633,225 @@ public class Game extends JPanel {
 
         _loc.add(_cardDisplay, BorderLayout.SOUTH);
     }
+	
+	/*
+	 * Opens the external file and writes the intro.
+	 * File that is opened is called "output.txt".
+	 * @param	UserName		The input name from the player.
+	 * @param	aiPlayerNames	The selected AI names.
+	*/
+	private void writeStartFile(String userName, String[] aiPlayerNames){
+		//Write the intro to the External File
+		File outputFile = new File("output.txt");
+		
+		BufferedWriter bw = null;
+		FileWriter fw = null;
 
-    private void endHand(){} // TODO
+		try {
+			String firstLine = "Game Started - ";
+			String secondLine = "Player name is: ";
+			String thirdLine = "AI player names: ";
+			
+			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			Date date = new Date();
 
-    private void startHand() {} //TODO
+			fw = new FileWriter(outputFile);
+			bw = new BufferedWriter(fw);
+			
+			//writes first line - gives date and time
+			bw.write(firstLine);
+			bw.write(dateFormat.format(date));
+			bw.newLine();
+			
+			//second line - gives player name
+			bw.write(secondLine);
+			bw.write(userName);
+			bw.newLine();
+			
+			//third line - gives ai players names
+			bw.write(thirdLine);
+			bw.write(Arrays.toString(aiPlayerNames));
+			bw.newLine();
+			
+		}  catch (IOException e) {
+
+			e.printStackTrace();
+
+		} finally {
+
+			try {
+
+				if (bw != null)
+					bw.close();
+
+				if (fw != null)
+					fw.close();
+
+			} catch (IOException ex) {
+
+				ex.printStackTrace();
+
+			}
+		}
+	}
+	
+	/*
+	 * Opens the external file and writes Hand #
+	*/
+	private void writeHandFile(){
+		try{
+			File outputFile = new File("output.txt");
+			
+			//Here true is to append the content to file
+			FileWriter fw = new FileWriter(outputFile,true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			//Hand #
+			bw.write("Hand: " + turnNum);
+			bw.newLine();
+			
+			//Closing BufferedWriter Stream
+			bw.close();
+
+		}  catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+	}
+	
+	/*
+	 * Opens the external file and writes the Cards Dealt.
+	 * @param	players			The info for the current player.
+	*/
+	private void writeCardsFile(Player players){
+		try{
+			File outputFile = new File("output.txt");
+			
+			//Here true is to append the content to file
+			FileWriter fw = new FileWriter(outputFile,true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			//System.out.println(players);
+			
+			String playersToString = players.toString();
+			
+			bw.write(playersToString);
+			bw.newLine();
+			
+			
+			//Closing BufferedWriter Stream
+			bw.close();
+
+		}  catch (IOException e) {
+
+			e.printStackTrace();
+
+		}		
+	}
+	
+	/*
+	 * Opens the external file and writes the Cards Dealt.
+	 * @param	cardHolder		Who has the cards - can be the pot.
+	 * @param	cardsHeld		The cards that ar being held.
+	*/
+	private void writeDeckCardsFile(Card deckCards){
+		try{
+			File outputFile = new File("output.txt");
+			
+			//Here true is to append the content to file
+			FileWriter fw = new FileWriter(outputFile,true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			//System.out.println(players);
+			
+			String deckCardsToString = deckCards.toString();
+			
+			bw.write(deckCardsToString);
+			
+			//Closing BufferedWriter Stream
+			bw.close();
+
+		}  catch (IOException e) {
+
+			e.printStackTrace();
+
+		}		
+	}
+	
+	/*
+	 * Opens the external file and writes the Player action.
+	 * @param	playerName		The input name from the player / AI.
+	 * @param	playerAction	The action taken by the player.
+	 * playerAction - 0: 		player checks
+	 * playerAction - 1;		player folds
+	 * playerAction - 2; 		player bets
+	 * playerAction - 3;		player calls
+	*/
+	private void writeActionFile(String playerName, int playerAction){
+		
+		try{
+			File outputFile = new File("output.txt");
+			
+			//Here true is to append the content to file
+			FileWriter fw = new FileWriter(outputFile,true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			bw.newLine();
+			
+			if (playerAction == 0){
+				bw.write(playerName + " checks");
+				bw.newLine();
+			}
+			if (playerAction == 1){
+				bw.write(playerName + " folds");
+				bw.newLine();
+			}
+			if (playerAction == 2){
+				bw.write(playerName + " bets");
+				bw.newLine();
+			}
+			if (playerAction == 3){
+				bw.write(playerName + " calls");
+				bw.newLine();
+			}
+			
+			
+			//Closing BufferedWriter Stream
+			bw.close();
+
+		}  catch (IOException e) {
+
+			e.printStackTrace();
+
+		}	
+	}
+	
+	/*
+	 * Opens the external file and writes the Ending of Hand.
+	 * @param	endResult		The ending result for the game
+	*/
+	private void writeEndFile(String endResult){
+		
+		try{
+			File outputFile = new File("output.txt");
+			
+			//Here true is to append the content to file
+			FileWriter fw = new FileWriter(outputFile,true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			bw.write(endResult);
+			bw.newLine();
+			
+			
+			//Closing BufferedWriter Stream
+			bw.close();
+
+		}  catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+	}
     
 }
