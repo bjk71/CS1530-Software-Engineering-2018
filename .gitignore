@@ -21,3 +21,4 @@ gradle-app.setting
 
 # Ignore class files
 *.class
+output.txt
