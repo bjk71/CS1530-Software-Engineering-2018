@@ -215,7 +215,7 @@ public class Game extends JPanel {
                 players[i] = new Player(userName, playerHand, 1000, true);
                 
                 // Display user's cash
-                // int yourCash = players[i].getCash();
+                playerCash   = players[i].getCash();
                 _playerCash = new JLabel("");
                 _playerCash.setForeground(WHITE);
                 _playerCash.setText("$" + String.valueOf(players[i].getCash()));
@@ -248,11 +248,11 @@ public class Game extends JPanel {
                 _playerCash.setFont(new Font("Courier", Font.PLAIN, 28));
                 _aiPlayersTB[i-1][0].add(_playerCash, BorderLayout.NORTH);
                 
-                //displayCard(_aiPlayersTB[i-1][1], cardBack);
-                //displayCard(_aiPlayersTB[i-1][1], cardBack);
+                displayCard(_aiPlayersTB[i-1][1], cardBack);
+                displayCard(_aiPlayersTB[i-1][1], cardBack);
 
-                displayCard(_aiPlayersTB[i-1][1], playerHand[0]);
-                displayCard(_aiPlayersTB[i-1][1], playerHand[1]);
+                //displayCard(_aiPlayersTB[i-1][1], playerHand[0]);
+                //displayCard(_aiPlayersTB[i-1][1], playerHand[1]);
             }
         }
         
