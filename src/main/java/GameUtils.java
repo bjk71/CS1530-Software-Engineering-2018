@@ -2,14 +2,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class GameUtils{
-    
-    public String[] getAINames(int num, String playerName) {
+    /**
+     * Return up to nine random names for AI players. Checks against playerName to ensure uniqueness.
+     * @param  numOfAI    The number of AI player names to return.
+     * @param  playerName Player name to check AI names against.
+     * @return           String array of AI player names.
+     */
+    public String[] getAINames(int numOfAI, String playerName) {
         String[] namesList  = {"Daniel", "Erik", "Antonio", "Fedor","Phil", "Johnathan", "Scott", "Elton", "Brian"};
-        String[] returnList = new String[num];
+        String[] returnList = new String[numOfAI];
         int      listLength = 0;
         int      index      = 0;
         
-        while(listLength < num) {
+        while(listLength < numOfAI) {
             if(!namesList[index].equals(playerName)) {
                 returnList[listLength] = namesList[index];
                 listLength++;
