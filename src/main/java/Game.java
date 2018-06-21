@@ -622,7 +622,6 @@ public class Game extends JPanel {
         repaint(); 
     }
     
-    
     /**
      * Display card in JPanel container.
      * @param _loc Panel to display card in.
