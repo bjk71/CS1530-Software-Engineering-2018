@@ -44,5 +44,4 @@ public class Player{
 	public void setPlayingHand(boolean inHand){
 		this.inHand = inHand;
 	}
-		
 }
