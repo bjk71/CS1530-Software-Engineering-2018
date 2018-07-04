@@ -5,18 +5,17 @@ public class Player{
 	private Card[]  cards;
 	private int 	role;
 	private int     cash;
-	private JLabel  _cash;
+	private PlayerPanel playerPanel;
 	private boolean isUser;
 	private boolean inHand;
 
 	private JPanel  _cardLoc;
 	
-	public Player(String name, Card[] cards, int role, int cash, JLabel _cash, boolean isUser){
+	public Player(String name, Card[] cards, int role, int cash, boolean isUser){
 		this.name   = name;
 		this.cards  = cards;
 		this.role	= role;
 		this.cash   = cash;
-		this._cash  = _cash;
 		this.isUser = isUser;
 		this.inHand = true;
 	}
@@ -32,8 +31,16 @@ public class Player{
 	public void setCards(Card[] newHand){
 		this.cards = newHand;
 	}
+
+	public void setPlayerPanel(PlayerPanel panel) {
+		this.playerPanel = panel;
+	}
+
+	public PlayerPanel getPlayerPanel() {
+		return this.playerPanel;
+	}
 	
-	public int getRole(){
+	public int getRole() {
 		return this.role;
 	}
 	
@@ -41,7 +48,7 @@ public class Player{
 		return this.cash;
 	}
 
-	public void adjustCash(int amount){
+	public void adjustCash(int amount) {
 		this.cash += amount;
 		if(this.cash < 0){
 			this.inHand = false;
@@ -50,17 +57,16 @@ public class Player{
 		setLabel();
 	}
 
-	public boolean isPlayingHand(){
+	public boolean isPlayingHand() {
 		return this.inHand;
 	}
 
-	public void setPlayingHand(boolean inHand){
+	public void setPlayingHand(boolean inHand) {
 		this.inHand = inHand;
 	}
 
-	private void setLabel()
-	{
-		this._cash.setText("$" + Integer.toString(this.cash));
+	private void setLabel() {
+		playerPanel.setPlayerCash(cash);
 	}
 
 	public void setCardPanel(JPanel _cardLoc) {

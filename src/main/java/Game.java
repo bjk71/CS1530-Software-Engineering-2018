@@ -1,5 +1,6 @@
 import java.awt.*;
 import javax.swing.*;
+
 import java.io.*;
 import java.util.*;
 import javax.imageio.*;
@@ -9,6 +10,7 @@ import java.awt.image.BufferedImage;
 
 public class Game extends JPanel {
     private final Color POKER_GREEN = new Color(71, 113, 72);
+    private final Color POKER_DARK  = new Color(47, 89, 49);
     private final Color WHITE       = new Color(255, 255, 255);
 
     private Player[] players    = null;
@@ -17,6 +19,7 @@ public class Game extends JPanel {
     private Card     cardBack   = null;
     private int      pot        = 0;
     private JPanel   _tablePanel = null;
+    
 	private int		 turnNum	= 1;
 	private int		 dealerNum	= -1;
 	private int		 sBlindNum	= -1;
@@ -24,6 +27,21 @@ public class Game extends JPanel {
 	private int		 sBlindVal  = 10;
 	private int 	 bBlindVal  = 20;
     
+    private CommunityCardsPanel _communityPanel = null;
+
+    private JPanel   _aiPlayersPanel = new JPanel();
+    private JPanel   _middlePanel    = new JPanel();
+    private JPanel   _bottomPanel    = new JPanel(null);
+    private JScrollPane _scrollPane  = new JScrollPane();
+    private JLabel   _gameLogLabel   = new JLabel();
+
+    // Action panel components
+    private JPanel   _actionPanel = new JPanel();
+    private JButton  _betButton   = new JButton();
+    private JButton  _checkButton = new JButton();
+    private JButton  _foldButton  = new JButton();
+    private JSpinner _betSpinner  = null;
+
 
     public Game() {
         initalizeStartGrid();
@@ -78,9 +96,11 @@ public class Game extends JPanel {
         _playerNameLabel.setVerticalAlignment(SwingConstants.TOP);
         _playerNameLabel.setText("Name:");
         
-        _playerNameInput.setPreferredSize(new Dimension( 100, 50 ));
+        _playerNameInput.setPreferredSize(new Dimension( 200, 50 ));
         _playerNameLabel.setFont(new Font("Courier", Font.PLAIN, 40));
+        _playerNameInput.setFont(new Font("Courier", Font.PLAIN, 30));
         _playerNameInput.setHorizontalAlignment(SwingConstants.CENTER);
+        _playerNameInput.setText("Player 1");
         _playerNamePanel.add(_playerNameInput);
 
         _numOppLabel.setForeground(WHITE);
@@ -91,6 +111,8 @@ public class Game extends JPanel {
         
         _numOpp.setModel(new DefaultComboBoxModel<>(new Integer[] { 1, 2, 3, 4, 5, 6, 7 }));        
         _numOpp.setPreferredSize(new Dimension( 100, 50 ));
+        _numOpp.setSelectedItem(4);
+        _numOpp.setFont(new Font("Courier", Font.PLAIN, 30));
         _numOpponentsPanel.add(_numOpp);
         
         _startGame.setText("Start Game");
@@ -104,7 +126,7 @@ public class Game extends JPanel {
                 int    numOpponents = (int) _numOpp.getSelectedItem();
 
                 removeAll();
-                createNewGame (name, numOpponents);
+                createNewGame(name, numOpponents);
             }
         });
         
@@ -121,6 +143,22 @@ public class Game extends JPanel {
         add(_startButton);       
     }
     
+    private void printGameConsole(String line) {
+        String        currentText = _gameLogLabel.getText().replace("</html>", "<br/>");
+        StringBuilder lineBuilder = new StringBuilder(currentText);
+        JScrollBar    _scrollBar  = _scrollPane.getVerticalScrollBar();
+
+        lineBuilder.append(line);
+        lineBuilder.append("</html>");
+
+        _gameLogLabel.setText(lineBuilder.toString());
+        
+        _scrollPane.revalidate();
+        _scrollPane.repaint();
+
+        _scrollBar.setValue(_scrollBar.getMaximum());
+    }
+
     /**
      * Create new game objects and and initialize players.
      * @param userName Player name.
@@ -129,10 +167,7 @@ public class Game extends JPanel {
     private void createNewGame(String userName, int numOfAI) {
         JPanel     _top            = new JPanel();
         JPanel     _bot            = new JPanel();
-        JPanel[]   _aiPlayers      = new JPanel[numOfAI];
-        JPanel[]   _tableAndUser   = new JPanel[2];
-        JPanel[][] _aiPlayersTB    = new JPanel[numOfAI][2];
-        JPanel[][] _tableAndUserTB = new JPanel[2][2];
+        JPanel     _tablePotPanel     = new JPanel();
 
         JLabel     _tableLabel     = new JLabel("Pot: ");
         JLabel     _pot            = new JLabel("");
@@ -166,39 +201,11 @@ public class Game extends JPanel {
         setBackground(POKER_GREEN);
         _top.setBackground(POKER_GREEN);
         _bot.setBackground(POKER_GREEN);
-        
-        for(int i = 0; i < numOfAI; i++) {
-            _aiPlayers[i] = new JPanel();
-            _top.add(_aiPlayers[i]);
-            _aiPlayers[i].setBackground(POKER_GREEN);
-            _aiPlayers[i].setLayout(new GridLayout(2, 1, 50, 50));
-            
-            _aiPlayersTB[i][0] = new JPanel();
-            _aiPlayersTB[i][1] = new JPanel();
-            _aiPlayers[i].add(_aiPlayersTB[i][0]);
-            _aiPlayers[i].add(_aiPlayersTB[i][1]);
-            _aiPlayersTB[i][0].setBackground(POKER_GREEN);
-            _aiPlayersTB[i][1].setBackground(POKER_GREEN);
-        }
-        
-        for(int i = 0; i < 2; i++) {
-            _tableAndUser[i] = new JPanel();
-            _bot.add(_tableAndUser[i]);
-            _tableAndUser[i].setBackground(POKER_GREEN);
-            _tableAndUser[i].setLayout(new GridLayout(2, 1, 50, 50));
-            
-            _tableAndUserTB[i][0] = new JPanel();
-            _tableAndUserTB[i][1] = new JPanel();
-            _tableAndUser[i].add(_tableAndUserTB[i][0]);
-            _tableAndUser[i].add(_tableAndUserTB[i][1]);
-            _tableAndUserTB[i][0].setBackground(POKER_GREEN);
-            _tableAndUserTB[i][1].setBackground(POKER_GREEN);
-        }
 
         // Make Labels and distribute starting cards
         _tableLabel.setForeground(WHITE);
         _tableLabel.setFont(new Font("Courier", Font.PLAIN, 28));
-        _tableAndUserTB[0][0].add(_tableLabel, BorderLayout.NORTH);
+        _tablePotPanel.add(_tableLabel, BorderLayout.NORTH);
         
 		//Add the blinds to the pot
 		pot = pot + sBlindVal + bBlindVal;
@@ -207,19 +214,19 @@ public class Game extends JPanel {
         _pot.setForeground(WHITE);
         _pot.setText("$" + String.valueOf(pot));
         _pot.setFont(new Font("Courier", Font.PLAIN, 28));
-        _tableAndUserTB[0][0].add(_pot, BorderLayout.NORTH);
+        _tablePotPanel.add(_pot, BorderLayout.NORTH);
         
         for(int i = 0; i < 5; i++) {
             tableCards[i] = deck.draw();
             // displayCard(_tableAndUserTB[0][1], tableCards[i]);
         }
-        // Save location of table cards
-        _tablePanel = _tableAndUserTB[0][1];
+        // Initialize table cards
+        _communityPanel = new CommunityCardsPanel(tableCards, cardBack);
 		
 		//writeCardsFile(deck);
         
         //For the players section
-        for(int i=0; i<players.length; i++){
+        for(int i = 0; i < players.length; i++){
             Card[] playerHand   = new Card[2];
             JLabel _playerLabel = null;
             JLabel _playerCash  = null;
@@ -246,86 +253,81 @@ public class Game extends JPanel {
 				playerRole = 3;
 				playerCash = playerCash - bBlindVal;
 			}
+            // JLabel _playerLabel = null;
+            // JLabel _playerCash  = null;
+            PlayerPanel _playerPanel = null;
 
             playerHand[0] = deck.draw();
             playerHand[1] = deck.draw();
 
             if(i == 0) { // Initialize human player
-                _playerLabel = new JLabel(userName + ": ");
-                _playerCash  = new JLabel();
-                players[i]   = new Player(userName, playerHand, playerRole, playerCash, _playerCash, true);
-                playerCash   = players[i].getCash();
+                // _playerLabel = new JLabel(userName + ": ");
+                // _playerCash  = new JLabel();
+                players[i]   = new Player(userName, playerHand, playerRole, 1000, true);
+                // playerCash   = players[i].getCash();
 				
 				writeCardsFile(players[i]);
-
-                _playerLabel.setForeground(WHITE);
-                _playerLabel.setFont(new Font("Courier", Font.PLAIN, 28));
-                _tableAndUserTB[1][0].add(_playerLabel, BorderLayout.NORTH);
-                                
-                // Display user's cash
-                _playerCash.setForeground(WHITE);
-                _playerCash.setText("$" + String.valueOf(players[i].getCash()));
-                _playerCash.setFont(new Font("Courier", Font.PLAIN, 28));
-                _tableAndUserTB[1][0].add(_playerCash, BorderLayout.NORTH);
-                
-                // Display player's cash
-                _playerCash.setForeground(WHITE);
-                _playerCash.setText("$" + String.valueOf(playerCash));
-                _playerCash.setFont(new Font("Courier", Font.PLAIN, 28));
-                _tableAndUserTB[1][0].add(_playerCash, BorderLayout.NORTH);
-               
-				displayButton(_tableAndUserTB[1][1], i);
-				
-                displayCard(_tableAndUserTB[1][1], playerHand[0]);
-                displayCard(_tableAndUserTB[1][1], playerHand[1]);
-				
             } else { // Initialize AI player
                 String aiName = aiPlayerNames[i - 1];
 
-                _playerLabel = new JLabel(aiName + ": ");
-                _playerCash  = new JLabel("");
-                players[i]   = new Player(aiName, playerHand, playerRole, playerCash, _playerCash, true);
-                playerCash   = players[i].getCash();
+                // _playerLabel = new JLabel(aiName + ": ");
+                // _playerCash  = new JLabel("");
+                players[i]   = new Player(aiName, playerHand, playerRole, 1000, true);
+                // playerCash   = players[i].getCash();
                 System.out.println(players[i]);
 				
 				writeCardsFile(players[i]);
                 
-                _playerLabel.setForeground(WHITE);
-                _playerLabel.setFont(new Font("Courier", Font.PLAIN, 28));
-                _aiPlayersTB[i-1][0].add(_playerLabel, BorderLayout.NORTH);
-                                
-                // Display AI's cash
-                _playerCash.setForeground(WHITE);
-                _playerCash.setText("$" + String.valueOf(playerCash));
-                _playerCash.setFont(new Font("Courier", Font.PLAIN, 28));
-                _aiPlayersTB[i-1][0].add(_playerCash, BorderLayout.NORTH);
-				
-				displayButton(_aiPlayersTB[i-1][1], i);
-                
-                displayCard(_aiPlayersTB[i-1][1], cardBack);
-                displayCard(_aiPlayersTB[i-1][1], cardBack);
+                _playerPanel = new PlayerPanel(players[i], cardBack, false);
+                players[i].setPlayerPanel(_playerPanel);
 
-                players[i].setCardPanel(_aiPlayersTB[i-1][1]);
-
-                //displayCard(_aiPlayersTB[i-1][1], playerHand[0]);
-                //displayCard(_aiPlayersTB[i-1][1], playerHand[1]);
+                _top.add(_playerPanel);
             }
         }
         
+        _aiPlayersPanel.setBackground(POKER_GREEN);
+        _aiPlayersPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 400));
+
+        _middlePanel.setBackground(POKER_GREEN);
+        _middlePanel.setLayout(new BorderLayout());
+
         // Add panels and repaint
-        add(_top);
-        add(_bot);
+        this.setLayout(new BorderLayout());
+        _aiPlayersPanel.add(_top, BorderLayout.PAGE_START);
+        _middlePanel.add(new PotPanel(), BorderLayout.LINE_START);
+        _middlePanel.add(_communityPanel, BorderLayout.CENTER);
+
+        _gameLogLabel.setText("<html>Game Log:<br/></html>");
+        _gameLogLabel.setForeground(Color.WHITE);
+        _gameLogLabel.setBackground(POKER_DARK);
+        _gameLogLabel.setOpaque(true);
+        _gameLogLabel.setVerticalAlignment(SwingConstants.TOP);
+
+        _scrollPane = new JScrollPane(_gameLogLabel);
+        _scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        _scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        _scrollPane.setBounds(0, 0, 500, 250);
+        _scrollPane.setBackground(new Color(29, 56, 199));
+        _scrollPane.setPreferredSize(new Dimension(600, 250));
+        _scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        
+        _bottomPanel.setLayout(new BorderLayout());
+        _bottomPanel.setPreferredSize(new Dimension(Integer.MAX_VALUE, 250));
+        _bottomPanel.setBackground(POKER_GREEN);
+        _bottomPanel.add(_scrollPane, BorderLayout.LINE_END);
+
+        add(_aiPlayersPanel, BorderLayout.PAGE_START);
+        add(_middlePanel, BorderLayout.CENTER);
+        add(_bottomPanel, BorderLayout.PAGE_END);
         
         revalidate();
         repaint();
 
-        // playGame();
-        // playPreFlop();
-
 		writeHandFile();
 		
+        userPanel();
+
         playGameSwitch(1);
-		
     }
 
     private void playGame() {
@@ -375,7 +377,13 @@ public class Game extends JPanel {
 
     }
 
+    /**
+     * Central location to call all round methods based on current round number.
+     * @param round Next round number.
+     */
     private void playGameSwitch(int round) {
+        printGameConsole("<br/>Round " + round + ":");
+
         switch(round) {
             case 1:
                 playPreFlop();
@@ -392,253 +400,253 @@ public class Game extends JPanel {
         }
     }
 
-    private Action userInput(Action minAction) {
-        JPanel   _actionPanel = new JPanel(new BorderLayout());
-        JPanel   _btnPanel    = new JPanel(new FlowLayout());
-        JButton  _betButton   = new JButton();
-        JButton  _foldButton  = new JButton();
+    /**
+     * First round of betting logic.
+     */
+    private void playPreFlop() {
+        setUserActions(2);
+    }
 
-        SpinnerModel betModel = new SpinnerNumberModel(0, 0, players[0].getCash(), 1);
-        JSpinner _betSpinner  = new JSpinner(betModel);
+    /**
+     * Second round of betting logic.
+     */
+    private void playFlop() {
+        _communityPanel.deal();
+        //TODO: writeDeckCardsFile(tableCards[i], 0);
 
-        Action playerAction   = new Action();
+        if(!players[2].isPlayingHand()) {
+            playGameSwitch(3);
+        }
+        else if(players[0].isPlayingHand()) {
+            setUserActions(3);
+        } else {
+            // AI players
+            playAI(null);
+
+            // Reset
+            playGameSwitch(3);
+        }
+    }
+
+    /**
+     * Third round of betting logic.
+     */
+    private void playTurn() {
+        _communityPanel.deal();
+        //TODO: writeDeckCardsFile(tableCards[3], 0);
+
+
+        if(!players[2].isPlayingHand()) {
+            playGameSwitch(4);
+        }
+        else if(players[0].isPlayingHand()) {
+            setUserActions(4);
+        } else {
+            // AI players
+            playAI(null);
+
+            // Reset
+            playGameSwitch(4);
+        }
+    }
+
+    /**
+     * Fourth round of betting logic. End of game compare hand logic handled in userPanel()
+     * method based on round number.
+     */
+    private void playRiver() {
+        _communityPanel.deal();
+        //TODO: writeDeckCardsFile(tableCards[4], 0);
+
+        if(!players[2].isPlayingHand()) {
+			String endResult = new GameUtils().determineBestHand(players, tableCards, pot);
+			
+			writeEndFile(endResult);
+			
+            JLabel _results = new JLabel(endResult);
+            _results.setForeground(WHITE);
+            _results.setFont(new Font("Courier", Font.PLAIN, 28));
+            _results.setHorizontalAlignment(SwingConstants.CENTER);
+            add(_results, BorderLayout.SOUTH);
+
+            printGameConsole("<br/>" + endResult);
+
+            showAICards();
+
+            nextHandButton();
+        }
+        else if(players[0].isPlayingHand()) {
+            setUserActions(5);
+        } else {
+			String endResult = new GameUtils().determineBestHand(players, tableCards, pot);
+            playAI(null);
+
+			writeEndFile(endResult);
+			
+            JLabel _results = new JLabel(endResult);
+            _results.setForeground(WHITE);
+            _results.setFont(new Font("Courier", Font.PLAIN, 28));
+            _results.setHorizontalAlignment(SwingConstants.CENTER);
+            add(_results, BorderLayout.SOUTH);
+
+            printGameConsole(endResult);
+
+            showAICards();
+
+            nextHandButton();
+        }
+    }
+
+    /**
+     * Add user panel components.
+     */
+    private void userPanel() {
+        JPanel  _userPanel      = new JPanel();
+        JPanel   _centeredPanel = new JPanel();
+        PlayerPanel _playerPanel = new PlayerPanel(players[0], cardBack, true);
+
+        JPanel   _btnPanel      = new JPanel(new FlowLayout());
+
+        SpinnerModel betModel  = new SpinnerNumberModel(10, 10, players[0].getCash(), 1);
+        
+        _betSpinner   = new JSpinner(betModel);
+
+        players[0].setPlayerPanel(_playerPanel); // Save panel to Player object
+
+        _userPanel.setBackground(POKER_GREEN);
+        _userPanel.setPreferredSize(new Dimension(600, Integer.MAX_VALUE));
+        _userPanel.setLayout(new GridBagLayout());
+
+        _centeredPanel.setLayout(new BorderLayout());
+
+        _btnPanel.setBackground(POKER_GREEN);
+        _betSpinner.setFont(new Font("Courier", Font.PLAIN, 25));
+        _betSpinner.setPreferredSize(new Dimension(300, 50));
+
+        _actionPanel.setBackground(POKER_GREEN);
+        _actionPanel.setLayout(new BorderLayout());
+        _actionPanel.setPreferredSize(new Dimension(340, 150));
+        _actionPanel.setMaximumSize(new Dimension(340, 150));
+        _actionPanel.setMinimumSize(new Dimension(340, 150));
 
         _betButton.setText("Bet");
-        _betButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int betAmount = (int) _betSpinner.getValue();
-
-                playerAction.setValue(betAmount);
-            }
-        });
+        _betButton.setFont(new Font("Courier", Font.PLAIN, 22));
+        _betButton.setPreferredSize(new Dimension(100, 60));
+        
+        _checkButton.setText("Check");
+        _checkButton.setFont(new Font("Courier", Font.PLAIN, 22));
+        _checkButton.setPreferredSize(new Dimension(100, 60));
+        
         _foldButton.setText("Fold");
-        _foldButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                playerAction.setValue(-1);
-            }
-        });
+        _foldButton.setFont(new Font("Courier", Font.PLAIN, 22));
+        _foldButton.setPreferredSize(new Dimension(100, 60));
+        
 
         _btnPanel.add(_betButton);
+        _btnPanel.add(_checkButton);
         _btnPanel.add(_foldButton);
 
         _actionPanel.add(_betSpinner, BorderLayout.PAGE_START);
         _actionPanel.add(_btnPanel, BorderLayout.PAGE_END);
 
-        add(_actionPanel);
+        _centeredPanel.add(_playerPanel, BorderLayout.PAGE_START);
+        _centeredPanel.add(_actionPanel, BorderLayout.PAGE_END);
+
+        _userPanel.add(_centeredPanel);
+
+        _middlePanel.add(_userPanel, BorderLayout.LINE_END);
 
         revalidate();
         repaint();
+    }
 
+    private Action setUserActions(int round) {
+        Action playerAction = null;
+
+        System.out.println(round);
+
+        if(round < 5) {
+            ActionListener[] al = _betButton.getActionListeners();
+            for(int i = 0; i < al.length; i++) {
+                _betButton.removeActionListener(al[i]);
+            }
+            _betButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    int betAmount = (int) _betSpinner.getValue();
+    
+                    // AI players
+                    playAI(new Action(betAmount));
+
+                    // Reset
+                    playGameSwitch(round);
+    
+                    revalidate();
+                    repaint();  
+                }
+            });
+
+            al = _checkButton.getActionListeners();
+            for(int i = 0; i < al.length; i++) {
+                _checkButton.removeActionListener(al[i]);
+            }
+            _checkButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {    
+                    // AI players
+                    playAI(new Action(0));
+
+                    // Reset
+                    playGameSwitch(round);
+    
+                    revalidate();
+                    repaint();  
+                }
+            });
+
+            al = _foldButton.getActionListeners();
+            for(int i = 0; i < al.length; i++) {
+                _foldButton.removeActionListener(al[i]);
+            }
+            _foldButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    players[0].setPlayingHand(false);
+
+                    // AI players
+                    playAI(new Action(-1));
+
+                    // Reset
+                    playGameSwitch(round);
+                    
+                    revalidate();
+                    repaint();  
+                }
+            });
+        } else { // End of game methods
+            showAICards();
+            endOfHand();
+        }
+        
         return playerAction;
     }
 
-    private void playPreFlop() {
-        userInputPanel(2);
-    }
-
-    private void playFlop() {
-        for (int i = 0; i < 3; i++) {
-            displayCard(_tablePanel, tableCards[i]);
-			writeDeckCardsFile(tableCards[i], 0);
-        }
-
-        if(!players[2].isPlayingHand()) {
-            playGameSwitch(3);
-        }
-        else if(players[0].isPlayingHand()) {
-            userInputPanel(3);
-        } else {
-            // AI players
-            playAI(new Action(0));
-
-            // Reset
-            playGameSwitch(3);
-        }
-    }
-
-    private void playTurn() {
-        displayCard(_tablePanel, tableCards[3]);
-		
-		writeDeckCardsFile(tableCards[3], 1);
-
-        if(!players[2].isPlayingHand()) {
-            playGameSwitch(4);
-        }
-        else if(players[0].isPlayingHand()) {
-            userInputPanel(4);
-        } else {
-            // AI players
-            playAI(new Action(0));
-
-            // Reset
-            playGameSwitch(4);
-        }
-    }
-
-    // TODO: Break into methods that can still access needed variables.
-    private void playRiver() {
-        displayCard(_tablePanel, tableCards[4]);
-		
-		writeDeckCardsFile(tableCards[4], 2);
-
-        if(!players[2].isPlayingHand()) {
-			String endResult = new GameUtils().determineBestHand(players, tableCards, pot);
-			
-			writeEndFile(endResult);
-			
-            JLabel _results = new JLabel(endResult);
-            _results.setForeground(WHITE);
-            _results.setFont(new Font("Courier", Font.PLAIN, 28));
-            _results.setHorizontalAlignment(SwingConstants.CENTER);
-            add(_results, BorderLayout.SOUTH);
-
-            nextHandButton();
-
-            revalidate();
-            repaint();  
-        }
-        else if(players[0].isPlayingHand()) {
-            userInputPanel(5);
-        } else {
-            playAI(new Action(0));
-			
-			String endResult = new GameUtils().determineBestHand(players, tableCards, pot);
-
-			writeEndFile(endResult);
-			
-            JLabel _results = new JLabel(endResult);
-            _results.setForeground(WHITE);
-            _results.setFont(new Font("Courier", Font.PLAIN, 28));
-            _results.setHorizontalAlignment(SwingConstants.CENTER);
-            add(_results, BorderLayout.SOUTH);
-
-            nextHandButton();
-            
-            revalidate();
-            repaint();
-        }
-    }
-
+    /**
+     * User input buttons, displayed on user's turn.
+     * @param round Round number.
+     */
     private void userInputPanel(int round) {
-        JPanel   _wrapperPanel = new JPanel();
-        JPanel   _actionPanel  = new JPanel(new BorderLayout());
-        JPanel   _btnPanel     = new JPanel(new FlowLayout());
-        JButton  _betButton    = new JButton();
-        JButton  _foldButton   = new JButton();
+        
+    }
 
-        SpinnerModel betModel  = new SpinnerNumberModel(0, 0, players[0].getCash(), 1);
-        JSpinner _betSpinner   = new JSpinner(betModel);
+    private void endOfHand() {
+        String result   = new GameUtils().determineBestHand(players, tableCards, pot);
+        JLabel _results = new JLabel(result);
+        _results.setForeground(WHITE);
+        _results.setFont(new Font("Courier", Font.PLAIN, 28));
+        _results.setHorizontalAlignment(SwingConstants.CENTER);
+        // add(_results, BorderLayout.SOUTH);
 
-        Action   playerAction  = new Action();
-
-        _wrapperPanel.setBackground(POKER_GREEN);
-        _actionPanel.setBackground(POKER_GREEN);
-        _btnPanel.setBackground(POKER_GREEN);
-        _betSpinner.setFont(new Font("Courier", Font.PLAIN, 30));
-        _betSpinner.setPreferredSize(new Dimension(300, 50));
-        _actionPanel.setPreferredSize(new Dimension(300, 150));
-
-        _betButton.setText("Bet");
-        _betButton.setFont(new Font("Courier", Font.PLAIN, 30));
-        _betButton.setPreferredSize(new Dimension(130, 70));
-        _betButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int betAmount = (int) _betSpinner.getValue();
-
-                playerAction.setValue(betAmount);
-				
-				writeActionFile(playerAction, 0);
-
-                // AI players
-                playAI(playerAction);
-                
-                // Reset
-                remove(_wrapperPanel);
-                
-                if(round <= 4) {
-                    // AI players
-                    playAI(new Action(-2));
-
-                    // Reset
-                    playGameSwitch(round);
-                } else {
-					String endResult = new GameUtils().determineBestHand(players, tableCards, pot);
-					
-					writeEndFile(endResult);
-					
-                    JLabel _results = new JLabel(endResult);
-                    _results.setForeground(WHITE);
-                    _results.setFont(new Font("Courier", Font.PLAIN, 28));
-                    _results.setHorizontalAlignment(SwingConstants.CENTER);
-                    add(_results, BorderLayout.SOUTH);
-
-                    showAICards();
-
-                    nextHandButton();
-                }
-
-                revalidate();
-                repaint();  
-            }
-        });
-        _foldButton.setText("Fold");
-        _foldButton.setFont(new Font("Courier", Font.PLAIN, 30));
-        _foldButton.setPreferredSize(new Dimension(130, 70));
-        _foldButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                playerAction.setValue(-1);
-
-				players[0].setPlayingHand(false);
-				
-				writeActionFile(playerAction, 0);
-				
-                // AI players
-                playAI(playerAction);
-
-                // Reset
-                remove(_wrapperPanel);
-                
-                if(round <= 4) {
-                    // AI players
-                    playAI(new Action(-2));
-
-                    // Reset
-                    playGameSwitch(round);
-                } else {
-					String endResult = new GameUtils().determineBestHand(players, tableCards, pot);
-					
-					writeEndFile(endResult);
-					
-                    JLabel _results = new JLabel(endResult);
-                    _results.setForeground(WHITE);
-                    _results.setFont(new Font("Courier", Font.PLAIN, 20));
-                    _results.setHorizontalAlignment(SwingConstants.CENTER);
-                    add(_results, BorderLayout.SOUTH);
-
-                    showAICards();
-
-                    nextHandButton();
-                }
-                
-                revalidate();
-                repaint();  
-            }
-        });
-
-        _btnPanel.add(_betButton);
-        _btnPanel.add(_foldButton);
-
-        _actionPanel.add(_betSpinner, BorderLayout.PAGE_START);
-        _actionPanel.add(_btnPanel, BorderLayout.PAGE_END);
-
-        _wrapperPanel.add(_actionPanel);
-
-        add(_wrapperPanel);
-
-        revalidate();
-        repaint();
-
-        // return _actionPanel;
+        printGameConsole(result);
+        showAICards();
+        nextHandButton();
     }
 
     private void nextHandButton() {
@@ -647,17 +655,18 @@ public class Game extends JPanel {
         _buttonPanel.setBackground(POKER_GREEN);
         _nextHandButton.setFont(new Font("Courier", Font.PLAIN, 30));
         _nextHandButton.setPreferredSize(new Dimension(400, 100));
-        // _nextHandButton.setVerticalAlignment(SwingConstants.CENTER);
-        // _nextHandButton.setHorizontalAlignment(SwingConstants.CENTER);
         _nextHandButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                
+
             }
         });
 
         _buttonPanel.add(_nextHandButton);
 
-        add(_buttonPanel);
+        System.out.println("nextHandButton");
+
+        _actionPanel.removeAll();
+        _actionPanel.add(_buttonPanel);
         
         revalidate();
         repaint();
@@ -673,6 +682,12 @@ public class Game extends JPanel {
 	 * If userAction is = -1, userAction = user folded, AI folds
      */
     private void playAI(Action userAction) {
+        try {
+            printGameConsole(players[0].getName() + " " + userAction.toString());
+        } catch(Exception e) {
+            System.out.println(players[0].getName() + " didn't play");
+            userAction = new Action();
+        }
         for(int i = 1; i < players.length; i++) {
 			
 			//if user folds
@@ -707,22 +722,12 @@ public class Game extends JPanel {
 				Thread.currentThread().interrupt();
 			}
 			*/
-			
         }
     }
 
     private void showAICards() {
         for(int i = 1; i < players.length; i++) {
-            if(players[i].isPlayingHand()) {
-                JPanel _cardPanel = players[i].getCardPanel();
-                Card[] playerHand = players[i].getCards();
-                System.out.println(players[i]);
-
-                _cardPanel.removeAll();
-
-                displayCard(_cardPanel, playerHand[0]);
-                displayCard(_cardPanel, playerHand[1]);
-            }
+            players[i].getPlayerPanel().showCards(true);
         }
 
         revalidate();
