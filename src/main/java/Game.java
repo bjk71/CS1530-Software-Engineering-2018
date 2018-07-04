@@ -5,6 +5,7 @@ import java.util.*;
 import javax.imageio.*;
 import java.awt.event.*;
 import java.text.*;
+import java.awt.image.BufferedImage;
 
 public class Game extends JPanel {
     private final Color POKER_GREEN = new Color(71, 113, 72);
@@ -18,6 +19,8 @@ public class Game extends JPanel {
     private JPanel   _tablePanel = null;
 	private int		 turnNum	= 1;
 	private int		 dealerNum	= -1;
+	private int		 sBlindNum	= -1;
+	private int		 bBlindNum	= -1;
     
 
     public Game() {
@@ -147,6 +150,8 @@ public class Game extends JPanel {
         players    = new Player[numOfAI + 1];
 		
 		dealerNum 	= -1;
+		sBlindNum	= -1;
+		bBlindNum	= -1;
 		
 		selectDealer();
 		
@@ -214,14 +219,28 @@ public class Game extends JPanel {
             JLabel _playerLabel = null;
             JLabel _playerCash  = null;
             int    playerCash   = 0;
+			//for a description of playerRole check displayButton function
+			int		playerRole	= 0;
+			
+			if(dealerNum == i){
+				playerRole = 1;
+			}
+			else if(sBlindNum == i){
+				playerRole = 2;
+			}
+			else if(bBlindNum == i){
+				playerRole = 3;
+			}
 
             playerHand[0] = deck.draw();
             playerHand[1] = deck.draw();
+			
+			
 
             if(i == 0) { // Initialize human player
                 _playerLabel = new JLabel(userName + ": ");
                 _playerCash  = new JLabel();
-                players[i]   = new Player(userName, playerHand, 1000, _playerCash, true);
+                players[i]   = new Player(userName, playerHand, playerRole, 1000, _playerCash, true);
                 playerCash   = players[i].getCash();
 				
 				writeCardsFile(players[i]);
@@ -241,15 +260,18 @@ public class Game extends JPanel {
                 _playerCash.setText("$" + String.valueOf(playerCash));
                 _playerCash.setFont(new Font("Courier", Font.PLAIN, 28));
                 _tableAndUserTB[1][0].add(_playerCash, BorderLayout.NORTH);
-                
+               
+				displayButton(_tableAndUserTB[1][1], i);
+				
                 displayCard(_tableAndUserTB[1][1], playerHand[0]);
                 displayCard(_tableAndUserTB[1][1], playerHand[1]);
+				
             } else { // Initialize AI player
                 String aiName = aiPlayerNames[i - 1];
 
                 _playerLabel = new JLabel(aiName + ": ");
                 _playerCash  = new JLabel("");
-                players[i]   = new Player(aiName, playerHand, 1000, _playerCash, true);
+                players[i]   = new Player(aiName, playerHand, playerRole, 1000, _playerCash, true);
                 playerCash   = players[i].getCash();
                 System.out.println(players[i]);
 				
@@ -264,6 +286,8 @@ public class Game extends JPanel {
                 _playerCash.setText("$" + String.valueOf(playerCash));
                 _playerCash.setFont(new Font("Courier", Font.PLAIN, 28));
                 _aiPlayersTB[i-1][0].add(_playerCash, BorderLayout.NORTH);
+				
+				displayButton(_aiPlayersTB[i-1][1], i);
                 
                 displayCard(_aiPlayersTB[i-1][1], cardBack);
                 displayCard(_aiPlayersTB[i-1][1], cardBack);
@@ -705,23 +729,126 @@ public class Game extends JPanel {
     }
 	
 	/*
+	 * Displays the button for the specific player
+	 * @param	_loc		Panel to display card in
+	 * @param	playerNum	the player being looked at
+	 * If playerRole = 0, the player does not get a button
+	 * If playerRole = 1, the player is the Dealer
+	 * If playerRole = 2, the player is the Small Blind
+	 * If playerRole = 3, the player is the Big Blind
+	*/
+	private void displayButton(JPanel _loc, int playerNum){
+		
+		String dealerButton = "Dealer.png";
+		String smallBlindButton = "Small-Blind.png";
+		String bigBlindButton = "Big-Blind.png";
+		
+		int playerRole = players[playerNum].getRole();
+		
+		if(playerRole != 0){
+			BufferedImage button = null;
+			
+			if(playerRole == 1){
+				try {
+					button = ImageIO.read(dealerButton.getClass().getResource("/Dealer.png"));
+				} catch (IOException ioex) {
+						System.exit(1);
+				}
+			}
+			else if(playerRole == 2){
+				try {
+					button = ImageIO.read(smallBlindButton.getClass().getResource("/Small-Blind.png"));
+				} catch (IOException ioex) {
+						System.exit(1);
+				}
+			}
+			else if(playerRole == 3){
+				try {
+					button = ImageIO.read(bigBlindButton.getClass().getResource("/Big-Blind.png"));
+				} catch (IOException ioex) {
+						System.exit(1);
+				}
+			}
+			
+			JLabel _buttonDisplay = new JLabel(new ImageIcon(button));
+			
+			_loc.add(_buttonDisplay, BorderLayout.SOUTH);
+		}
+	}
+	
+	
+	/*
 	 * Selects the dealer
 	 * If dealerNum = -1 then the dealerNum is randomized
 	 * If dealerNum = total length of players, reset it back to 0
 	 * Otherwise, dealerNum is ++
 	*/
 	private void selectDealer(){
-		
-		if (dealerNum == -1){
-			Random rand = new Random();
+		//if there are only two players, there is only a big blind and small blind
+		if (players.length != 2){
+			//game has not started, randomize the dealer
+			if (dealerNum == -1){
+				Random rand = new Random();
 			
-			dealerNum = rand.nextInt(players.length);
-		}
-		else if (dealerNum == players.length){
-			dealerNum = 0;
+				dealerNum = rand.nextInt(players.length);
+				selectSmallBlind();
+				selectBigBlind();
+			}
+			//resetting dealerNum since it reached the end
+			else if (dealerNum == players.length){
+				dealerNum = 0;
+				
+				selectSmallBlind();
+				selectBigBlind();
+			}
+			//moving the dealer clockwise
+			else{
+				dealerNum++;
+				
+				selectSmallBlind();
+				selectBigBlind();
+			}
 		}
 		else{
-			dealerNum++;
+			//starting the game with only 2 players, should randomize small blind
+			if (sBlindNum == -1){
+				Random rand = new Random();
+				
+				sBlindNum = rand.nextInt(2);
+				selectBigBlind();
+			}
+			else{
+				selectSmallBlind();
+				selectBigBlind();
+			}
+		}
+	}
+	
+	/*
+	 * Selects the player with the small blind
+	 * If dealerNum is the last player, sBlindNum = 0
+	 * Otherwise sBlindNum is dealerNum + 1
+	*/
+	private void selectSmallBlind(){
+		if (dealerNum == (players.length - 1)){
+			sBlindNum = 0;
+		}
+		else{
+			sBlindNum = dealerNum + 1;
+		}
+	}
+	
+	/*
+	 *Selects the player with the big blind
+	 *If sBlindNum is the last player, sBlindNum = 0
+	 *Otherwise bBlindNum is sBlindNum + 1
+	*/
+	private void selectBigBlind(){
+		if (sBlindNum == (players.length - 1)){
+			bBlindNum = 0;
+		}
+		else{
+			bBlindNum = sBlindNum + 1;
 		}
 	}
 	
