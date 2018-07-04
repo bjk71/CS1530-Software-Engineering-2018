@@ -16,7 +16,7 @@ public class Game extends JPanel {
     private Card     cardBack   = null;
     private int      pot        = 0;
     private JPanel   _tablePanel = null;
-	private int		 turnNum	= 0;
+	private int		 turnNum	= 1;
     
 
     public Game() {
@@ -201,7 +201,7 @@ public class Game extends JPanel {
         // Save location of table cards
         _tablePanel = _tableAndUserTB[0][1];
 		
-		// writeCardsFile("deck", tableCards);
+		//writeCardsFile(deck);
         
         //For the players section
         for(int i=0; i<players.length; i++){
@@ -253,8 +253,6 @@ public class Game extends JPanel {
                 _playerLabel.setForeground(WHITE);
                 _playerLabel.setFont(new Font("Courier", Font.PLAIN, 28));
                 _aiPlayersTB[i-1][0].add(_playerLabel, BorderLayout.NORTH);
-
-                // writeCardsFile(aiName, players[i].getCards());
                                 
                 // Display AI's cash
                 _playerCash.setForeground(WHITE);
@@ -282,7 +280,10 @@ public class Game extends JPanel {
         // playGame();
         // playPreFlop();
 
+		writeHandFile();
+		
         playGameSwitch(1);
+		
     }
 
     private void playGame() {
@@ -392,6 +393,7 @@ public class Game extends JPanel {
     private void playFlop() {
         for (int i = 0; i < 3; i++) {
             displayCard(_tablePanel, tableCards[i]);
+			writeDeckCardsFile(tableCards[i], 0);
         }
 
         if(!players[2].isPlayingHand()) {
@@ -410,6 +412,8 @@ public class Game extends JPanel {
 
     private void playTurn() {
         displayCard(_tablePanel, tableCards[3]);
+		
+		writeDeckCardsFile(tableCards[3], 1);
 
         if(!players[2].isPlayingHand()) {
             playGameSwitch(4);
@@ -428,9 +432,15 @@ public class Game extends JPanel {
     // TODO: Break into methods that can still access needed variables.
     private void playRiver() {
         displayCard(_tablePanel, tableCards[4]);
+		
+		writeDeckCardsFile(tableCards[4], 2);
 
         if(!players[2].isPlayingHand()) {
-            JLabel _results = new JLabel(new GameUtils().determineBestHand(players, tableCards, pot));
+			String endResult = new GameUtils().determineBestHand(players, tableCards, pot);
+			
+			writeEndFile(endResult);
+			
+            JLabel _results = new JLabel(endResult);
             _results.setForeground(WHITE);
             _results.setFont(new Font("Courier", Font.PLAIN, 28));
             _results.setHorizontalAlignment(SwingConstants.CENTER);
@@ -445,8 +455,12 @@ public class Game extends JPanel {
             userInputPanel(5);
         } else {
             playAI(new Action(0));
+			
+			String endResult = new GameUtils().determineBestHand(players, tableCards, pot);
 
-            JLabel _results = new JLabel(new GameUtils().determineBestHand(players, tableCards, pot));
+			writeEndFile(endResult);
+			
+            JLabel _results = new JLabel(endResult);
             _results.setForeground(WHITE);
             _results.setFont(new Font("Courier", Font.PLAIN, 28));
             _results.setHorizontalAlignment(SwingConstants.CENTER);
@@ -486,6 +500,8 @@ public class Game extends JPanel {
                 int betAmount = (int) _betSpinner.getValue();
 
                 playerAction.setValue(betAmount);
+				
+				writeActionFile(playerAction, 0);
 
                 // AI players
                 playAI(playerAction);
@@ -495,12 +511,16 @@ public class Game extends JPanel {
                 
                 if(round <= 4) {
                     // AI players
-                    playAI(new Action(0));
+                    playAI(new Action(-2));
 
                     // Reset
                     playGameSwitch(round);
                 } else {
-                    JLabel _results = new JLabel(new GameUtils().determineBestHand(players, tableCards, pot));
+					String endResult = new GameUtils().determineBestHand(players, tableCards, pot);
+					
+					writeEndFile(endResult);
+					
+                    JLabel _results = new JLabel(endResult);
                     _results.setForeground(WHITE);
                     _results.setFont(new Font("Courier", Font.PLAIN, 28));
                     _results.setHorizontalAlignment(SwingConstants.CENTER);
@@ -522,6 +542,10 @@ public class Game extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 playerAction.setValue(-1);
 
+				players[0].setPlayingHand(false);
+				
+				writeActionFile(playerAction, 0);
+				
                 // AI players
                 playAI(playerAction);
 
@@ -530,12 +554,16 @@ public class Game extends JPanel {
                 
                 if(round <= 4) {
                     // AI players
-                    playAI(new Action(0));
+                    playAI(new Action(-2));
 
                     // Reset
                     playGameSwitch(round);
                 } else {
-                    JLabel _results = new JLabel(new GameUtils().determineBestHand(players, tableCards, pot));
+					String endResult = new GameUtils().determineBestHand(players, tableCards, pot);
+					
+					writeEndFile(endResult);
+					
+                    JLabel _results = new JLabel(endResult);
                     _results.setForeground(WHITE);
                     _results.setFont(new Font("Courier", Font.PLAIN, 20));
                     _results.setHorizontalAlignment(SwingConstants.CENTER);
@@ -592,15 +620,48 @@ public class Game extends JPanel {
     /**
      * Current very simple AI action, if user bets AI fold.
      * TODO: move to own class.
+	 *
+	 *
+	 * If userAction is > 0, userAction = money bet by user, AI folds
+	 * If userAction is = 0, userAction = user checked, AI checks
+	 * If userAction is = -1, userAction = user folded, AI folds
      */
     private void playAI(Action userAction) {
         for(int i = 1; i < players.length; i++) {
+			
+			//if user folds
+			if(userAction.getValue() == -1 && players[i].isPlayingHand()) {
+				players[i].setPlayingHand(false);
+				System.out.println("user " + userAction.toString() + " , ai " + i + " folded");
+				writeActionFile(userAction, i);
+			}
+			
+			//if user bets 0 / checks
+			if(userAction.getValue() == 0 && players[i].isPlayingHand()) {
+				players[i].setPlayingHand(true);
+				System.out.println("user " + userAction.toString() + ", ai " + i + " checks");
+				writeActionFile(userAction, i);
+			}
+			
+			//if user bets more than 0
             if(userAction.getValue() > 0 && players[i].isPlayingHand()) {
+				userAction.setValue(-1);
                 players[i].setPlayingHand(false);
                 System.out.println("user " + userAction.toString() + ", ai " + i + " folded");
-				writeActionFile(userAction.toString(), 1);
-				
+				writeActionFile(userAction, i);
             }
+			
+			//makes program wait a second after each AI move
+			//it works, just commented out for quicker testing
+			/*
+			try{
+				Thread.sleep(500);
+			}
+			catch(InterruptedException ex){
+				Thread.currentThread().interrupt();
+			}
+			*/
+			
         }
     }
 
@@ -721,7 +782,7 @@ public class Game extends JPanel {
 	}
 	
 	/*
-	 * Opens the external file and writes the Cards Dealt.
+	 * Opens the external file and writes the Cards Dealt and each players cash
 	 * @param	players			The info for the current player.
 	*/
 	private void writeCardsFile(Player players){
@@ -751,11 +812,14 @@ public class Game extends JPanel {
 	}
 	
 	/*
-	 * Opens the external file and writes the Cards Dealt.
-	 * @param	cardHolder		Who has the cards - can be the pot.
-	 * @param	cardsHeld		The cards that ar being held.
+	 * Opens the external file and writes the Cards Dealt in flop.
+	 * @param	cards			cards in the deck
+	 * @param	when		 	flop, turn, or river
+	 * If when = 0, writing flop
+	 * If when = 1, writing turn
+	 * If when = 2, writing river
 	*/
-	private void writeDeckCardsFile(Card deckCards){
+	private void writeDeckCardsFile(Card cards, int when){
 		try{
 			File outputFile = new File("output.txt");
 			
@@ -763,11 +827,23 @@ public class Game extends JPanel {
 			FileWriter fw = new FileWriter(outputFile,true);
 			BufferedWriter bw = new BufferedWriter(fw);
 			
-			//System.out.println(players);
 			
-			String deckCardsToString = deckCards.toString();
-			
-			bw.write(deckCardsToString);
+			if(when == 0){
+				bw.write("A flop card is: " + cards.getName());
+				bw.newLine();
+			}
+			else if(when == 1){
+				bw.write("The turn card is : " + cards.getName());
+				bw.newLine();
+			}
+			else if(when == 2){
+				bw.write("The river card is : " + cards.getName());
+				bw.newLine();
+			}
+			else{
+				bw.write("I messed up.");
+				bw.newLine();
+			}
 			
 			//Closing BufferedWriter Stream
 			bw.close();
@@ -781,14 +857,13 @@ public class Game extends JPanel {
 	
 	/*
 	 * Opens the external file and writes the Player action.
-	 * @param	playerName		The input name from the player / AI.
-	 * @param	playerAction	The action taken by the player.
-	 * playerAction - 0: 		player checks
-	 * playerAction - 1;		player folds
-	 * playerAction - 2; 		player bets
-	 * playerAction - 3;		player calls
+	 * @param	userAction		The action taken by the user
+	 * @param	playerNum		the number of the player who made the move
+	 * If userAction is > 0, userAction = money bet by user, AI folds
+	 * If userAction is = 0, userAction = user checked, AI checks
+	 * If userAction is = -1, userAction = user folded, AI folds
 	*/
-	private void writeActionFile(String playerName, int playerAction){
+	private void writeActionFile(Action userAction, int playerNum){
 		
 		try{
 			File outputFile = new File("output.txt");
@@ -797,25 +872,9 @@ public class Game extends JPanel {
 			FileWriter fw = new FileWriter(outputFile,true);
 			BufferedWriter bw = new BufferedWriter(fw);
 			
+			bw.write(players[playerNum].getName() + " " + userAction.toString());
+			
 			bw.newLine();
-			
-			if (playerAction == 0){
-				bw.write(playerName + " checks");
-				bw.newLine();
-			}
-			if (playerAction == 1){
-				bw.write(playerName + " folds");
-				bw.newLine();
-			}
-			if (playerAction == 2){
-				bw.write(playerName + " bets");
-				bw.newLine();
-			}
-			if (playerAction == 3){
-				bw.write(playerName + " calls");
-				bw.newLine();
-			}
-			
 			
 			//Closing BufferedWriter Stream
 			bw.close();
