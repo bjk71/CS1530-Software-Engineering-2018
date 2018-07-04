@@ -3,6 +3,7 @@ import javax.swing.*;
 public class Player{
 	private String  name;
 	private Card[]  cards;
+	private int 	role;
 	private int     cash;
 	private JLabel  _cash;
 	private boolean isUser;
@@ -10,9 +11,10 @@ public class Player{
 
 	private JPanel  _cardLoc;
 	
-	public Player(String name, Card[] cards, int cash, JLabel _cash, boolean isUser){
+	public Player(String name, Card[] cards, int role, int cash, JLabel _cash, boolean isUser){
 		this.name   = name;
 		this.cards  = cards;
+		this.role	= role;
 		this.cash   = cash;
 		this._cash  = _cash;
 		this.isUser = isUser;
@@ -29,6 +31,10 @@ public class Player{
 
 	public void setCards(Card[] newHand){
 		this.cards = newHand;
+	}
+	
+	public int getRole(){
+		return this.role;
 	}
 	
 	public int getCash(){
