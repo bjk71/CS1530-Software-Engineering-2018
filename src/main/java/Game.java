@@ -244,7 +244,7 @@ public class Game extends JPanel {
 
                 _playerLabel = new JLabel(aiName + ": ");
                 _playerCash  = new JLabel("");
-                players[i]   = new Player(aiName, playerHand, 1000, _playerCash, true);
+                players[i]   = new Player(aiName, playerHand, 1000, _playerCash, false);
                 playerCash   = players[i].getCash();
                 System.out.println(players[i]);
 				
@@ -430,7 +430,7 @@ public class Game extends JPanel {
         displayCard(_tablePanel, tableCards[4]);
 
         if(!players[2].isPlayingHand()) {
-            JLabel _results = new JLabel(new GameUtils().determineBestHand(players, tableCards, pot));
+            JLabel _results = new JLabel(new GameUtils().determineBestHand(players, tableCards, pot, true));
             _results.setForeground(WHITE);
             _results.setFont(new Font("Courier", Font.PLAIN, 28));
             _results.setHorizontalAlignment(SwingConstants.CENTER);
@@ -446,7 +446,7 @@ public class Game extends JPanel {
         } else {
             playAI(new Action(0));
 
-            JLabel _results = new JLabel(new GameUtils().determineBestHand(players, tableCards, pot));
+            JLabel _results = new JLabel(new GameUtils().determineBestHand(players, tableCards, pot, true));
             _results.setForeground(WHITE);
             _results.setFont(new Font("Courier", Font.PLAIN, 28));
             _results.setHorizontalAlignment(SwingConstants.CENTER);
@@ -500,7 +500,7 @@ public class Game extends JPanel {
                     // Reset
                     playGameSwitch(round);
                 } else {
-                    JLabel _results = new JLabel(new GameUtils().determineBestHand(players, tableCards, pot));
+                    JLabel _results = new JLabel(new GameUtils().determineBestHand(players, tableCards, pot, true));
                     _results.setForeground(WHITE);
                     _results.setFont(new Font("Courier", Font.PLAIN, 28));
                     _results.setHorizontalAlignment(SwingConstants.CENTER);
@@ -535,7 +535,7 @@ public class Game extends JPanel {
                     // Reset
                     playGameSwitch(round);
                 } else {
-                    JLabel _results = new JLabel(new GameUtils().determineBestHand(players, tableCards, pot));
+                    JLabel _results = new JLabel(new GameUtils().determineBestHand(players, tableCards, pot, true));
                     _results.setForeground(WHITE);
                     _results.setFont(new Font("Courier", Font.PLAIN, 20));
                     _results.setHorizontalAlignment(SwingConstants.CENTER);

@@ -25,7 +25,7 @@ public class GameUtils{
         return returnList;
     }
     
-    public String determineBestHand(Player[] thePlayers, Card[] communityCards, int pot){
+    public String determineBestHand(Player[] thePlayers, Card[] communityCards, int pot, boolean updateDisplay){
         ArrayList<Player> remainingPlayers = new ArrayList<Player>();
         ArrayList<Player> playersWithBestHand = new ArrayList<Player>();
         int highestHighCard = 0;
@@ -45,7 +45,7 @@ public class GameUtils{
 
         //Check if only one player remains
         if(remainingPlayers.size() == 1){
-            distributePot(remainingPlayers, thePlayers, pot);
+            distributePot(remainingPlayers, thePlayers, pot, updateDisplay);
             return remainingPlayers.get(0).getName() + " has won as the last man Standing!";
         }
 
@@ -64,14 +64,16 @@ public class GameUtils{
         //Royal/Straight Flush?-------------------------------------------------------------------------
         for(Player p : remainingPlayers){
             suit = containsFlush(p.getCards());
-            int highCard = containsStraight(p.getCards(), suit);
-            if(!suit.equals("") && highCard >= highestHighCard){
-                if(highCard > highestHighCard){
-                    highestHighCard =  highCard;
-                    playersWithBestHand = new ArrayList<Player>();
-                }
+            if(!suit.equals("")){
+                int highCard = containsStraight(p.getCards(), suit);
+                if(highCard >= highestHighCard){
+                    if(highCard > highestHighCard){
+                        highestHighCard =  highCard;
+                        playersWithBestHand = new ArrayList<Player>();
+                    }
 
-                playersWithBestHand.add(p);
+                    playersWithBestHand.add(p);
+                }
             }
         }
 
@@ -88,7 +90,7 @@ public class GameUtils{
                 bestHand = "a " + highestHighCard + "'s High Straight Flush!!";
             }
 
-            distributePot(playersWithBestHand, thePlayers, pot);
+            distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -126,7 +128,7 @@ public class GameUtils{
                 bestHand = "four " + highestHighCard + "'s!!";
             }
 
-            distributePot(playersWithBestHand, thePlayers, pot);
+            distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -177,7 +179,7 @@ public class GameUtils{
                 bestHand += highestHighCard2 + "'s!!";
             }
 
-            distributePot(playersWithBestHand, thePlayers, pot);
+            distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -247,7 +249,7 @@ public class GameUtils{
                 bestHand = "a " + highestHighCard + "'s High Flush!";
             }
 
-            distributePot(playersWithBestHand, thePlayers, pot);
+            distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -278,7 +280,7 @@ public class GameUtils{
                 bestHand = "a " + highestHighCard + "'s High Straight!";
             }
 
-            distributePot(playersWithBestHand, thePlayers, pot);
+            distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -326,7 +328,7 @@ public class GameUtils{
                 bestHand = "three " + highestHighCard + "'s!";
             }
 
-            distributePot(playersWithBestHand, thePlayers, pot);
+            distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -386,7 +388,7 @@ public class GameUtils{
                 bestHand += highestHighCard2 + "'s.";
             }
 
-            distributePot(playersWithBestHand, thePlayers, pot);
+            distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -444,7 +446,7 @@ public class GameUtils{
                 bestHand = "two " + highestHighCard + "'s.";
             }
 
-            distributePot(playersWithBestHand, thePlayers, pot);
+            distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -513,7 +515,7 @@ public class GameUtils{
                 bestHand = "a " + highestHighCard + "'s High.";
             }
 
-            distributePot(playersWithBestHand, thePlayers, pot);
+            distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
             return buildResultsString(playersWithBestHand, bestHand);
         }
         
@@ -633,6 +635,7 @@ public class GameUtils{
                 returnVal = i;
             }
         }
+
         return returnVal + 1; //To offest the array starting at 0, returning a 10 means high card is 10, not jack
     }
 
@@ -786,7 +789,7 @@ public class GameUtils{
     }
 
     //Makes the display string describing the outcome of the game
-    private String buildResultsString(ArrayList<Player> winners, String winningHand){
+    public String buildResultsString(ArrayList<Player> winners, String winningHand){
         StringBuilder resultStrBuilder = new StringBuilder();
         String deliminator = "";
         for(int i = 0; i < winners.size(); i++){
@@ -814,12 +817,12 @@ public class GameUtils{
     }
 
     //Divide up the pot among the winner(s), and set it back to 0
-    private void distributePot(ArrayList<Player> winners, Player[] thePlayers, int pot){
+    private void distributePot(ArrayList<Player> winners, Player[] thePlayers, int pot, boolean updateDisplay){
         if(winners.size() > 0){
             int winningsAmount = pot/winners.size();
             for(Player p : thePlayers){
                 if(winners.indexOf(p) > 0){
-                    p.adjustCash(winningsAmount);
+                    p.adjustCash(winningsAmount, updateDisplay);
                 }
             }
         }
