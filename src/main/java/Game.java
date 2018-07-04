@@ -21,6 +21,8 @@ public class Game extends JPanel {
 	private int		 dealerNum	= -1;
 	private int		 sBlindNum	= -1;
 	private int		 bBlindNum	= -1;
+	private int		 sBlindVal  = 10;
+	private int 	 bBlindVal  = 20;
     
 
     public Game() {
@@ -198,6 +200,9 @@ public class Game extends JPanel {
         _tableLabel.setFont(new Font("Courier", Font.PLAIN, 28));
         _tableAndUserTB[0][0].add(_tableLabel, BorderLayout.NORTH);
         
+		//Add the blinds to the pot
+		pot = pot + sBlindVal + bBlindVal;
+		
         // Display the pot value
         _pot.setForeground(WHITE);
         _pot.setText("$" + String.valueOf(pot));
@@ -219,28 +224,36 @@ public class Game extends JPanel {
             JLabel _playerLabel = null;
             JLabel _playerCash  = null;
             int    playerCash   = 0;
+			int		initPlayerCash = 1000;
 			//for a description of playerRole check displayButton function
 			int		playerRole	= 0;
 			
+			if (turnNum == 1){
+				playerCash = initPlayerCash;
+			}
+			
+			//player is dealer
 			if(dealerNum == i){
 				playerRole = 1;
 			}
+			//player is small blind
 			else if(sBlindNum == i){
 				playerRole = 2;
+				playerCash = playerCash - sBlindVal;
 			}
+			//player is big blind
 			else if(bBlindNum == i){
 				playerRole = 3;
+				playerCash = playerCash - bBlindVal;
 			}
 
             playerHand[0] = deck.draw();
             playerHand[1] = deck.draw();
-			
-			
 
             if(i == 0) { // Initialize human player
                 _playerLabel = new JLabel(userName + ": ");
                 _playerCash  = new JLabel();
-                players[i]   = new Player(userName, playerHand, playerRole, 1000, _playerCash, true);
+                players[i]   = new Player(userName, playerHand, playerRole, playerCash, _playerCash, true);
                 playerCash   = players[i].getCash();
 				
 				writeCardsFile(players[i]);
@@ -271,7 +284,7 @@ public class Game extends JPanel {
 
                 _playerLabel = new JLabel(aiName + ": ");
                 _playerCash  = new JLabel("");
-                players[i]   = new Player(aiName, playerHand, playerRole, 1000, _playerCash, true);
+                players[i]   = new Player(aiName, playerHand, playerRole, playerCash, _playerCash, true);
                 playerCash   = players[i].getCash();
                 System.out.println(players[i]);
 				
