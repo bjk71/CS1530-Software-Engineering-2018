@@ -5,7 +5,6 @@ import java.io.*;
 import java.util.*;
 import javax.imageio.*;
 import java.awt.event.*;
-import java.text.*;
 import java.awt.image.BufferedImage;
 
 public class Game extends JPanel {
@@ -18,11 +17,14 @@ public class Game extends JPanel {
     private final int   playerStart  = 1000;
 
 
-    private Player[] players    = null;
-    private Deck     deck       = null;
-    private Card[]   tableCards = null;
-    private Card     cardBack   = null;
-    private int      pot        = 0;
+    private Player[] players     = null;
+    private Deck     deck        = null;
+    private Pot[]    pots        = null;
+    private int      potCount    = 1;
+    private Card[]   tableCards  = null;
+    private Card     cardBack    = null;
+    private Logging  gameLogging = null;
+    private Random   random      = new Random();
     
 	private int		 turnNum	= 1;
 	private int		 dealerNum	= -1;
@@ -31,13 +33,13 @@ public class Game extends JPanel {
     
     private CommunityCardsPanel _communityPanel = null;
 
-    private JPanel   _aiPlayersPanel = new JPanel();
-    private JPanel   _middlePanel    = new JPanel();
-    private JPanel   _bottomPanel    = new JPanel(null);
-    private JScrollPane _scrollPane  = new JScrollPane();
-    private JLabel   _gameLogLabel   = new JLabel();
-    private PotPanel _potPanel       = new PotPanel();
-    private JPanel   _userPanel      = new JPanel();
+    private JPanel      _aiPlayersPanel = new JPanel();
+    private JPanel      _middlePanel    = new JPanel();
+    private JPanel      _bottomPanel    = new JPanel(null);
+    private JScrollPane _scrollPane     = new JScrollPane();
+    private JLabel      _gameLogLabel   = new JLabel();
+    private JPanel      _userPanel      = new JPanel();
+    private PotPanel    _potPanel       = new PotPanel();
 
     // Action panel components
     private JPanel   _actionPanel = new JPanel();
@@ -190,14 +192,19 @@ public class Game extends JPanel {
         deck       = new Deck();
         tableCards = new Card[5];
         players    = new Player[numOfAI + 1];
+
+        pots    = new Pot[numOfAI];
+        pots[0] = new Pot(0, 0, players, false);
+        potCount=1;
 		
 		dealerNum 	= -1;
 		sBlindNum	= -1;
 		bBlindNum	= -1;
 		
 		selectDealer();
-		
-		writeStartFile(userName, aiPlayerNames);
+        
+        gameLogging = new Logging();        
+		gameLogging.writeStartFile(userName, aiPlayerNames);
         
         setLayout(new GridLayout(3, 1));
         _top.setLayout(new GridLayout(1, numOfAI, 50, 100));
@@ -241,13 +248,13 @@ public class Game extends JPanel {
                 
                 _userPanel = userPanel();
 
-				writeCardsFile(players[i]);
+				gameLogging.writeCardsFile(players[i]);
             } else { // Initialize AI player
                 String aiName = aiPlayerNames[i - 1];
 
                 players[i]   = new Player(aiName, playerHand, playerRole, startingCash, true);
                 				
-				writeCardsFile(players[i]);
+				gameLogging.writeCardsFile(players[i]);
                 
                 _playerPanel = new PlayerPanel(players[i], cardBack, false);
                 players[i].setPlayerPanel(_playerPanel);
@@ -257,9 +264,9 @@ public class Game extends JPanel {
 
             // add blinds to pot
             if(playerRole == 2) {
-                bet(players[i], sBlindVal);
+                bet(players[i], sBlindVal, true);
             } else if(playerRole == 3) {
-                bet(players[i], bBlindVal);
+                bet(players[i], bBlindVal, true);
             }
 
             System.out.println(players[i]); // print player info to system
@@ -304,56 +311,9 @@ public class Game extends JPanel {
         revalidate();
         repaint();
 
-		writeHandFile();
+        gameLogging.writeHandFile(turnNum);
 
         playGameSwitch(1);
-    }
-
-    private void playGame() {
-
-        Action minAction = null;
-        int i, j, k;
-        int playersLeft = 0;
-
-        while (playersLeft >= 2) {                    //play game while at least 2 players have chips
-            // startHand(); //TODO: Reinit Deck + Give each player Cards
-            minAction = null;
-			
-			writeHandFile();
-			
-			turnNum++;
-			
-			selectDealer();
-			
-            for (i=0; i<4; i++) {                       //pre-flop, flop, turn, river
-                if (i==1){           //flop
-                    for (k=0; k<3; k++){
-                        tableCards[k] = deck.draw();
-                    }
-                } else if (i==2){    //turn
-                    tableCards[3] = deck.draw();
-                } else if (i==3) {   //river
-                    tableCards[4] = deck.draw();
-                }
-                for (j=0; j<players.length; j++){    //number of players
-                    if (!players[j].isPlayingHand()) continue;   //skip if not in hand (folded)
-                    
-                    // minAction = Turn.turn(players[j], minAction); // TODO
-                    //Need to update Player.setPlayingHand(false) if they folded
-                    //Send Player + Current minimum Action
-                    //Return New minimum Action
-                }
-
-            }
-
-            // WinObj.handCompare(tableCards, players); //TODO: determine who won
-            //NEED TO UPDATE playersLeft variable if someone runs out of chips + remove them from players Array
-            // endHand(); //TODO: update UI, pot, clear community cards, and hands; Reset all players to playing --> Player.setPlayingHand(true) 
-
-        }
-
-        //TODO: DISPLAY WINNER IN SWING
-
     }
 
     /**
@@ -393,6 +353,8 @@ public class Game extends JPanel {
         _communityPanel.deal();
         //TODO: writeDeckCardsFile(tableCards[i], 0);
 
+        resetCurrentBet();
+
         if(playersPlaying() < 2) {
             playGameSwitch(3);
         }
@@ -414,7 +376,8 @@ public class Game extends JPanel {
         _communityPanel.deal();
         //TODO: writeDeckCardsFile(tableCards[3], 0);
 
-
+        resetCurrentBet();
+        
         if(playersPlaying() < 2) {
             playGameSwitch(4);
         }
@@ -437,10 +400,16 @@ public class Game extends JPanel {
         _communityPanel.deal();
         //TODO: writeDeckCardsFile(tableCards[4], 0);
 
+        resetCurrentBet();
         if(playersPlaying() < 2) {
-			String endResult = new GameUtils().determineBestHand(players, tableCards, _potPanel.clearPot());
+            for (int i=potCount-1; i>0; i--){
+                new GameUtils().determineBestHand(pots[potCount-1].getValidPlayers(), tableCards, _potPanel.clearPot(i));
+            }   //Distribute side pot winnings
+            
+            String endResult = new GameUtils().determineBestHand(players, tableCards, _potPanel.clearPot(0));
+
 			
-			writeEndFile(endResult);
+			gameLogging.writeEndFile(endResult);
 			
             JLabel _results = new JLabel(endResult);
             _results.setForeground(WHITE);
@@ -457,10 +426,13 @@ public class Game extends JPanel {
         else if(players[0].isPlayingHand()) {
             setUserActions(4);
         } else {
-			String endResult = new GameUtils().determineBestHand(players, tableCards, _potPanel.clearPot());
+            for (int i=potCount-1; i>0; i--){
+                new GameUtils().determineBestHand(pots[potCount-1].getValidPlayers(), tableCards, _potPanel.clearPot(i));
+            }   //Distribute side pot winnings
+			String endResult = new GameUtils().determineBestHand(players, tableCards, _potPanel.clearPot(0));
             playAI(null);
 
-			writeEndFile(endResult);
+			gameLogging.writeEndFile(endResult);
 			
             JLabel _results = new JLabel(endResult);
             _results.setForeground(WHITE);
@@ -486,7 +458,7 @@ public class Game extends JPanel {
 
         JPanel   _btnPanel      = new JPanel(new FlowLayout());
 
-        SpinnerModel betModel  = new SpinnerNumberModel(10, 10, players[0].getCash(), 1);
+        SpinnerModel betModel  = new SpinnerNumberModel(20, 20, players[0].getCash(), 1);
         
         _betSpinner   = new JSpinner(betModel);
 
@@ -550,7 +522,7 @@ public class Game extends JPanel {
                     int betAmount = (int) _betSpinner.getValue();
 
                     if(betAmount <= players[0].getCash()) {
-                        bet(players[0], betAmount);
+                        bet(players[0], betAmount, false);
 
                         // AI players
                         playAI(new Action(betAmount));
@@ -652,7 +624,10 @@ public class Game extends JPanel {
     }
 
     private void endOfHand() {
-        String result   = new GameUtils().determineBestHand(players, tableCards, _potPanel.clearPot());
+        for (int i=potCount-1; i>0; i--){
+            new GameUtils().determineBestHand(pots[potCount-1].getValidPlayers(), tableCards, _potPanel.clearPot(i));
+        }   //Distribute side pot winnings
+        String result   = new GameUtils().determineBestHand(players, tableCards, _potPanel.clearPot(0));
         JLabel _results = new JLabel(result);
         _results.setForeground(WHITE);
         _results.setFont(new Font("Courier", Font.PLAIN, 28));
@@ -845,16 +820,21 @@ public class Game extends JPanel {
                 // if user bets more than 0
                 if(userAction.getValue() > 0) {
                     if(players[i].getCash() >= userAction.getValue()) {
-                        bet(players[i], userAction.getValue());
+                        bet(players[i], userAction.getValue(), false);
                         aiAction.setValue(userAction.getValue());
                     } else {
+                        if (random.nextInt(5) <= 1){    //All in  (40% chance)
+                            bet(players[i], players[i].getCash(), false);
+                            aiAction.setValue(players[i].getCash());
+                        } else {        //Fold
                         players[i].setPlayingHand(false);
                         aiAction.setValue(-1);
+                        }
                     }
                 }
 
                 // print AI action
-                writeActionFile(aiAction, i);
+                gameLogging.writeActionFile(aiAction, players[i]);
                 printGameConsole(players[i].getName() + " " + aiAction.toString());
             }
 			
@@ -874,12 +854,67 @@ public class Game extends JPanel {
 
     /**
      * Player bet, remove cash from player and add to pot.
+     * @param player    Player who is betting.
+     * @param amount    Amount of cash bet.
+     * @param blindFlag Is this bet from the blind
+     */
+    private void bet(Player player, int amount, boolean blindFlag) {
+        player.adjustCash(-amount);
+        if (potCount == 1) {    //No side pots
+            if (pots[0].getCurrentBet() <= amount || blindFlag) {     //Normal Bet
+                pots[0].adjustPot(amount);
+                player.setActivePot(0, true);
+                pots[0].setHaveBetPot(0, true);
+                _potPanel.adjustPot(0, amount);
+            } else {                //create new sidepot
+                createSidePot(player, amount);
+                player.setActivePot(0, true);
+            }
+
+        } else {                //Side pots
+            for (int i=0; i<potCount; i++){
+                if (pots[i].getCurrentBet() <= amount || player.getActivePot(i)) {     //Normal Bet
+                    pots[i].adjustPot(amount);
+                    player.setActivePot(i, true);
+                    pots[0].setHaveBetPot(i, true);
+                    _potPanel.adjustPot(i, amount);
+                } else {                //create new sidepot
+                    createSidePot(player, amount);
+                    player.setActivePot(i, true);
+                }
+            } 
+        }       
+    }
+
+    /**
+     * Create a side pot, since bet is less than minimum pot current bet,
+     * which implies that the player is all in.
      * @param player Player who is betting.
      * @param amount Amount of cash bet.
      */
-    private void bet(Player player, int amount) {
-        player.adjustCash(-amount);
-        _potPanel.adjustPot(amount);
+    private void createSidePot(Player player, int amount) {
+        int numBet=0;
+        int n=0;
+        int sidePotVal;
+        Player[] sidePotPlayers;
+        potCount++;
+
+        sidePotVal = pots[potCount-2].getCurrentBet() - amount;
+        for (int i=0; i<players.length; i++){
+            if ( pots[potCount-2].getHaveBetPot(i) ) {
+                numBet++;
+            }
+        }
+        sidePotPlayers = new Player[numBet];
+        pots[potCount-2].adjustPot(-(sidePotVal*numBet));        //Remove excess money from main pot
+        for (int i=0; i<players.length; i++){
+            if ( pots[potCount-2].getHaveBetPot(i) ) {
+                sidePotPlayers[n]=players[i];
+                n++;
+            }
+        }
+        pots[potCount-1] = new Pot(sidePotVal, sidePotVal-amount, sidePotPlayers, true);       //create new sidepot only certain players can win
+        _potPanel.addPot(potCount-1, sidePotVal);
     }
 
     private void showAICards() {
@@ -1030,224 +1065,18 @@ public class Game extends JPanel {
 		else{
 			bBlindNum = sBlindNum + 1;
         }
+    }
+    
+    /*
+	 * Selects the player with the small blind
+	 * If dealerNum is the last player, sBlindNum = 0
+	 * Otherwise sBlindNum is dealerNum + 1
+	*/
+	private void resetCurrentBet() {
+		for (int i=0; i<potCount; i++){
+            pots[i].adjustCurrentBet(0);
+        }
 	}
 	
-	/*
-	 * Opens the external file and writes the intro.
-	 * File that is opened is called "output.txt".
-	 * @param	UserName		The input name from the player.
-	 * @param	aiPlayerNames	The selected AI names.
-	*/
-	private void writeStartFile(String userName, String[] aiPlayerNames){
-		//Write the intro to the External File
-		File outputFile = new File("output.txt");
-		
-		BufferedWriter bw = null;
-		FileWriter fw = null;
-
-		try {
-			String firstLine = "Game Started - ";
-			String secondLine = "Player name is: ";
-			String thirdLine = "AI player names: ";
-			
-			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-			Date date = new Date();
-
-			fw = new FileWriter(outputFile);
-			bw = new BufferedWriter(fw);
-			
-			//writes first line - gives date and time
-			bw.write(firstLine);
-			bw.write(dateFormat.format(date));
-			bw.newLine();
-			
-			//second line - gives player name
-			bw.write(secondLine);
-			bw.write(userName);
-			bw.newLine();
-			
-			//third line - gives ai players names
-			bw.write(thirdLine);
-			bw.write(Arrays.toString(aiPlayerNames));
-			bw.newLine();
-			
-		}  catch (IOException e) {
-
-			e.printStackTrace();
-
-		} finally {
-
-			try {
-
-				if (bw != null)
-					bw.close();
-
-				if (fw != null)
-					fw.close();
-
-			} catch (IOException ex) {
-
-				ex.printStackTrace();
-
-			}
-		}
-	}
-	
-	/*
-	 * Opens the external file and writes Hand #
-	*/
-	private void writeHandFile(){
-		try{
-			File outputFile = new File("output.txt");
-			
-			//Here true is to append the content to file
-			FileWriter fw = new FileWriter(outputFile,true);
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			//Hand #
-			bw.write("Hand: " + turnNum);
-			bw.newLine();
-			
-			//Closing BufferedWriter Stream
-			bw.close();
-
-		}  catch (IOException e) {
-
-			e.printStackTrace();
-
-		}
-	}
-	
-	/*
-	 * Opens the external file and writes the Cards Dealt and each players cash
-	 * @param	players			The info for the current player.
-	*/
-	private void writeCardsFile(Player players){
-		try{
-			File outputFile = new File("output.txt");
-			
-			//Here true is to append the content to file
-			FileWriter fw = new FileWriter(outputFile,true);
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			//System.out.println(players);
-			
-			String playersToString = players.toString();
-			
-			bw.write(playersToString);
-			bw.newLine();
-			
-			
-			//Closing BufferedWriter Stream
-			bw.close();
-
-		}  catch (IOException e) {
-
-			e.printStackTrace();
-
-		}		
-	}
-	
-	/*
-	 * Opens the external file and writes the Cards Dealt in flop.
-	 * @param	cards			cards in the deck
-	 * @param	when		 	flop, turn, or river
-	 * If when = 0, writing flop
-	 * If when = 1, writing turn
-	 * If when = 2, writing river
-	*/
-	private void writeDeckCardsFile(Card cards, int when){
-		try{
-			File outputFile = new File("output.txt");
-			
-			//Here true is to append the content to file
-			FileWriter fw = new FileWriter(outputFile,true);
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			
-			if(when == 0){
-				bw.write("A flop card is: " + cards.getName());
-				bw.newLine();
-			}
-			else if(when == 1){
-				bw.write("The turn card is : " + cards.getName());
-				bw.newLine();
-			}
-			else if(when == 2){
-				bw.write("The river card is : " + cards.getName());
-				bw.newLine();
-			}
-			else{
-				bw.write("I messed up.");
-				bw.newLine();
-			}
-			
-			//Closing BufferedWriter Stream
-			bw.close();
-
-		}  catch (IOException e) {
-
-			e.printStackTrace();
-
-		}		
-	}
-	
-	/*
-	 * Opens the external file and writes the Player action.
-	 * @param	userAction		The action taken by the user
-	 * @param	playerNum		the number of the player who made the move
-	 * If userAction is > 0, userAction = money bet by user, AI folds
-	 * If userAction is = 0, userAction = user checked, AI checks
-	 * If userAction is = -1, userAction = user folded, AI folds
-	*/
-	private void writeActionFile(Action userAction, int playerNum){
-		
-		try{
-			File outputFile = new File("output.txt");
-			
-			//Here true is to append the content to file
-			FileWriter fw = new FileWriter(outputFile,true);
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			bw.write(players[playerNum].getName() + " " + userAction.toString());
-			
-			bw.newLine();
-			
-			//Closing BufferedWriter Stream
-			bw.close();
-
-		}  catch (IOException e) {
-
-			e.printStackTrace();
-
-		}	
-	}
-	
-	/*
-	 * Opens the external file and writes the Ending of Hand.
-	 * @param	endResult		The ending result for the game
-	*/
-	private void writeEndFile(String endResult){
-		
-		try{
-			File outputFile = new File("output.txt");
-			
-			//Here true is to append the content to file
-			FileWriter fw = new FileWriter(outputFile,true);
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			bw.write(endResult);
-			bw.newLine();
-			
-			
-			//Closing BufferedWriter Stream
-			bw.close();
-
-		}  catch (IOException e) {
-
-			e.printStackTrace();
-
-		}
-	}
     
 }

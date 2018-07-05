@@ -1,6 +1,8 @@
 import javax.swing.*;
 
 public class Player{
+	private final int MAXIMUM_SIDEPOTS = 8;
+
 	private String  name;
 	private Card[]  cards;
 	private int 	role;
@@ -8,6 +10,7 @@ public class Player{
 	private PlayerPanel playerPanel;
 	private boolean isUser;
 	private boolean inHand;
+	private boolean[] activePot;
 
 	private JPanel  _cardLoc;
 	
@@ -18,6 +21,7 @@ public class Player{
 		this.cash   = cash;
 		this.isUser = isUser;
 		this.inHand = true;
+		this.activePot = new boolean[MAXIMUM_SIDEPOTS];
 	}
 	
 	public String getName(){
@@ -33,6 +37,14 @@ public class Player{
 
 		this.playerPanel.setPlayerCards(newHand);
 		this.playerPanel.showCards(false);
+	}
+
+	public void setActivePot(int num, boolean b){
+		this.activePot[num] = b;
+	}
+
+	public boolean getActivePot(int num){
+		return this.activePot[num];
 	}
 
 	public void setPlayerPanel(PlayerPanel panel) {
