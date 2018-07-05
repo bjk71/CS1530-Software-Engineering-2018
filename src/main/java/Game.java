@@ -617,7 +617,7 @@ public class Game extends JPanel {
                     playGameSwitch(round);
                     
                     revalidate();
-                    repaint();  
+                    repaint();
                 }
             });
         } else { // End of game methods

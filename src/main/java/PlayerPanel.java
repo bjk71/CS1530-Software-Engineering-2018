@@ -1,5 +1,7 @@
 import java.awt.*;
+import java.io.*;
 import javax.swing.*;
+import javax.imageio.*;
 
 // TODO: make font size adjust based on number of players, allow user font size to
 // be larger
@@ -19,6 +21,7 @@ public class PlayerPanel extends JPanel {
     private Card    cardBack    = null;
     private String  name        = null;
     private boolean showCards   = false;
+    private int     playerRole  = 0;
 
     /**
      * Initialize PlayerPanel object and variables, then call methods to display
@@ -34,19 +37,16 @@ public class PlayerPanel extends JPanel {
         this.playerHand[0] = player.getCards()[0];
         this.playerHand[1] = player.getCards()[1];
 
-        this.cardBack  = cardBack;
-        this.name      = player.getName();
-        this.showCards = showCards;
+        this.cardBack   = cardBack;
+        this.name       = player.getName();
+        this.showCards  = showCards;
+        this.playerRole = player.getRole();
 
         this._nameLabel.setForeground(WHITE);
         this._nameLabel.setFont(COURIER);
 
         this._cashLabel.setForeground(WHITE);
         this._cashLabel.setFont(COURIER);
-
-        if(player.getRole() == 1) {
-            setDealer(true);
-        }
 
         showCards(showCards);
 
@@ -84,12 +84,17 @@ public class PlayerPanel extends JPanel {
         displayCards();
     }
 
-    public void setDealer(boolean dealer) {
-        if(dealer) {
-            setPlayerName("D " + this.name);
-        } else {
-            setPlayerName(this.name);
-        }
+    /**
+     * Display player as inactive by removed their cash label, cards, and buttons. 
+     */
+    public void setInactive() {
+        this._cardPanel.removeAll();
+        this._cardPanel.add(paddingPanel(52));
+        this._cardPanel.add(paddingPanel(105));
+        this._cashLabel.setText("---");
+
+        this.revalidate();
+        this.repaint();
     }
 
     /* Private Methods */
@@ -124,7 +129,7 @@ public class PlayerPanel extends JPanel {
         _bottomPanel.add(_cardLabels[0]);
         _bottomPanel.add(_cardLabels[1]);
 
-        this._cardPanel.add(paddingPanel(50));
+        this._cardPanel.add(imagePanel(52, getRoleImage(this.playerRole)));
         this._cardPanel.add(_bottomPanel);
 
         this.repaint();
@@ -169,5 +174,49 @@ public class PlayerPanel extends JPanel {
         _padding.setBackground(POKER_GREEN);
 
         return _padding;
+    }
+
+    private Image getRoleImage(int role) {
+        Image image = null;
+
+        try {
+            switch(role) {
+                case 1:
+                    image = ImageIO.read(this.getClass().getResource("/Dealer.png"));
+                    break;
+                case 2:
+                    image = ImageIO.read(this.getClass().getResource("/Small-Blind.png"));
+                    break;
+                case 3:
+                    image = ImageIO.read(this.getClass().getResource("/Big-Blind.png"));
+                    break;
+            }
+        } catch (IOException ioex) {
+            System.exit(1);
+        }
+
+        return image;
+    }
+
+    /**
+     * Return <b>image</b> background JPanel with height and width equal to <b>size</b>.
+     * @param size  Height and width of padding panel.
+     * @param image Background image.
+     */
+    private JPanel imagePanel(int size, Image image) {
+        JPanel _imagePanel = new JPanel();
+        JLabel _imageLabel = null;
+
+        _imagePanel.setPreferredSize(new Dimension(size, size));
+        _imagePanel.setBackground(POKER_GREEN);
+
+        try {
+            _imageLabel = new JLabel(new ImageIcon(image));
+            _imagePanel.add(_imageLabel);
+        } catch(Exception e) {
+            // No role image
+        }
+
+        return _imagePanel;
     }
 }
