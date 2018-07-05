@@ -686,10 +686,10 @@ public class Game extends JPanel {
                             players[i].setRole(1);
                         } else if(sBlindNum == i) { //player is small blind
                             players[i].setRole(2);
-                            bet(players[i], sBlindVal);
+                            bet(players[i], sBlindVal, true);
                         } else if(bBlindNum == i) { //player is big blind
                             players[i].setRole(3);
-                            bet(players[i], bBlindVal);
+                            bet(players[i], bBlindVal, true);
                         } else {
                             players[i].setRole(0);
                         }
@@ -705,7 +705,7 @@ public class Game extends JPanel {
                             _top.add(_playerPanel);
                         }
 
-                        writeCardsFile(players[i]);
+                        // writeCardsFile(players[i]);
 
                         players[i].setPlayingHand(true);
                         System.out.println(players[i]);
@@ -726,7 +726,7 @@ public class Game extends JPanel {
                 revalidate();
                 repaint();
 
-                writeHandFile();
+                // writeHandFile();
 
                 if(playersRemaining() > 1) {
                     playGameSwitch(1);
@@ -867,7 +867,7 @@ public class Game extends JPanel {
      * @param blindFlag Is this bet from the blind
      */
     private void bet(Player player, int amount, boolean blindFlag) {
-        player.adjustCash(-amount);
+        player.adjustCash(-amount, true);
         if (potCount == 1) {    //No side pots
             if (pots[0].getCurrentBet() <= amount || blindFlag) {     //Normal Bet
                 pots[0].adjustPot(amount);
@@ -930,7 +930,7 @@ public class Game extends JPanel {
             if(players[i].isPlayingHand() && players[i].getCash() >= 0) {
                 players[i].getPlayerPanel().showCards(true);
                 if(players[i].getCash() == 0) {
-                    players[i].adjustCash(-1); // player lost, negative cash
+                    players[i].adjustCash(-1, true); // player lost, negative cash
                 }
             }
         }
