@@ -15,6 +15,7 @@ public class Game extends JPanel {
     private final int   sBlindVal    = 10;
     private final int   bBlindVal    = 20;
     private final int   startingCash = 1000;
+    private final int   playerStart  = 1000;
 
 
     private Player[] players    = null;
@@ -233,7 +234,7 @@ public class Game extends JPanel {
             playerHand[1] = deck.draw();
 
             if(i == 0) { // Initialize human player
-                players[i] = new Player(userName, playerHand, playerRole, startingCash, true);
+                players[i] = new Player(userName, playerHand, playerRole, playerStart, true);
                 
                 _userPanel = userPanel();
 
@@ -379,7 +380,7 @@ public class Game extends JPanel {
      * First round of betting logic.
      */
     private void playPreFlop() {
-        setUserActions(2);
+        setUserActions(1);
     }
 
     /**
@@ -393,7 +394,7 @@ public class Game extends JPanel {
             playGameSwitch(3);
         }
         else if(players[0].isPlayingHand()) {
-            setUserActions(3);
+            setUserActions(2);
         } else {
             // AI players
             playAI(null);
@@ -415,7 +416,7 @@ public class Game extends JPanel {
             playGameSwitch(4);
         }
         else if(players[0].isPlayingHand()) {
-            setUserActions(4);
+            setUserActions(3);
         } else {
             // AI players
             playAI(null);
@@ -451,7 +452,7 @@ public class Game extends JPanel {
             nextHandButton();
         }
         else if(players[0].isPlayingHand()) {
-            setUserActions(5);
+            setUserActions(4);
         } else {
 			String endResult = new GameUtils().determineBestHand(players, tableCards, _potPanel.clearPot());
             playAI(null);
@@ -498,6 +499,7 @@ public class Game extends JPanel {
         _betSpinner.setFont(new Font("Courier", Font.PLAIN, 25));
         _betSpinner.setPreferredSize(new Dimension(300, 50));
 
+        _actionPanel = new JPanel();
         _actionPanel.setBackground(POKER_GREEN);
         _actionPanel.setLayout(new BorderLayout());
         _actionPanel.setPreferredSize(new Dimension(340, 150));
@@ -551,13 +553,19 @@ public class Game extends JPanel {
                         playAI(new Action(betAmount));
 
                         // Reset
-                        playGameSwitch(round);
+                        if(round == 4) {
+                            setUserActions(5);
+                        } else {
+                            playGameSwitch(round+1);
+                        }
                     } else {
                         _betSpinner.setValue(players[0].getCash());
                     }
 
                     revalidate();
                     repaint();  
+
+                    
                 }
             });
 
@@ -571,10 +579,16 @@ public class Game extends JPanel {
                     playAI(new Action(0));
 
                     // Reset
-                    playGameSwitch(round);
+                    // playGameSwitch(round+1);
     
                     revalidate();
-                    repaint();  
+                    repaint(); 
+                    
+                    if(round == 4) {
+                        setUserActions(5);
+                    } else {
+                        playGameSwitch(round+1);
+                    }
                 }
             });
 
@@ -590,14 +604,20 @@ public class Game extends JPanel {
                     playAI(new Action(-1));
 
                     // Reset
-                    playGameSwitch(round);
+                    
                     
                     revalidate();
                     repaint();
+
+                    if(round == 4) {
+                        setUserActions(5);
+                    } else {
+                        playGameSwitch(round+1);
+                    }
                 }
             });
         } else { // End of game methods
-            showAICards();
+            // showAICards();
             endOfHand();
         }
         
@@ -633,7 +653,80 @@ public class Game extends JPanel {
         _nextHandButton.setPreferredSize(new Dimension(400, 100));
         _nextHandButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
+                JPanel _top = new JPanel();
 
+                deck = new Deck();
+
+                for(int i = 0; i < 5; i++) {
+                    tableCards[i] = deck.draw();
+                }
+
+                _communityPanel = new CommunityCardsPanel(tableCards, cardBack);
+
+                System.out.printf("D: %d, S: %d, B: %d\n", dealerNum, sBlindNum, bBlindNum);
+                selectDealer();
+                System.out.printf("D: %d, S: %d, B: %d\n", dealerNum, sBlindNum, bBlindNum);
+
+
+                for(int i = 0; i < players.length; i++) {
+                    Card[] playerHand = new Card[2];
+
+                    _top.setLayout(new GridLayout(1, players.length-1, 50, 100));
+                    _top.setBackground(POKER_GREEN);
+
+                    if(players[i].getCash() > 0) { // player is still in game
+                        playerHand[0] = deck.draw();
+                        playerHand[1] = deck.draw();
+
+                        players[i].setCards(playerHand);
+
+                        if(dealerNum == i) { //player is dealer
+                            players[i].setRole(1);
+                        } else if(sBlindNum == i) { //player is small blind
+                            players[i].setRole(2);
+                            bet(players[i], sBlindVal);
+                        } else if(bBlindNum == i) { //player is big blind
+                            players[i].setRole(3);
+                            bet(players[i], bBlindVal);
+                        } else {
+                            players[i].setRole(0);
+                        }
+
+                        if(i == 0) {
+                            players[i].getPlayerPanel().showCards(true);
+
+                            _userPanel = userPanel();
+                        } else {
+                            PlayerPanel _playerPanel = new PlayerPanel(players[i], cardBack, false);
+                            players[i].setPlayerPanel(_playerPanel);
+
+                            _top.add(_playerPanel);
+                        }
+
+                        writeCardsFile(players[i]);
+
+                        players[i].setPlayingHand(true);
+                        System.out.println(players[i]);
+                    } else { // player is out of cash, lost
+                        players[i].setPlayingHand(false);
+                        players[i].getPlayerPanel().setInactive();
+                    }
+                }
+
+                _aiPlayersPanel.removeAll();
+                _aiPlayersPanel.add(_top, BorderLayout.PAGE_START);
+                // update panels
+                _middlePanel.removeAll();
+                _middlePanel.add(_potPanel, BorderLayout.LINE_START);
+                _middlePanel.add(_communityPanel, BorderLayout.CENTER);
+                _middlePanel.add(_userPanel, BorderLayout.LINE_END);
+
+                revalidate();
+                repaint();
+
+                writeHandFile();
+
+                playGameSwitch(1);
             }
         });
 
@@ -641,6 +734,9 @@ public class Game extends JPanel {
 
         _actionPanel.removeAll();
         _actionPanel.add(_buttonPanel);
+
+        //TODO: figure out why player hand gets hidden at end of turn, temp fix
+        players[0].getPlayerPanel().showCards(true);
         
         revalidate();
         repaint();
@@ -720,7 +816,12 @@ public class Game extends JPanel {
 
     private void showAICards() {
         for(int i = 1; i < players.length; i++) {
-            players[i].getPlayerPanel().showCards(true);
+            if(players[i].isPlayingHand() && players[i].getCash() >= 0) {
+                players[i].getPlayerPanel().showCards(true);
+                if(players[i].getCash() == 0) {
+                    players[i].adjustCash(-1); // player lost, negative cash
+                }
+            }
         }
 
         revalidate();
@@ -806,7 +907,7 @@ public class Game extends JPanel {
 				selectBigBlind();
 			}
 			//resetting dealerNum since it reached the end
-			else if (dealerNum == players.length){
+			else if (dealerNum == players.length-1){
 				dealerNum = 0;
 				
 				selectSmallBlind();
