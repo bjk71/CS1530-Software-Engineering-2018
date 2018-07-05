@@ -145,6 +145,9 @@ public class Game extends JPanel {
         add(_playerName);
         add(_numOpponents);
         add(_startButton);       
+
+        revalidate();
+        repaint();
     }
     
     private void printGameConsole(String line) {
@@ -390,7 +393,7 @@ public class Game extends JPanel {
         _communityPanel.deal();
         //TODO: writeDeckCardsFile(tableCards[i], 0);
 
-        if(!players[2].isPlayingHand()) {
+        if(playersPlaying() < 2) {
             playGameSwitch(3);
         }
         else if(players[0].isPlayingHand()) {
@@ -412,7 +415,7 @@ public class Game extends JPanel {
         //TODO: writeDeckCardsFile(tableCards[3], 0);
 
 
-        if(!players[2].isPlayingHand()) {
+        if(playersPlaying() < 2) {
             playGameSwitch(4);
         }
         else if(players[0].isPlayingHand()) {
@@ -434,7 +437,7 @@ public class Game extends JPanel {
         _communityPanel.deal();
         //TODO: writeDeckCardsFile(tableCards[4], 0);
 
-        if(!players[2].isPlayingHand()) {
+        if(playersPlaying() < 2) {
 			String endResult = new GameUtils().determineBestHand(players, tableCards, _potPanel.clearPot());
 			
 			writeEndFile(endResult);
@@ -624,12 +627,28 @@ public class Game extends JPanel {
         return playerAction;
     }
 
-    /**
-     * User input buttons, displayed on user's turn.
-     * @param round Round number.
-     */
-    private void userInputPanel(int round) {
-        
+    private int playersRemaining() {
+        int num = 0;
+
+        for(int i =0; i < players.length; i++) {
+            if(players[i].getCash() > 0) {
+                num++;
+            }
+        }
+
+        return num;
+    }
+
+    private int playersPlaying() {
+        int num = 0;
+
+        for(int i =0; i < players.length; i++) {
+            if(players[i].isPlayingHand()) {
+                num++;
+            }
+        }
+
+        return num;
     }
 
     private void endOfHand() {
@@ -726,7 +745,19 @@ public class Game extends JPanel {
 
                 writeHandFile();
 
-                playGameSwitch(1);
+                if(playersRemaining() > 1) {
+                    playGameSwitch(1);
+                } else { // find winner
+                    Player winner = null;
+                    for(int i =0; i < players.length; i++) {
+                        if(players[i].getCash() > 0) {
+                            winner = players[i];
+
+                            winner(winner);
+
+                        }
+                    }
+                }
             }
         });
 
@@ -738,6 +769,43 @@ public class Game extends JPanel {
         //TODO: figure out why player hand gets hidden at end of turn, temp fix
         players[0].getPlayerPanel().showCards(true);
         
+        if(playersRemaining() > 1) {
+            playGameSwitch(1);
+        } else { // find winner
+            _nextHandButton.setText("End");
+        }
+
+        revalidate();
+        repaint();
+    }
+
+    private void winner(Player player) {
+        JLabel _winnerLabel = new JLabel();
+        JButton _newgameButton = new JButton();
+
+        JPanel _this = this;
+
+        this.removeAll();
+
+        _winnerLabel.setBackground(POKER_GREEN);
+        _winnerLabel.setFont(new Font("Courier", Font.PLAIN, 60));
+        _winnerLabel.setText(player.getName() + " has won the game!");
+
+        _newgameButton.setFont(new Font("Courier", Font.PLAIN, 30));
+        _newgameButton.setMaximumSize(new Dimension(400, 100));
+        _newgameButton.setText("New game");
+        _newgameButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                _this.removeAll();
+
+                initalizeStartGrid();
+            }
+        });
+
+        this.setLayout(new BorderLayout());
+        this.add(_winnerLabel, BorderLayout.PAGE_START);
+        this.add(_newgameButton, BorderLayout.CENTER);
+
         revalidate();
         repaint();
     }
