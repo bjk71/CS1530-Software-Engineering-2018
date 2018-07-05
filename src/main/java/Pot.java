@@ -113,6 +113,7 @@ public class Pot{
 	public void adjustPot(int bet, int num) {
 		this.value += bet;
         this._potPanel.adjustPot(num, bet);
+
 	}
 
 	public void setLabel(int value) {
@@ -139,6 +140,7 @@ public class Pot{
             sb.append("Main Pot: " + value);
         }
         sb.append(", Players in Pot: ");
+
             for (Player p : validPlayers) {
                 sb.append(prefix);
                 prefix=", ";

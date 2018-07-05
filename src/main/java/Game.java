@@ -26,11 +26,11 @@ public class Game extends JPanel {
     private Card     cardBack    = null;
     private Logging  gameLogging = null;
     private Random   random      = new Random();
-
+    
     private Action  playerAction = null;
     private boolean userAction   = false;
     private boolean nextHand     = false;
-    
+
 	private int		 turnNum	= 1;
 	private int		 dealerNum	= -1;
 	private int		 sBlindNum	= -1;
@@ -157,7 +157,7 @@ public class Game extends JPanel {
         revalidate();
         repaint();
     }
-    
+
     /**
      * Create new game objects and and initialize players.
      * @param userName Player name.
