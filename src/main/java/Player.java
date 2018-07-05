@@ -75,6 +75,7 @@ public class Player{
 	private void setLabel() {
 		if(this.cash < 0) {
 			playerPanel.setPlayerCash(0);
+			this.inHand = false;
 		} else {
 			playerPanel.setPlayerCash(cash);
 		}
