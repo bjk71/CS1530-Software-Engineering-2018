@@ -24,6 +24,10 @@ public class GameUtils{
 
         return returnList;
     }
+  
+    public String determineBestHand(Player[] thePlayers, Card[] communityCards, int pot){
+        return determineBestHand(thePlayers, communityCards, pot, true);
+    }
     
     public String determineBestHand(Player[] thePlayers, Card[] communityCards, int pot, boolean updateDisplay){
         ArrayList<Player> remainingPlayers = new ArrayList<Player>();
@@ -821,8 +825,9 @@ public class GameUtils{
         if(winners.size() > 0){
             int winningsAmount = pot/winners.size();
             for(Player p : thePlayers){
-                if(winners.indexOf(p) > 0){
+                if(winners.indexOf(p) >= 0){
                     p.adjustCash(winningsAmount, updateDisplay);
+
                 }
             }
         }
