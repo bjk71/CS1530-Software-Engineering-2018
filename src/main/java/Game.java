@@ -255,6 +255,7 @@ public class Game extends JPanel {
                 players[i]   = new Player(aiName, playerHand, playerRole, startingCash, true);
                 				
 				gameLogging.writeCardsFile(players[i]);
+
                 
                 _playerPanel = new PlayerPanel(players[i], cardBack, false);
                 players[i].setPlayerPanel(_playerPanel);
@@ -408,10 +409,12 @@ public class Game extends JPanel {
             
             String endResult = new GameUtils().determineBestHand(players, tableCards, _potPanel.clearPot(0));
 
+
 			
 			gameLogging.writeEndFile(endResult);
 			
             JLabel _results = new JLabel(endResult);
+
             _results.setForeground(WHITE);
             _results.setFont(new Font("Courier", Font.PLAIN, 28));
             _results.setHorizontalAlignment(SwingConstants.CENTER);
@@ -432,9 +435,11 @@ public class Game extends JPanel {
 			String endResult = new GameUtils().determineBestHand(players, tableCards, _potPanel.clearPot(0));
             playAI(null);
 
+
 			gameLogging.writeEndFile(endResult);
 			
             JLabel _results = new JLabel(endResult);
+
             _results.setForeground(WHITE);
             _results.setFont(new Font("Courier", Font.PLAIN, 28));
             _results.setHorizontalAlignment(SwingConstants.CENTER);
@@ -504,6 +509,7 @@ public class Game extends JPanel {
         _centeredPanel.add(_playerPanel, BorderLayout.PAGE_START);
         _centeredPanel.add(_actionPanel, BorderLayout.PAGE_END);
 
+
         _userPanel.add(_centeredPanel);
 
         return _userPanel;
@@ -554,6 +560,7 @@ public class Game extends JPanel {
                     playAI(new Action(0));
 
                     // Reset
+
                     // playGameSwitch(round+1);
     
                     revalidate();
@@ -566,6 +573,7 @@ public class Game extends JPanel {
                     }
                 }
             });
+
 
             al = _foldButton.getActionListeners();
             for(int i = 0; i < al.length; i++) {

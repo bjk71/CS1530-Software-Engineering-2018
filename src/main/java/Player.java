@@ -67,13 +67,16 @@ public class Player{
 		return this.cash;
 	}
 
-	public void adjustCash(int amount) {
+	public void adjustCash(int amount, boolean updateDisplay){
 		this.cash += amount;
 		if(this.cash < 0){
 			this.inHand = false;
 		}
 
-		setLabel();
+		if(updateDisplay){
+			setLabel();
+		}
+		
 	}
 
 	public boolean isPlayingHand() {
