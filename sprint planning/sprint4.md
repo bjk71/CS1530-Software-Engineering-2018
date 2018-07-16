@@ -3,6 +3,7 @@ Timer:
 As a player, I would like the option of having a time limit indicated (in seconds). This timer will be displayed on the screen and will count down to zero from the time limit while it is the users turn.
 (Must be done in separate thread.)
 (The time counter only has to operate for the human player.)
+
 4 points 
 
 Upon reaching zero, the text of the timer will change to "FOLD" and the player will automatically fold.
