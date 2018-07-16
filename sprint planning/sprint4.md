@@ -3,20 +3,23 @@ Timer:
 As a player, I would like the option of having a time limit indicated (in seconds). This timer will be displayed on the screen and will count down to zero from the time limit while it is the users turn.
 (Must be done in separate thread.)
 (The time counter only has to operate for the human player.)
-&nbsp;&nbsp;&nbsp;&nbsp;4 points 
+4 points 
+
 Upon reaching zero, the text of the timer will change to "FOLD" and the player will automatically fold.
 (Must be done in separate thread.)
 (The time counter only has to operate for the human player.)
-&nbsp;&nbsp;&nbsp;&nbsp;4 points
+4 points
 
 
 ### Ben - SCRUM MASTER
 If an AI player loses, the Blind and Dealer Buttons continue to properly iterate through the remaining players.  
-&nbsp;&nbsp;&nbsp;&nbsp;2 point  
+2 points  
+
 TASK: Assist the creation of the Save/Load game feature.
-&nbsp;&nbsp;&nbsp;&nbsp;1 point  
+1 points
+
 TASK: Clean up the current game.java file and get rid of unused functions.  
-&nbsp;&nbsp;&nbsp;&nbsp;1 point  
+1 point  
 
 
 ### Zack
