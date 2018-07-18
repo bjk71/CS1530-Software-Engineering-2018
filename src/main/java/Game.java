@@ -54,7 +54,7 @@ public class Game extends JPanel {
     private JSpinner _betSpinner  = null;
     private JButton  _nextHandButton = null;
 
-    
+
     public Game() {
         initalizeStartGrid();
         setVisible(true);
@@ -758,7 +758,7 @@ public class Game extends JPanel {
                         playerHand[0] = deck.draw();
                         playerHand[1] = deck.draw();
 
-                        players[i].setCards(playerHand);
+                        players[i].setCards(playerHand, true);
 
                         if(dealerNum == i) { //player is dealer
                             players[i].setRole(1);
