@@ -66,13 +66,14 @@ public class PotPanel extends JPanel {
     /* Private methods */
 
     /**
-     * Update pot label text.
+     * Update pot label text for pot at index <b>num</b>.
      */
     private void updateLabel(int num) {
-        if (num == 0)  
+        if(num == 0) {
             this._potLabel[num].setText("Pot: $" + this.value[num] + "   ");
-        else 
+        } else {
             this._potLabel[num].setText("Side Pot: $" + this.value[num] + "   ");
+        }
 
         this.add(_potLabel[num]);
     }

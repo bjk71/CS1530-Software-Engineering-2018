@@ -20,11 +20,16 @@ public class Game extends JPanel {
     private Player[] players     = null;
     private Deck     deck        = null;
     private Pot[]    pots        = null;
+    private Pot      pot         = null;
     private int      potCount    = 1;
     private Card[]   tableCards  = null;
     private Card     cardBack    = null;
     private Logging  gameLogging = null;
     private Random   random      = new Random();
+
+    private Action  playerAction = null;
+    private boolean userAction   = false;
+    private boolean nextHand     = false;
     
 	private int		 turnNum	= 1;
 	private int		 dealerNum	= -1;
@@ -47,7 +52,8 @@ public class Game extends JPanel {
     private JButton  _checkButton = new JButton();
     private JButton  _foldButton  = new JButton();
     private JSpinner _betSpinner  = null;
-
+    private JButton  _nextHandButton = null;
+ 
 
     public Game() {
         initalizeStartGrid();
@@ -152,35 +158,17 @@ public class Game extends JPanel {
         repaint();
     }
     
-    private void printGameConsole(String line) {
-        String        currentText = _gameLogLabel.getText().replace("</html>", "<br/>");
-        StringBuilder lineBuilder = new StringBuilder(currentText);
-        JScrollBar    _scrollBar  = _scrollPane.getVerticalScrollBar();
-
-        lineBuilder.append(line);
-        lineBuilder.append("</html>");
-
-        _gameLogLabel.setText(lineBuilder.toString());
-        
-        _scrollPane.revalidate();
-        _scrollPane.repaint();
-
-        _scrollBar.setValue(_scrollBar.getMaximum());
-    }
-
     /**
      * Create new game objects and and initialize players.
      * @param userName Player name.
      * @param numOfAI  Number of AI players to initialize.
      */
     private void createNewGame(String userName, int numOfAI) {
-        JPanel     _top            = new JPanel();
-        JPanel     _bot            = new JPanel();
-
-        JLabel     _tableLabel     = new JLabel("Pot: ");
-
-        GameUtils  utils           = new GameUtils();
-        String[]   aiPlayerNames   = utils.getAINames(numOfAI, userName);
+        JPanel     _top          = new JPanel();
+        JPanel     _bot          = new JPanel();
+        JLabel     _tableLabel   = new JLabel("Pot: ");
+        GameUtils  utils         = new GameUtils();
+        String[]   aiPlayerNames = utils.getAINames(numOfAI, userName);
         
         try {
             Image back = ImageIO.read(this.getClass().getResource("/back.png"));
@@ -192,10 +180,7 @@ public class Game extends JPanel {
         deck       = new Deck();
         tableCards = new Card[5];
         players    = new Player[numOfAI + 1];
-
-        pots    = new Pot[numOfAI];
-        pots[0] = new Pot(0, 0, players, false);
-        potCount=1;
+        pot        = new Pot(_potPanel, numOfAI + 1);
 		
 		dealerNum 	= -1;
 		sBlindNum	= -1;
@@ -244,7 +229,7 @@ public class Game extends JPanel {
             playerHand[1] = deck.draw();
 
             if(i == 0) { // Initialize human player
-                players[i] = new Player(userName, playerHand, playerRole, playerStart, true);
+                players[i] = new Player(userName, playerHand, playerRole, playerStart, i);
                 
                 _userPanel = userPanel();
 
@@ -252,7 +237,7 @@ public class Game extends JPanel {
             } else { // Initialize AI player
                 String aiName = aiPlayerNames[i - 1];
 
-                players[i]   = new Player(aiName, playerHand, playerRole, startingCash, true);
+                players[i]   = new Player(aiName, playerHand, playerRole, startingCash, i);
                 				
 				gameLogging.writeCardsFile(players[i]);
 
@@ -261,13 +246,6 @@ public class Game extends JPanel {
                 players[i].setPlayerPanel(_playerPanel);
 
                 _top.add(_playerPanel);
-            }
-
-            // add blinds to pot
-            if(playerRole == 2) {
-                bet(players[i], sBlindVal, true);
-            } else if(playerRole == 3) {
-                bet(players[i], bBlindVal, true);
             }
 
             System.out.println(players[i]); // print player info to system
@@ -314,158 +292,347 @@ public class Game extends JPanel {
 
         gameLogging.writeHandFile(turnNum);
 
-        playGameSwitch(1);
+        play();
     }
 
     /**
-     * Central location to call all round methods based on current round number.
-     * @param round Next round number.
+     * Start PlayThread.
      */
-    private void playGameSwitch(int round) {
-        printGameConsole("<br/>Round " + round + ":");
+    private void play() {
+        PlayThread thread = new PlayThread();
 
-        switch(round) {
-            case 1:
-                playPreFlop();
-                break;
-            case 2:
-                playFlop();
-                break;
-            case 3:
-                playTurn();
-                break;
-            case 4:
-                playRiver();
-                break;
-        }
+        thread.start();
     }
 
     /**
-     * First round of betting logic.
+     * Looping thread that blocks while waiting for user action without freezing Swing UI.
      */
-    private void playPreFlop() {
-        setUserActions(1);
-    }
+    public class PlayThread extends Thread {
+        Action    minAction   = null;
+        TurnTimer timer       = new TurnTimer(60);
+        int       startIndex  = -1;
+        int       index       = -1;
+        boolean   keepPlaying = true;
 
-    /**
-     * Second round of betting logic.
-     */
-    private void playFlop() {
-        _communityPanel.deal();
-        //TODO: writeDeckCardsFile(tableCards[i], 0);
+        public void run() {
+            while(keepPlaying) {
+                Action minAction = null;
 
-        resetCurrentBet();
+                // run one hand
+                for(int i = 0; i < 4; i++) {
+                    printGameConsole("<br>Round " + i + ":");
 
-        if(playersPlaying() < 2) {
-            playGameSwitch(3);
+                    if(i == 0) {
+                        // add blinds to pot
+                        pot.newRound(dealerNum);
+                        pot.bet(players[sBlindNum], sBlindVal);
+                        pot.bet(players[bBlindNum], bBlindVal);
+                        
+                        startIndex = bBlindNum + 1;
+                        if(startIndex == players.length) {
+                            startIndex = 0;
+                        }
+
+                        minAction  = new Action(20);
+                        
+                        // print blind actions
+                        printGameConsole(players[sBlindNum].getName() + " played $" + sBlindVal + " ante");
+                        printGameConsole(players[bBlindNum].getName() + " played $" + bBlindVal + " ante");
+                    } else {
+                        startIndex = sBlindNum;
+                        minAction  = new Action(0);
+
+                        pot.newRound(dealerNum);
+                    }
+
+                    if( i > 0 && i < 4) {
+                        _communityPanel.deal();
+                    }
+
+                    index = startIndex;
+                    System.out.println("start index: " + startIndex);
+
+                    // TODO: let big blind get chance to check first round
+
+                    while(index != pot.getSetBet()) {
+                        if(players[index].isPlayingHand()) {
+                            if(index == 0) {
+                                userTurn(minAction);
+                                if(playerAction.isGreater(minAction)) {
+                                    minAction = playerAction;
+                                }
+                            } else {
+                                minAction = aiTurn(minAction, index);
+                            }
+                        }
+                        index++;
+                        if(index >= players.length) {
+                            index = 0;
+                        }
+                        
+                        // sleep to watch user bets take place
+                        try{
+                            Thread.sleep(700);
+                        } catch(InterruptedException ex){
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                }
+
+                endOfHand();
+                nextHand();
+
+                if(playersRemaining() > 1) {
+                    keepPlaying = true;; // Start next hand
+                } else { // find winner
+                    _nextHandButton.setText("End");
+                    keepPlaying = false;
+                }
+            }
         }
-        else if(players[0].isPlayingHand()) {
-            setUserActions(2);
-        } else {
-            // AI players
-            playAI(null);
 
-            // Reset
-            playGameSwitch(3);
+        /**
+         * Run simple AI logic based in the minimum action they must take and return
+         * updated AI action.
+         * TODO: pass in AI player object directly instead of playerIndex.
+         * @param  minAction   Minimum action the AI must match (or fold).
+         * @param  playerIndex Index of AI player, used to access player in players[] array.
+         * @return             Action the AI took.
+         */
+        private Action aiTurn(Action minAction, int playerIndex) {
+            Action aiAction = new Action();
+            Action thisBet  = new Action(); // use only for printing
+            Player aiPlayer = players[playerIndex];
+            int    aiRandom = new Random().nextInt(20);
+            int    betRemaining = minAction.getValue() - pot.getPlayerBet(playerIndex);
+
+            if(aiPlayer.isPlayingHand()) {
+                // if minAction is fold
+                if(betRemaining == -1) {
+                    // decide using aiRandom
+                    if(aiRandom > 0) {
+                        aiAction.setValue(0);
+                    } else {
+                        aiAction.setValue(20);
+                    }
+                }
+                
+                // if minAction is check
+                if(betRemaining == 0) {
+                    // decide using aiRandom
+                    if(aiRandom > 7) {
+                        aiAction.setValue(0);
+                    } else {
+                        aiAction.setValue(20);
+                    }
+                }
+                
+                // if minAction is bet 
+                if(betRemaining > 0) {
+                    // ai has enough cash to call
+                    if(aiPlayer.getCash() >= betRemaining) {
+                        // decide using aiRandom
+                        if(aiRandom > 17) {
+                            aiAction.setValue(betRemaining + 20);
+                        } else if(betRemaining > 100 && aiRandom < 14) {
+                            // ai quits! too expensive
+                            aiPlayer.setPlayingHand(false);
+                            aiAction.setValue(-1);
+                        } else if(aiRandom == 0) {
+                            aiAction.setValue(betRemaining + 100);
+                        } else {
+                            aiAction.setValue(betRemaining);
+                        }
+                    } else {
+                        // ai doesn't have enough cash, fold
+                        aiPlayer.setPlayingHand(false);
+                        aiAction.setValue(-1);
+                    }
+                }
+
+                thisBet  = aiAction;
+                aiAction = pot.bet(aiPlayer, aiAction.getValue());
+
+                if(aiAction.isGreater(minAction)) {
+                    minAction = aiAction;
+                }
+
+                // print AI action
+                gameLogging.writeActionFile(aiAction, aiPlayer);
+                printGameConsole(aiPlayer.getName() + " " + thisBet.toString() + ", total " + aiAction.getValue());
+            }
+
+            return minAction;
         }
-    }
 
-    /**
-     * Third round of betting logic.
-     */
-    private void playTurn() {
-        _communityPanel.deal();
-        //TODO: writeDeckCardsFile(tableCards[3], 0);
+        private void userTurn(Action minAction) {
+            addUserActionListeners(minAction);
 
-        resetCurrentBet();
-        
-        if(playersPlaying() < 2) {
-            playGameSwitch(4);
+            while(!userAction) { // loop until change
+                try{
+                    Thread.sleep(500);
+                } catch(InterruptedException ex){
+                    Thread.currentThread().interrupt();
+                }
+            }
+            userAction = false;
         }
-        else if(players[0].isPlayingHand()) {
-            setUserActions(3);
-        } else {
-            // AI players
-            playAI(null);
 
-            // Reset
-            playGameSwitch(4);
-        }
-    }
+        /**
+         * Add actionListeners to user input buttons.
+         * TODO: disable buttons in between player's turns.
+         */
+        private void addUserActionListeners(Action minAction) {
+            ActionListener[] alList   = null;
+            SpinnerModel     betModel = null;
+            int              minBet   = 20;
 
-    /**
-     * Fourth round of betting logic. End of game compare hand logic handled in userPanel()
-     * method based on round number.
-     */
-    private void playRiver() {
-        _communityPanel.deal();
-        //TODO: writeDeckCardsFile(tableCards[4], 0);
+            // remove old action listeners
+            alList = _betButton.getActionListeners();
+            for(int i = 0; i < alList.length; i++) {
+                _betButton.removeActionListener(alList[i]);
+            }
 
-        resetCurrentBet();
-        if(playersPlaying() < 2) {
-            for (int i=potCount-1; i>0; i--){
-                new GameUtils().determineBestHand(pots[potCount-1].getValidPlayers(), tableCards, _potPanel.clearPot(i));
-            }   //Distribute side pot winnings
+            alList = _checkButton.getActionListeners();
+            for(int i = 0; i < alList.length; i++) {
+                _checkButton.removeActionListener(alList[i]);
+            }
+
+            alList = _foldButton.getActionListeners();
+            for(int i = 0; i < alList.length; i++) {
+                _foldButton.removeActionListener(alList[i]);
+            }
+
+            // enable buttons
+            setButtons(true);
+
+            System.out.printf("min action: %d, getPlayerBet: %d\n", minAction.getValue(), pot.getPlayerBet(0));
+
+            if(minAction.getValue() >= minBet && minAction.getValue() <= players[0].getCash()) {
+                minBet = minAction.getValue() - pot.getPlayerBet(0);
+            } else if(minAction.getValue() > players[0].getCash()) { // player doesn't have enough cash to call, must go all in
+                minBet = players[0].getCash();
+            }
+            betModel = new SpinnerNumberModel(minBet, minBet, players[0].getCash(), 10);
+
+            _betSpinner.setModel(betModel);
+
+            final int minimumBet = minBet;
+
+            _betButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    int betAmount = (int) _betSpinner.getValue();
+
+                    if(betAmount < minimumBet) {
+                        _betSpinner.setValue(minAction.getValue());
+                    } else if(betAmount > players[0].getCash()) {
+                        _betSpinner.setValue(players[0].getCash());
+                    }else {
+                        pot.bet(players[0], betAmount);
+
+                        playerAction = new Action(pot.getPlayerBet(0));
+
+                        userAction = true;
+
+                        // disable buttons
+                        setButtons(false);
+
+                        // print user action
+                        gameLogging.writeActionFile(playerAction, players[0]);
+                        printGameConsole(players[0].getName() + " " + new Action(betAmount).toString() + ", total " + playerAction.getValue());
+
+                    }
+                    
+                    revalidate();
+                    repaint();
+                }
+            });
+
+            if(minAction.getValue() == 0) {
+                _checkButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        playerAction = new Action(0);
+
+                        pot.bet(players[0], 0);
+                        
+                        userAction = true;
+
+                        // disable buttons
+                        setButtons(false);
+
+                        // print user action
+                        gameLogging.writeActionFile(playerAction, players[0]);
+                        printGameConsole(players[0].getName() + " " + playerAction.toString());
+                    }
+                });
+
+                _checkButton.setEnabled(true);
+            } else {
+                _checkButton.setEnabled(false);
+
+                revalidate();
+                repaint(); 
+            }
             
-            String endResult = new GameUtils().determineBestHand(players, tableCards, _potPanel.clearPot(0));
+            _foldButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    playerAction = new Action(-1);
 
+                    pot.bet(players[0], -1);
 
-			
-			gameLogging.writeEndFile(endResult);
-			
-            JLabel _results = new JLabel(endResult);
+                    userAction = true;
 
-            _results.setForeground(WHITE);
-            _results.setFont(new Font("Courier", Font.PLAIN, 28));
-            _results.setHorizontalAlignment(SwingConstants.CENTER);
-            add(_results, BorderLayout.SOUTH);
+                    // disable buttons
+                    setButtons(false);
 
-            printGameConsole("<br/>" + endResult);
-
-            showAICards();
-
-            nextHandButton();
+                    // print user action
+                    gameLogging.writeActionFile(playerAction, players[0]);
+                    printGameConsole(players[0].getName() + " " + playerAction.toString());
+                }
+            });
         }
-        else if(players[0].isPlayingHand()) {
-            setUserActions(4);
-        } else {
-            for (int i=potCount-1; i>0; i--){
-                new GameUtils().determineBestHand(pots[potCount-1].getValidPlayers(), tableCards, _potPanel.clearPot(i));
-            }   //Distribute side pot winnings
-			String endResult = new GameUtils().determineBestHand(players, tableCards, _potPanel.clearPot(0));
-            playAI(null);
 
-
-			gameLogging.writeEndFile(endResult);
-			
-            JLabel _results = new JLabel(endResult);
-
-            _results.setForeground(WHITE);
-            _results.setFont(new Font("Courier", Font.PLAIN, 28));
-            _results.setHorizontalAlignment(SwingConstants.CENTER);
-            add(_results, BorderLayout.SOUTH);
-
-            printGameConsole(endResult);
-
-            showAICards();
-
-            nextHandButton();
+        /**
+         * Enabled or disable buttons based on passed in boolean.
+         * @param state Boolean value to set setEnabled of buttons to.
+         */
+        private void setButtons(boolean state) {
+            _betButton.setEnabled(state);
+            _checkButton.setEnabled(state);
+            _foldButton.setEnabled(state);
         }
+    }
+
+    /**
+     * Display the next hand button and block the PlayThread until pressed.
+     */
+    private void nextHand() {
+        nextHandButton();
+
+        while(!nextHand) {
+            // block
+            try{
+                Thread.sleep(500);
+            } catch(InterruptedException ex){
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        nextHand = false;
     }
 
     /**
      * Add user panel components.
+     * @return Created panel to be added to container.
      */
     private JPanel userPanel() {
-        JPanel  _userPanel      = new JPanel();
-        JPanel   _centeredPanel = new JPanel();
-        PlayerPanel _playerPanel = new PlayerPanel(players[0], cardBack, true);
-
-        JPanel   _btnPanel      = new JPanel(new FlowLayout());
-
-        SpinnerModel betModel  = new SpinnerNumberModel(20, 20, players[0].getCash(), 1);
+        JPanel       _userPanel     = new JPanel();
+        JPanel       _centeredPanel = new JPanel();
+        JPanel       _btnPanel      = new JPanel(new FlowLayout());
+        PlayerPanel  _playerPanel   = new PlayerPanel(players[0], cardBack, true);
+        SpinnerModel betModel       = new SpinnerNumberModel(20, 20, players[0].getCash(), 1);
         
-        _betSpinner   = new JSpinner(betModel);
+        _betSpinner = new JSpinner(betModel);
 
         players[0].setPlayerPanel(_playerPanel); // Save panel to Player object
 
@@ -489,16 +656,18 @@ public class Game extends JPanel {
         _betButton.setText("Bet");
         _betButton.setFont(new Font("Courier", Font.PLAIN, 22));
         _betButton.setPreferredSize(new Dimension(100, 60));
+        _betButton.setEnabled(false);
         
         _checkButton.setText("Check");
         _checkButton.setFont(new Font("Courier", Font.PLAIN, 22));
         _checkButton.setPreferredSize(new Dimension(100, 60));
+        _checkButton.setEnabled(false);
         
         _foldButton.setText("Fold");
         _foldButton.setFont(new Font("Courier", Font.PLAIN, 22));
         _foldButton.setPreferredSize(new Dimension(100, 60));
+        _foldButton.setEnabled(false);
         
-
         _btnPanel.add(_betButton);
         _btnPanel.add(_checkButton);
         _btnPanel.add(_foldButton);
@@ -509,102 +678,9 @@ public class Game extends JPanel {
         _centeredPanel.add(_playerPanel, BorderLayout.PAGE_START);
         _centeredPanel.add(_actionPanel, BorderLayout.PAGE_END);
 
-
         _userPanel.add(_centeredPanel);
 
         return _userPanel;
-    }
-
-    private Action setUserActions(int round) {
-        Action playerAction = null;
-
-        if(round < 5) {
-            ActionListener[] al = _betButton.getActionListeners();
-            for(int i = 0; i < al.length; i++) {
-                _betButton.removeActionListener(al[i]);
-            }
-            _betButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    int betAmount = (int) _betSpinner.getValue();
-
-                    if(betAmount <= players[0].getCash()) {
-                        bet(players[0], betAmount, false);
-
-                        // AI players
-                        playAI(new Action(betAmount));
-
-                        // Reset
-                        if(round == 4) {
-                            setUserActions(5);
-                        } else {
-                            playGameSwitch(round+1);
-                        }
-                    } else {
-                        _betSpinner.setValue(players[0].getCash());
-                    }
-
-                    revalidate();
-                    repaint();  
-
-                    
-                }
-            });
-
-            al = _checkButton.getActionListeners();
-            for(int i = 0; i < al.length; i++) {
-                _checkButton.removeActionListener(al[i]);
-            }
-            _checkButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {    
-                    // AI players
-                    playAI(new Action(0));
-
-                    // Reset
-
-                    // playGameSwitch(round+1);
-    
-                    revalidate();
-                    repaint(); 
-                    
-                    if(round == 4) {
-                        setUserActions(5);
-                    } else {
-                        playGameSwitch(round+1);
-                    }
-                }
-            });
-
-
-            al = _foldButton.getActionListeners();
-            for(int i = 0; i < al.length; i++) {
-                _foldButton.removeActionListener(al[i]);
-            }
-            _foldButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    players[0].setPlayingHand(false);
-
-                    // AI players
-                    playAI(new Action(-1));
-
-                    // Reset
-                    
-                    
-                    revalidate();
-                    repaint();
-
-                    if(round == 4) {
-                        setUserActions(5);
-                    } else {
-                        playGameSwitch(round+1);
-                    }
-                }
-            });
-        } else { // End of game methods
-            // showAICards();
-            endOfHand();
-        }
-        
-        return playerAction;
     }
 
     private int playersRemaining() {
@@ -644,12 +720,14 @@ public class Game extends JPanel {
 
         printGameConsole(result);
         showAICards();
-        nextHandButton();
+        // nextHandButton();
     }
 
     private void nextHandButton() {
         JPanel  _buttonPanel    = new JPanel();
-        JButton _nextHandButton = new JButton("Deal next hand");
+
+        _nextHandButton = new JButton("Deal next hand");
+
         _buttonPanel.setBackground(POKER_GREEN);
         _nextHandButton.setFont(new Font("Courier", Font.PLAIN, 30));
         _nextHandButton.setPreferredSize(new Dimension(400, 100));
@@ -686,10 +764,8 @@ public class Game extends JPanel {
                             players[i].setRole(1);
                         } else if(sBlindNum == i) { //player is small blind
                             players[i].setRole(2);
-                            bet(players[i], sBlindVal, true);
                         } else if(bBlindNum == i) { //player is big blind
                             players[i].setRole(3);
-                            bet(players[i], bBlindVal, true);
                         } else {
                             players[i].setRole(0);
                         }
@@ -729,7 +805,7 @@ public class Game extends JPanel {
                 // writeHandFile();
 
                 if(playersRemaining() > 1) {
-                    playGameSwitch(1);
+                    // playGameSwitch(1);
                 } else { // find winner
                     Player winner = null;
                     for(int i =0; i < players.length; i++) {
@@ -741,6 +817,8 @@ public class Game extends JPanel {
                         }
                     }
                 }
+
+                nextHand = true;
             }
         });
 
@@ -752,12 +830,6 @@ public class Game extends JPanel {
         //TODO: figure out why player hand gets hidden at end of turn, temp fix
         players[0].getPlayerPanel().showCards(true);
         
-        if(playersRemaining() > 1) {
-            playGameSwitch(1);
-        } else { // find winner
-            _nextHandButton.setText("End");
-        }
-
         revalidate();
         repaint();
     }
@@ -794,137 +866,9 @@ public class Game extends JPanel {
     }
 
     /**
-     * Current very simple AI action, if user bets AI fold.
-     * TODO: move to own class.
-	 *
-	 * If userAction is > 0, userAction = money bet by user, AI call.
-	 * If userAction is = 0, userAction = user checked, AI checks.
-	 * If userAction is = -1, userAction = user folded, AI folds.
-     * @param userAction Action taken by user.
+     * Iterate through array of AI players and display the card stored 
+     * in their PlayerPanel object.
      */
-    private void playAI(Action userAction) {
-        Action aiAction = new Action();
-
-        try { // If user is still in round, print their action
-            printGameConsole(players[0].getName() + " " + userAction.toString());
-        } catch(Exception e) {
-            System.out.println(players[0].getName() + " didn't play");
-            userAction = new Action();
-        }
-
-        for(int i = 1; i < players.length; i++) {
-            
-            if(players[i].isPlayingHand()) {
-                // if user folds
-                if(userAction.getValue() == -1) {
-                    aiAction.setValue(0);
-                }
-                
-                // if user bets 0 / checks
-                if(userAction.getValue() == 0) {
-                    aiAction.setValue(0);
-                }
-                
-                // if user bets more than 0
-                if(userAction.getValue() > 0) {
-                    if(players[i].getCash() >= userAction.getValue()) {
-                        bet(players[i], userAction.getValue(), false);
-                        aiAction.setValue(userAction.getValue());
-                    } else {
-                        if (random.nextInt(5) <= 1){    //All in  (40% chance)
-                            bet(players[i], players[i].getCash(), false);
-                            aiAction.setValue(players[i].getCash());
-                        } else {        //Fold
-                        players[i].setPlayingHand(false);
-                        aiAction.setValue(-1);
-                        }
-                    }
-                }
-
-                // print AI action
-                gameLogging.writeActionFile(aiAction, players[i]);
-                printGameConsole(players[i].getName() + " " + aiAction.toString());
-            }
-			
-			
-			//makes program wait a second after each AI move
-			//it works, just commented out for quicker testing
-			/*
-			try{
-				Thread.sleep(500);
-			}
-			catch(InterruptedException ex){
-				Thread.currentThread().interrupt();
-			}
-			*/
-        }
-    }
-
-    /**
-     * Player bet, remove cash from player and add to pot.
-     * @param player    Player who is betting.
-     * @param amount    Amount of cash bet.
-     * @param blindFlag Is this bet from the blind
-     */
-    private void bet(Player player, int amount, boolean blindFlag) {
-        player.adjustCash(-amount, true);
-        if (potCount == 1) {    //No side pots
-            if (pots[0].getCurrentBet() <= amount || blindFlag) {     //Normal Bet
-                pots[0].adjustPot(amount);
-                player.setActivePot(0, true);
-                pots[0].setHaveBetPot(0, true);
-                _potPanel.adjustPot(0, amount);
-            } else {                //create new sidepot
-                createSidePot(player, amount);
-                player.setActivePot(0, true);
-            }
-
-        } else {                //Side pots
-            for (int i=0; i<potCount; i++){
-                if (pots[i].getCurrentBet() <= amount || player.getActivePot(i)) {     //Normal Bet
-                    pots[i].adjustPot(amount);
-                    player.setActivePot(i, true);
-                    pots[0].setHaveBetPot(i, true);
-                    _potPanel.adjustPot(i, amount);
-                } else {                //create new sidepot
-                    createSidePot(player, amount);
-                    player.setActivePot(i, true);
-                }
-            } 
-        }       
-    }
-
-    /**
-     * Create a side pot, since bet is less than minimum pot current bet,
-     * which implies that the player is all in.
-     * @param player Player who is betting.
-     * @param amount Amount of cash bet.
-     */
-    private void createSidePot(Player player, int amount) {
-        int numBet=0;
-        int n=0;
-        int sidePotVal;
-        Player[] sidePotPlayers;
-        potCount++;
-
-        sidePotVal = pots[potCount-2].getCurrentBet() - amount;
-        for (int i=0; i<players.length; i++){
-            if ( pots[potCount-2].getHaveBetPot(i) ) {
-                numBet++;
-            }
-        }
-        sidePotPlayers = new Player[numBet];
-        pots[potCount-2].adjustPot(-(sidePotVal*numBet));        //Remove excess money from main pot
-        for (int i=0; i<players.length; i++){
-            if ( pots[potCount-2].getHaveBetPot(i) ) {
-                sidePotPlayers[n]=players[i];
-                n++;
-            }
-        }
-        pots[potCount-1] = new Pot(sidePotVal, sidePotVal-amount, sidePotPlayers, true);       //create new sidepot only certain players can win
-        _potPanel.addPot(potCount-1, sidePotVal);
-    }
-
     private void showAICards() {
         for(int i = 1; i < players.length; i++) {
             if(players[i].isPlayingHand() && players[i].getCash() >= 0) {
@@ -938,67 +882,6 @@ public class Game extends JPanel {
         revalidate();
         repaint(); 
     }
-    
-    /**
-     * Display card in JPanel container.
-     * @param _loc Panel to display card in.
-     * @param card Card to display.
-     */
-    private void displayCard(JPanel _loc, Card card){
-        Image  resizedCard  = card.getFace().getScaledInstance(75, 105,  java.awt.Image.SCALE_SMOOTH);
-        JLabel _cardDisplay = new JLabel(new ImageIcon(resizedCard));
-
-        _loc.add(_cardDisplay, BorderLayout.SOUTH);
-    }
-	
-	/*
-	 * Displays the button for the specific player
-	 * @param	_loc		Panel to display card in
-	 * @param	playerNum	the player being looked at
-	 * If playerRole = 0, the player does not get a button
-	 * If playerRole = 1, the player is the Dealer
-	 * If playerRole = 2, the player is the Small Blind
-	 * If playerRole = 3, the player is the Big Blind
-	*/
-	private void displayButton(JPanel _loc, int playerNum){
-		
-		String dealerButton = "Dealer.png";
-		String smallBlindButton = "Small-Blind.png";
-		String bigBlindButton = "Big-Blind.png";
-		
-		int playerRole = players[playerNum].getRole();
-		
-		if(playerRole != 0){
-			BufferedImage button = null;
-			
-			if(playerRole == 1){
-				try {
-					button = ImageIO.read(dealerButton.getClass().getResource("/Dealer.png"));
-				} catch (IOException ioex) {
-						System.exit(1);
-				}
-			}
-			else if(playerRole == 2){
-				try {
-					button = ImageIO.read(smallBlindButton.getClass().getResource("/Small-Blind.png"));
-				} catch (IOException ioex) {
-						System.exit(1);
-				}
-			}
-			else if(playerRole == 3){
-				try {
-					button = ImageIO.read(bigBlindButton.getClass().getResource("/Big-Blind.png"));
-				} catch (IOException ioex) {
-						System.exit(1);
-				}
-			}
-			
-			JLabel _buttonDisplay = new JLabel(new ImageIcon(button));
-			
-			_loc.add(_buttonDisplay, BorderLayout.SOUTH);
-		}
-	}
-	
 	
 	/*
 	 * Selects the dealer
@@ -1044,7 +927,9 @@ public class Game extends JPanel {
 				selectSmallBlind();
 				selectBigBlind();
 			}
-		}
+        }
+
+        System.out.printf("Dealer num: %d, sb num: %d, bb num: %d\n", dealerNum, sBlindNum, bBlindNum);
 	}
 	
 	/*
@@ -1075,16 +960,27 @@ public class Game extends JPanel {
         }
     }
     
-    /*
-	 * Selects the player with the small blind
-	 * If dealerNum is the last player, sBlindNum = 0
-	 * Otherwise sBlindNum is dealerNum + 1
-	*/
-	private void resetCurrentBet() {
-		for (int i=0; i<potCount; i++){
-            pots[i].adjustCurrentBet(0);
-        }
-	}
-	
+    /**
+     * Print user actions and other game information to game console in
+     * bottom right corner of Game panel.
+     * @param line String to format and print.
+     */
+    private void printGameConsole(String line) {
+        String        currentText = _gameLogLabel.getText().replace("</html>", "<br/>");
+        StringBuilder lineBuilder = new StringBuilder(currentText);
+        JScrollBar    _scrollBar  = _scrollPane.getVerticalScrollBar();
     
+        lineBuilder.append(line);
+        lineBuilder.append("</html>");
+    
+        _gameLogLabel.setText(lineBuilder.toString());
+        
+        _scrollPane.revalidate();
+        _scrollPane.repaint();
+    
+        revalidate();
+        repaint();
+    
+        _scrollBar.setValue(_scrollBar.getMaximum());
+    }
 }

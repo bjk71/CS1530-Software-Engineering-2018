@@ -5,21 +5,21 @@ public class Player{
 
 	private String  name;
 	private Card[]  cards;
-	private int 	role;
+	private int 	  role;
 	private int     cash;
 	private PlayerPanel playerPanel;
-	private boolean isUser;
+	private int     index;
 	private boolean inHand;
 	private boolean[] activePot;
 
 	private JPanel  _cardLoc;
 	
-	public Player(String name, Card[] cards, int role, int cash, boolean isUser){
+	public Player(String name, Card[] cards, int role, int cash, int index){
 		this.name   = name;
 		this.cards  = cards;
-		this.role	= role;
+		this.role	  = role;
 		this.cash   = cash;
-		this.isUser = isUser;
+		this.index  = index;
 		this.inHand = true;
 		this.activePot = new boolean[MAXIMUM_SIDEPOTS];
 	}
@@ -30,6 +30,10 @@ public class Player{
 	
 	public Card[] getCards(){
 		return this.cards;
+	}
+	
+	public int getIndex() {
+		return this.index;
 	}
 
 	public void setCards(Card[] newHand){

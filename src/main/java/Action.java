@@ -55,6 +55,19 @@ public class Action {
     }
 
     /**
+     * Return true if this action is greater than passed in action.
+     * @param  compare Value to compare <b>this</b> against.
+     * @return Boolean true if greater than <b>compare</b>.
+     */
+    public boolean isGreater(Action compare) {
+        if(this.value > compare.getValue()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Return string of Action value for printing to console.
      * @return String representation of <b>this.value</b>.
      */
