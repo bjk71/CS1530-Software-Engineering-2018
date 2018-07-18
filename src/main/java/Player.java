@@ -5,7 +5,7 @@ public class Player{
 
 	private String  name;
 	private Card[]  cards;
-	private int 	  role;
+	private int 	role;
 	private int     cash;
 	private PlayerPanel playerPanel;
 	private int     index;
@@ -17,7 +17,7 @@ public class Player{
 	public Player(String name, Card[] cards, int role, int cash, int index){
 		this.name   = name;
 		this.cards  = cards;
-		this.role	  = role;
+		this.role	= role;
 		this.cash   = cash;
 		this.index  = index;
 		this.inHand = true;
@@ -36,11 +36,13 @@ public class Player{
 		return this.index;
 	}
 
-	public void setCards(Card[] newHand){
+	public void setCards(Card[] newHand, boolean updateDisplay){
 		this.cards = newHand;
 
-		this.playerPanel.setPlayerCards(newHand);
-		this.playerPanel.showCards(false);
+		if(updateDisplay){
+			this.playerPanel.setPlayerCards(newHand);
+			this.playerPanel.showCards(false);
+		}
 	}
 
 	public void setActivePot(int num, boolean b){

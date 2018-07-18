@@ -139,6 +139,7 @@ public class Pot{
             sb.append("Main Pot: " + value);
         }
         sb.append(", Players in Pot: ");
+
             for (Player p : validPlayers) {
                 sb.append(prefix);
                 prefix=", ";

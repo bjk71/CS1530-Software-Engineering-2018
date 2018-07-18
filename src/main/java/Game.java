@@ -26,11 +26,11 @@ public class Game extends JPanel {
     private Card     cardBack    = null;
     private Logging  gameLogging = null;
     private Random   random      = new Random();
-
+    
     private Action  playerAction = null;
     private boolean userAction   = false;
     private boolean nextHand     = false;
-    
+
 	private int		 turnNum	= 1;
 	private int		 dealerNum	= -1;
 	private int		 sBlindNum	= -1;
@@ -53,7 +53,7 @@ public class Game extends JPanel {
     private JButton  _foldButton  = new JButton();
     private JSpinner _betSpinner  = null;
     private JButton  _nextHandButton = null;
- 
+
 
     public Game() {
         initalizeStartGrid();
@@ -157,7 +157,7 @@ public class Game extends JPanel {
         revalidate();
         repaint();
     }
-    
+
     /**
      * Create new game objects and and initialize players.
      * @param userName Player name.
@@ -758,7 +758,7 @@ public class Game extends JPanel {
                         playerHand[0] = deck.draw();
                         playerHand[1] = deck.draw();
 
-                        players[i].setCards(playerHand);
+                        players[i].setCards(playerHand, true);
 
                         if(dealerNum == i) { //player is dealer
                             players[i].setRole(1);
