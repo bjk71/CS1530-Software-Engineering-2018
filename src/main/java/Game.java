@@ -604,6 +604,30 @@ public class Game extends JPanel {
     }
 
     /**
+     * Thread that lets the user know how much time they have left in their turn
+     */
+    public class TurnTimer extends Thread {
+        private int timer = 0;
+    
+        public TurnTimer(int count) {
+            timer = count;
+        }
+    
+        public void run() {
+            while(timer > 0) {
+                try {
+                    Thread.sleep(1000);
+                } catch(InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+    
+                timer--;
+            }
+    
+        }
+    }
+
+    /**
      * Display the next hand button and block the PlayThread until pressed.
      */
     private void nextHand() {
