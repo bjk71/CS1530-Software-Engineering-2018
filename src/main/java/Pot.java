@@ -113,7 +113,6 @@ public class Pot{
 	public void adjustPot(int bet, int num) {
 		this.value += bet;
         this._potPanel.adjustPot(num, bet);
-
 	}
 
 	public void setLabel(int value) {

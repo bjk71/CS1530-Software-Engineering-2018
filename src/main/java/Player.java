@@ -5,7 +5,7 @@ public class Player{
 
 	private String  name;
 	private Card[]  cards;
-	private int 	  role;
+	private int 	role;
 	private int     cash;
 	private PlayerPanel playerPanel;
 	private int     index;

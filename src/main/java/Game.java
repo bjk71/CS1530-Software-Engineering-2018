@@ -53,8 +53,8 @@ public class Game extends JPanel {
     private JButton  _foldButton  = new JButton();
     private JSpinner _betSpinner  = null;
     private JButton  _nextHandButton = null;
- 
 
+    
     public Game() {
         initalizeStartGrid();
         setVisible(true);
