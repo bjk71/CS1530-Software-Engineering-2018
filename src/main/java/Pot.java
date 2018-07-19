@@ -1,7 +1,5 @@
-import java.util.stream.IntStream;
 import java.io.Serializable;
-
-import javax.swing.*;
+import java.util.stream.IntStream;
 
 public class Pot implements Serializable {
 	private int       value;
