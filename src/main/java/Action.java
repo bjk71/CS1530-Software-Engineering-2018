@@ -1,8 +1,10 @@
+import java.io.Serializable;
+
 /**
  * Stores integer value related to Player class bet. Positive value represents
  * a dollar amount, zero represents checking, and a negative value is folding.
  */
-public class Action {
+public class Action implements Serializable {
 
     private int value = 0;
     

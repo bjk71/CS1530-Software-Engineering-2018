@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.stream.IntStream;
 
-public class Pot{
+public class Pot implements Serializable {
 	private int       value;
     private int 	  currBet;
     private int       setBet;

@@ -17,6 +17,15 @@ public class CommunityCardsPanel extends JPanel{
     }
 
     /**
+     * Reinitializes Images after loading save file
+     */
+    public void reinitImages() {
+        for (Card card : communityCards){
+            card.reinitFace();
+        }
+    } 
+
+    /**
      * @param communityCards Card array of community cards.
      * @param cardBack       Card object of card back, used for displaying cards facedown. 
      */

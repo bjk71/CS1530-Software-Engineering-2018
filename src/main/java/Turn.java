@@ -1,4 +1,6 @@
-public class Turn {
+import java.io.Serializable;
+
+public class Turn implements Serializable {
 
     private Player player       = null;
     private Action minAction    = null;

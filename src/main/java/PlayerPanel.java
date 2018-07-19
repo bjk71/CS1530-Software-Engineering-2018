@@ -54,6 +54,21 @@ public class PlayerPanel extends JPanel {
     }
 
     /**
+     * Reinitialize Card images after loading from save file
+     */
+    public void reinitImages() {
+        for (Card card : playerHand){
+            card.reinitFace();
+        }
+        try {
+            Image back = ImageIO.read(this.getClass().getResource("/back.png"));
+            cardBack = new Card("Back", back);
+        } catch (IOException ioex) {
+            System.exit(1);
+        }
+    }
+
+    /**
      * Set player cash and cash label text.
      * @param cash Integer cash value.
      */
