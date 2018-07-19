@@ -21,8 +21,9 @@ gradle-app.setting
 
 # Ignore class files
 *.class
-output.txt
 
+# Ignore gamelog files
 *.txt
 
+# Ignore save files
 *.ser
