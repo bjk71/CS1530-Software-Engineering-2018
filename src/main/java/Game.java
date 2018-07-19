@@ -47,12 +47,13 @@ public class Game extends JPanel {
     private PotPanel    _potPanel       = new PotPanel();
 
     // Action panel components
-    private JPanel   _actionPanel = new JPanel();
-    private JButton  _betButton   = new JButton();
-    private JButton  _checkButton = new JButton();
-    private JButton  _foldButton  = new JButton();
-    private JSpinner _betSpinner  = null;
+    private JPanel   _actionPanel    = new JPanel();
+    private JButton  _betButton      = new JButton();
+    private JButton  _checkButton    = new JButton();
+    private JButton  _foldButton     = new JButton();
+    private JSpinner _betSpinner     = null;
     private JButton  _nextHandButton = null;
+    private JLabel   _timer          = null;
 
 
     public Game() {
@@ -144,7 +145,6 @@ public class Game extends JPanel {
 
         _timerOptions.setModel(new DefaultComboBoxModel<>(new String[] { "No Limit", "15 Seconds", "30 Seconds", "1 Minute" }));        
         _timerOptions.setPreferredSize(new Dimension( 215, 50 ));
-        //_timerOptions.setSelectedItem(4);
         _timerOptions.setFont(new Font("Courier", Font.PLAIN, 30));
         _timerModePanel.add(_timerOptions);
         
@@ -523,6 +523,7 @@ public class Game extends JPanel {
 
             if( timer != null && !timer.isInterrupted() ) {
                 timer.interrupt();
+                _timer.setText("Time: --");
             }
         }
 
@@ -653,24 +654,54 @@ public class Game extends JPanel {
     
         public void run() {
             while(timer > 0) {
-                try {
-                    Thread.sleep(1000);
-                } catch(InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    return;
+                if(timer >= 10) {
+                    _timer.setText("Time: " + timer);
+                } else {
+                    _timer.setText("Time: 0" + timer);
                 }
-    
+
+                if(timer == 1) {
+                    try {
+                        Thread.sleep(500);
+                    } catch(InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+
+                    // disable buttons - technically user only has timer - 0.5 seconds to make decision
+                    setButtons(false);
+
+                    try {
+                        Thread.sleep(500);
+                    } catch(InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                } else {
+                    try {
+                        Thread.sleep(1000);
+                    } catch(InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
+
                 timer--;
             }
-    
+
+            _timer.setText("FOLD");
+            try {
+                Thread.sleep(2000);
+            } catch(InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+
             playerAction = new Action(-1);
 
             pot.bet(players[0], -1);
 
             userAction = true;
-
-            // disable buttons
-            setButtons(false);
 
             // print user action
             System.out.println("Times Up!");
@@ -755,7 +786,16 @@ public class Game extends JPanel {
         _centeredPanel.add(_playerPanel, BorderLayout.PAGE_START);
         _centeredPanel.add(_actionPanel, BorderLayout.PAGE_END);
 
+        _timer = new JLabel();
+        _timer.setBackground(POKER_GREEN);
+        _timer.setForeground(WHITE);
+        _timer.setFont(new Font("Courier", Font.PLAIN, 40));
+        _timer.setHorizontalAlignment(SwingConstants.CENTER);
+        _timer.setVerticalAlignment(SwingConstants.CENTER);
+        _timer.setText("Time: --");
+
         _userPanel.add(_centeredPanel);
+        _userPanel.add(_timer);
 
         return _userPanel;
     }
