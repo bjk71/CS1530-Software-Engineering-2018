@@ -3,7 +3,7 @@ import java.io.*;
 import java.util.*;
 import javax.imageio.*;
 
-public class Deck{
+public class Deck implements Serializable {
     private ArrayList<Card> cards;
     
     public Deck(){
