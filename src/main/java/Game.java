@@ -18,9 +18,7 @@ public class Game extends JPanel {
 
     private Player[] players      = null;
     private Deck     deck         = null;
-    private Pot[]    pots         = null;
     private Pot      pot          = null;
-    private int      potCount     = 1;
     private int      timerSetting = -1;
     private Card[]   tableCards   = null;
     private Card     cardBack     = null;
@@ -357,11 +355,19 @@ public class Game extends JPanel {
 
                 // run one hand
                 for(int i = 0; i < 4; i++) {
+
+                    if(playersPlaying() == 1) {
+                        break;
+                    }
+
                     printGameConsole("<br>Round " + i + ":");
 
                     if(i == 0) {
-                        // add blinds to pot
+                        //initialize pot
+                        pot.newHand(players);
                         pot.newRound(dealerNum);
+
+                        //add blinds to pot
                         pot.bet(players[sBlindNum], sBlindVal);
                         pot.bet(players[bBlindNum], bBlindVal);
                         
@@ -409,7 +415,7 @@ public class Game extends JPanel {
                         
                         // sleep to watch user bets take place
                         try{
-                            Thread.sleep(700);
+                            Thread.sleep(500);
                         } catch(InterruptedException ex){
                             Thread.currentThread().interrupt();
                         }
@@ -482,8 +488,10 @@ public class Game extends JPanel {
                         }
                     } else {
                         // ai doesn't have enough cash, fold
-                        aiPlayer.setPlayingHand(false);
-                        aiAction.setValue(-1);
+                        // aiPlayer.setPlayingHand(false);
+                        // aiAction.setValue(-1);
+                        //TODO: revert logic
+                        aiAction.setValue(aiPlayer.getCash());
                     }
                 }
 
@@ -565,6 +573,7 @@ public class Game extends JPanel {
             betModel = new SpinnerNumberModel(minBet, minBet, players[0].getCash(), 10);
 
             _betSpinner.setModel(betModel);
+            _betSpinner.requestFocus();
 
             final int minimumBet = minBet;
 
@@ -719,7 +728,7 @@ public class Game extends JPanel {
         while(!nextHand) {
             // block
             try{
-                Thread.sleep(500);
+                Thread.sleep(250);
             } catch(InterruptedException ex){
                 Thread.currentThread().interrupt();
             }
@@ -824,19 +833,38 @@ public class Game extends JPanel {
     }
 
     private void endOfHand() {
-        for (int i=potCount-1; i>0; i--){
-            new GameUtils().determineBestHand(pots[potCount-1].getValidPlayers(), tableCards, _potPanel.clearPot(i));
-        }   //Distribute side pot winnings
-        String result   = new GameUtils().determineBestHand(players, tableCards, _potPanel.clearPot(0));
+        // check for sidepots
+        if(pot.numberOfPots() > 1) {
+            // re-enable players who started a sidepot
+            pot.addAllInPlayers(players);
+
+            // distribute sidepots
+            for(int i = 1; i < pot.numberOfPots(); i++) {
+                // make players array
+                int[] playersInPot = pot.getPlayersInPot(i);
+                Player[] playerArray = new Player[playersInPot.length];
+                for(int j = 0; j < playersInPot.length; j++) {
+                    playerArray[j] = players[playersInPot[j]];
+                }
+                new GameUtils().determineBestHand(playerArray, tableCards, pot.clearPot(i));
+            }
+
+            try { // show remaining table cards
+                _communityPanel.deal();
+                _communityPanel.deal();
+                _communityPanel.deal();
+            } catch(Exception e) {}
+        }
+
+        String result   = new GameUtils().determineBestHand(players, tableCards, pot.clearPot(0));
         JLabel _results = new JLabel(result);
+
         _results.setForeground(WHITE);
         _results.setFont(new Font("Courier", Font.PLAIN, 28));
         _results.setHorizontalAlignment(SwingConstants.CENTER);
-        // add(_results, BorderLayout.SOUTH);
 
         printGameConsole(result);
         showAICards();
-        // nextHandButton();
     }
 
     private void nextHandButton() {

@@ -9,8 +9,8 @@ public class PotPanel extends JPanel {
     private final Font  COURIER     = new Font("Courier", Font.PLAIN, 22);
     private final int   MAXIMUM_SIDEPOTS = 7;
 
-    private JLabel _potLabel[] = new JLabel[MAXIMUM_SIDEPOTS];
-    private int[]  value       = new int[MAXIMUM_SIDEPOTS];
+    private JLabel[] _potLabel = new JLabel[MAXIMUM_SIDEPOTS];
+    private int[]    value     = new int[MAXIMUM_SIDEPOTS];
 
     /**
      * Initialize pot <b>value</b> to zero.
@@ -24,17 +24,34 @@ public class PotPanel extends JPanel {
      * @param value Dollar value to initialize pot to.
      */
     public PotPanel(int value) {
-        this.value[0] = value;
-        _potLabel[0] = new JLabel();
+        this._potLabel[0] = new JLabel();
+        this.value[0]     = value;
+
         updateLabel(0);
-        showComponent(0);
+        showComponent();
+    }
+
+    public void setPots(int[] pots) {
+        for(int i = 0; i < pots.length; i++) {
+            if(pots[i] > 0) {
+                this._potLabel[i] = new JLabel();
+                this.value[i]     = pots[i];
+                updateLabel(i);
+            } else {
+                this._potLabel[i] = null;
+                this.value[i]     = 0;
+            }
+        }
+
+        showComponent();
     }
 
     public void addPot(int num, int value){
-        this.value[num] = value;
-        _potLabel[num] = new JLabel();
+        this._potLabel[num] = new JLabel();
+        this.value[num]     = value;
+
         updateLabel(num);
-        showComponent(num);
+        showComponent();
     }
 
     /**
@@ -42,9 +59,12 @@ public class PotPanel extends JPanel {
      * @return New pot total.
      */
     public int adjustPot(int num, int change) {
-        this.value[num] += change;
+        try {
+            this.value[num] += change;
 
-        updateLabel(num);
+            updateLabel(num);
+
+        } catch(Exception e) {}
 
         return this.value[num];
     }
@@ -72,24 +92,33 @@ public class PotPanel extends JPanel {
         if(num == 0) {
             this._potLabel[num].setText("Pot: $" + this.value[num] + "   ");
         } else {
-            this._potLabel[num].setText("Side Pot: $" + this.value[num] + "   ");
+            this._potLabel[num].setText("Side Pot " + num + ": $" + this.value[num] + "   ");
         }
 
-        this.add(_potLabel[num]);
+        this.revalidate();
+        this.repaint();
     }
 
     /**
      * Initialize and add components.
      */
-    private void showComponent(int num) {
-        this._potLabel[num].setBackground(POKER_GREEN);
-        this._potLabel[num].setForeground(WHITE);
-        this._potLabel[num].setFont(COURIER);
+    private void showComponent() {
+        GridBagConstraints constraints = new GridBagConstraints();
 
         this.setBackground(POKER_GREEN);
         this.setLayout(new GridBagLayout());
         this.setPreferredSize(new Dimension(500, Integer.MAX_VALUE));
-        this.add(this._potLabel[num]);
+        this.removeAll();
+
+        for(int i = 0; i < _potLabel.length; i++) {
+            try {
+                this._potLabel[i].setBackground(POKER_GREEN);
+                this._potLabel[i].setForeground(WHITE);
+                this._potLabel[i].setFont(COURIER);   
+                constraints.gridy = i;     
+                this.add(this._potLabel[i], constraints);
+            } catch (Exception e) {}
+        }
 
         this.revalidate();
         this.repaint();
