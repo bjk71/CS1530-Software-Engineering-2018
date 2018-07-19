@@ -1037,6 +1037,35 @@ public class Game extends JPanel {
         repaint(); 
     }
 	
+	/**
+     * Finds the next player that hasnt already lost
+     * @param 	int start		 gives where to start looking for next
+	 * @return	the next available player
+     */
+	private int nextPlayerIn(int start){
+		//if the start is at the end
+		if (start == players.length-1){
+			for(int i = 0; i < start; i++){
+				if(players[i].getCash() > 0) {
+					return i;
+				}
+			}
+		}
+		else{
+			for(int i = start + 1; i < players.length; i++){
+				if(players[i].getCash() > 0) {
+					return i;
+				}
+				else{
+					return nextPlayerIn(i);
+				}
+			}
+		}
+		return 0;
+	}
+	
+	
+	
 	/*
 	 * Selects the dealer
 	 * If dealerNum = -1 then the dealerNum is randomized
@@ -1056,17 +1085,15 @@ public class Game extends JPanel {
 			}
 			//resetting dealerNum since it reached the end
 			else if (dealerNum == players.length-1){
-				dealerNum = 0;
-				
-				selectSmallBlind();
-				selectBigBlind();
+				dealerNum = nextPlayerIn(dealerNum);
+				sBlindNum = nextPlayerIn(dealerNum);
+				bBlindNum = nextPlayerIn(sBlindNum);
 			}
 			//moving the dealer clockwise
 			else{
-				dealerNum++;
-				
-				selectSmallBlind();
-				selectBigBlind();
+				dealerNum = nextPlayerIn(dealerNum);
+				sBlindNum = nextPlayerIn(dealerNum);
+				bBlindNum = nextPlayerIn(sBlindNum);
 			}
 		}
 		else{
@@ -1075,11 +1102,24 @@ public class Game extends JPanel {
 				Random rand = new Random();
 				
 				sBlindNum = rand.nextInt(2);
-				selectBigBlind();
+				if(sBlindNum == 0){
+					sBlindNum = 1;
+					bBlindNum = 0;
+				}
+				else{
+					sBlindNum = 0;
+					bBlindNum = 1;
+				}
 			}
 			else{
-				selectSmallBlind();
-				selectBigBlind();
+				if(sBlindNum == 0){
+					sBlindNum = 1;
+					bBlindNum = 0;
+				}
+				else{
+					sBlindNum = 0;
+					bBlindNum = 1;
+				}
 			}
         }
 
