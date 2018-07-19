@@ -12,6 +12,9 @@ public class Player{
 	private boolean inHand;
 	private boolean[] activePot;
 
+	//TODO: Better fix than this
+	private Card[]  fullHand; //For determining best hand, stores 2 card hand and community cards
+
 	private JPanel  _cardLoc;
 	
 	public Player(String name, Card[] cards, int role, int cash, int index){
@@ -43,6 +46,14 @@ public class Player{
 			this.playerPanel.setPlayerCards(newHand);
 			this.playerPanel.showCards(false);
 		}
+	}
+
+	public void setFullHand(Card[] hand){
+		this.fullHand = hand;
+	}
+
+	public Card[] getFullHand(){
+		return this.fullHand;
 	}
 
 	public void setActivePot(int num, boolean b){
