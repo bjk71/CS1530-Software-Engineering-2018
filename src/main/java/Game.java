@@ -5,9 +5,10 @@ import java.io.*;
 import java.util.*;
 import javax.imageio.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 
-public class Game extends JPanel {
+public class Game extends JPanel implements Serializable {
+    private static final long serialVersionUID = 42L;
+
     private final Color POKER_GREEN  = new Color(71, 113, 72);
     private final Color POKER_DARK   = new Color(47, 89, 49);
     private final Color WHITE        = new Color(255, 255, 255);
@@ -64,6 +65,20 @@ public class Game extends JPanel {
     public Game(File saveFile) {
       // initialize game settings from save file
     }
+
+    /**
+     * Reinitializes all images from a saved game
+     */
+    public void reinitImages() {
+        _communityPanel.reinitImages();
+        for (Player player : players){
+            player.reinitImages();
+        }
+        reinitCardBack();
+
+    }
+
+    
     
     
     private void initalizeStartGrid(){    
@@ -298,7 +313,7 @@ public class Game extends JPanel {
     /**
      * Start PlayThread.
      */
-    private void play() {
+    public void play() {
         PlayThread thread = new PlayThread();
 
         thread.start();
@@ -959,6 +974,19 @@ public class Game extends JPanel {
 			bBlindNum = sBlindNum + 1;
         }
     }
+    
+    /**
+     * Reinitialize Card after loading game from save file
+     */
+    private void reinitCardBack() {
+        try {
+            Image back = ImageIO.read(this.getClass().getResource("/back.png"));
+            cardBack = new Card("Back", back);
+        } catch (IOException ioex) {
+            System.exit(1);
+        }
+    }
+    
     
     /**
      * Print user actions and other game information to game console in

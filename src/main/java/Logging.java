@@ -2,15 +2,15 @@ import java.io.*;
 import java.util.*;
 import java.text.*;
 
-public class Logging {    
-    private String outputFileName;
+public class Logging implements Serializable {    
+    private final String outputFileName;
 
     public Logging(){
         //ISO 8601 Date Format
         DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd'_T'HHmmss");
         Date date = new Date();
 
-        this.outputFileName = "gamelog_" + dateFormat.format(date) + ".txt";
+        this.outputFileName = "gamelog" + File.separator + "gamelog_" + dateFormat.format(date) + ".txt";
     }
 
     /*
@@ -27,6 +27,7 @@ public class Logging {
 		FileWriter fw = null;
 
 		try {
+			outputFile.getParentFile().mkdirs();
             outputFile.createNewFile();
 			String firstLine = "Game Started - ";
 			String secondLine = "Player name is: ";

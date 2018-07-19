@@ -1,6 +1,8 @@
+import java.io.Serializable;
+
 import javax.swing.*;
 
-public class Pot{
+public class Pot implements Serializable {
 	private int       value;
     private int 	  currBet;
     private int       setBet;

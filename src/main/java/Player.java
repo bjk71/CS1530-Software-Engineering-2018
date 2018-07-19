@@ -1,6 +1,7 @@
 import javax.swing.*;
+import java.io.Serializable;
 
-public class Player{
+public class Player implements Serializable {
 	private final int MAXIMUM_SIDEPOTS = 8;
 
 	private String  name;
@@ -22,6 +23,13 @@ public class Player{
 		this.index  = index;
 		this.inHand = true;
 		this.activePot = new boolean[MAXIMUM_SIDEPOTS];
+	}
+
+	/**
+     * Reinitialize Card images after loading from save file
+     */
+	public void reinitImages() {
+		this.playerPanel.reinitImages();
 	}
 	
 	public String getName(){

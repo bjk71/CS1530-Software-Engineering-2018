@@ -1,4 +1,6 @@
-public class TurnTimer extends Thread {
+import java.io.Serializable;
+
+public class TurnTimer extends Thread implements Serializable {
     private int timer = 0;
 
     public TurnTimer(int count) {

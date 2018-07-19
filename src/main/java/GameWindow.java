@@ -1,13 +1,15 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.io.*;
 
 public class GameWindow {
     
-    public static JFrame  _frame   = new JFrame("CS1530 Poker Game");
-    public static Title   _title   = new Title();
-    public static Game    _game    = null;
-    public static boolean gameOpen = false;
+    public static JFrame     _frame   = new JFrame("CS1530 Poker Game");
+    public static Title      _title   = new Title();
+    public static Game       _game    = null;
+    public static Load       _load    = null;
+    public static boolean    gameOpen = false;
 
     public static void main(String[] args) {
         JMenuBar  _menuBar  = new JMenuBar();
@@ -20,9 +22,11 @@ public class GameWindow {
         JMenuItem _exitGame = new JMenuItem("Exit Game");
 
         ActionListener newGameListener  = new NewGameListener();
+        ActionListener loadGameListener = new LoadGameListener();
+        ActionListener saveGameListener = new SaveGameListener();
         ActionListener exitGameListener = new ExitGameListener();
         
-        new GameWindow();
+       
 
         _frame.setSize(1600, 900);
         _frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -32,6 +36,8 @@ public class GameWindow {
 
         _fileExit.addActionListener(new ExitListener());
         _newGame.addActionListener(newGameListener);
+        _loadGame.addActionListener(loadGameListener);
+        _saveGame.addActionListener(saveGameListener);
         _exitGame.addActionListener(exitGameListener);
 
         _menuFile.add(_fileExit);
@@ -62,6 +68,7 @@ public class GameWindow {
         public void actionPerformed(ActionEvent e) {
             if(gameOpen == false)
             {
+                _load = null;
                 _game = new Game();
                 
                 _frame.remove(_title);
@@ -78,11 +85,67 @@ public class GameWindow {
         }
     }
 
+    private static class LoadGameListener implements ActionListener {
+    
+        public void actionPerformed(ActionEvent e) {
+            if(gameOpen == false)
+            {
+                _load = new Load(_frame);
+
+                _frame.remove(_title);
+                _frame.add(_load, BorderLayout.NORTH);
+                _frame.validate();
+                _frame.repaint();
+
+                gameOpen = true;
+                
+
+            } else {
+                // TODO
+                // Are you sure you want to leave the current game?
+                
+            }
+        }
+    }
+
+    private static class SaveGameListener implements ActionListener {
+    
+        public void actionPerformed(ActionEvent e) {
+            if(gameOpen == true)
+            {
+                if (_load != null){
+                    _game = _load.updateGame();
+                }
+                
+                try {
+                    FileOutputStream fos = new FileOutputStream("SaveGame.ser");
+                    ObjectOutputStream oos = new ObjectOutputStream(fos);
+                    // write object to file
+                    oos.writeObject(_game);
+                    // closing resources
+                    oos.close();
+                    fos.close();
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
+
+            } else {
+                // TODO
+                // Are you sure you want to leave the current game?
+                
+            }
+        }
+    }
+
     private static class ExitGameListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
             if(gameOpen == true)
             {
+                if (_load != null) {
+                    _game = _load.updateGame();
+                }
+                
                 _frame.remove(_game);
                 _frame.add(_title);
                 _frame.validate();
