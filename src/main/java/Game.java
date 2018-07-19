@@ -16,16 +16,16 @@ public class Game extends JPanel {
     private final int   startingCash = 1000;
     private final int   playerStart  = 1000;
 
-
-    private Player[] players     = null;
-    private Deck     deck        = null;
-    private Pot[]    pots        = null;
-    private Pot      pot         = null;
-    private int      potCount    = 1;
-    private Card[]   tableCards  = null;
-    private Card     cardBack    = null;
-    private Logging  gameLogging = null;
-    private Random   random      = new Random();
+    private Player[] players      = null;
+    private Deck     deck         = null;
+    private Pot[]    pots         = null;
+    private Pot      pot          = null;
+    private int      potCount     = 1;
+    private int      timerSetting = -1;
+    private Card[]   tableCards   = null;
+    private Card     cardBack     = null;
+    private Logging  gameLogging  = null;
+    private Random   random       = new Random();
     
     private Action  playerAction = null;
     private boolean userAction   = false;
@@ -47,12 +47,13 @@ public class Game extends JPanel {
     private PotPanel    _potPanel       = new PotPanel();
 
     // Action panel components
-    private JPanel   _actionPanel = new JPanel();
-    private JButton  _betButton   = new JButton();
-    private JButton  _checkButton = new JButton();
-    private JButton  _foldButton  = new JButton();
-    private JSpinner _betSpinner  = null;
+    private JPanel   _actionPanel    = new JPanel();
+    private JButton  _betButton      = new JButton();
+    private JButton  _checkButton    = new JButton();
+    private JButton  _foldButton     = new JButton();
+    private JSpinner _betSpinner     = null;
     private JButton  _nextHandButton = null;
+    private JLabel   _timer          = null;
 
 
     public Game() {
@@ -70,9 +71,11 @@ public class Game extends JPanel {
         JPanel             _startTitle        = new JPanel();
         JPanel             _playerName        = new JPanel();
         JPanel             _numOpponents      = new JPanel();
+        JPanel             _timerMode         = new JPanel();
         JPanel             _startButton       = new JPanel();
         JPanel             _playerNamePanel   = new JPanel();
         JPanel             _numOpponentsPanel = new JPanel();
+        JPanel             _timerModePanel    = new JPanel();
 
         JLabel             _titleLabel        = new JLabel();        
         JButton            _startGame         = new JButton();
@@ -80,21 +83,28 @@ public class Game extends JPanel {
         JTextField         _playerNameInput   = new JTextField();
         JLabel             _numOppLabel       = new JLabel();
         JComboBox<Integer> _numOpp            = new JComboBox<>();
+        JLabel             _timerLabel        = new JLabel();
+        JComboBox<String>  _timerOptions      = new JComboBox<>();
+
 
         _playerNamePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         _numOpponentsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        
-        setLayout(new GridLayout(4,1));
+        _timerModePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+        setLayout(new GridLayout(5,1));
         
         _playerName.setLayout(new GridLayout(1, 2, 50, 100));
         _numOpponents.setLayout(new GridLayout(1, 2, 50, 100));
+        _timerMode.setLayout(new GridLayout(1, 2, 50, 100));
         
         _startTitle.setBackground(POKER_GREEN);
         _playerName.setBackground(POKER_GREEN);
         _numOpponents.setBackground(POKER_GREEN);
+        _timerMode.setBackground(POKER_GREEN);
         _startButton.setBackground(POKER_GREEN);
         _playerNamePanel.setBackground(POKER_GREEN);
         _numOpponentsPanel.setBackground(POKER_GREEN);
+        _timerModePanel.setBackground(POKER_GREEN);
         
         _titleLabel.setForeground(WHITE);
         _titleLabel.setFont(new Font("Courier", Font.PLAIN, 60));
@@ -126,6 +136,17 @@ public class Game extends JPanel {
         _numOpp.setSelectedItem(4);
         _numOpp.setFont(new Font("Courier", Font.PLAIN, 30));
         _numOpponentsPanel.add(_numOpp);
+
+        _timerLabel.setForeground(WHITE);
+        _timerLabel.setFont(new Font("Courier", Font.PLAIN, 40));
+        _timerLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        _timerLabel.setVerticalAlignment(SwingConstants.TOP);
+        _timerLabel.setText("Time limit to take your turn:");
+
+        _timerOptions.setModel(new DefaultComboBoxModel<>(new String[] { "No Limit", "15 Seconds", "30 Seconds", "1 Minute" }));        
+        _timerOptions.setPreferredSize(new Dimension( 215, 50 ));
+        _timerOptions.setFont(new Font("Courier", Font.PLAIN, 30));
+        _timerModePanel.add(_timerOptions);
         
         _startGame.setText("Start Game");
         _startGame.setFont(new Font("Courier", Font.PLAIN, 30));
@@ -136,9 +157,20 @@ public class Game extends JPanel {
                 //TODO: REGEX user input
                 String name         = _playerNameInput.getText();
                 int    numOpponents = (int) _numOpp.getSelectedItem();
+                String timerSelect  = (String) _timerOptions.getSelectedItem();
+                int    timerValue;
+                if ( timerSelect.equals("15 Seconds") ) {
+                    timerValue = 15;
+                } else if ( timerSelect.equals("30 Seconds") ) {
+                    timerValue = 30;
+                } else if ( timerSelect.equals("1 Minute") ) {
+                    timerValue = 60;
+                } else {
+                    timerValue = -1;
+                }
 
                 removeAll();
-                createNewGame(name, numOpponents);
+                createNewGame(name, numOpponents, timerValue);
             }
         });
         
@@ -147,11 +179,15 @@ public class Game extends JPanel {
         _playerName.add(_playerNamePanel);
         _numOpponents.add(_numOppLabel);
         _numOpponents.add(_numOpponentsPanel);
+        _timerMode.add(_timerLabel);
+        _timerMode.add(_timerModePanel);
+
         _startButton.add(_startGame);
         
         add(_startTitle);
         add(_playerName);
         add(_numOpponents);
+        add(_timerMode);
         add(_startButton);       
 
         revalidate();
@@ -160,10 +196,11 @@ public class Game extends JPanel {
 
     /**
      * Create new game objects and and initialize players.
-     * @param userName Player name.
-     * @param numOfAI  Number of AI players to initialize.
+     * @param userName   Player name.
+     * @param numOfAI    Number of AI players to initialize.
+     * @param timerValue No timer-mode if -1, else time limit in seconds
      */
-    private void createNewGame(String userName, int numOfAI) {
+    private void createNewGame(String userName, int numOfAI, int timerValue) {
         JPanel     _top          = new JPanel();
         JPanel     _bot          = new JPanel();
         JLabel     _tableLabel   = new JLabel("Pot: ");
@@ -177,10 +214,11 @@ public class Game extends JPanel {
             System.exit(1);
         }
 
-        deck       = new Deck();
-        tableCards = new Card[5];
-        players    = new Player[numOfAI + 1];
-        pot        = new Pot(_potPanel, numOfAI + 1);
+        deck         = new Deck();
+        tableCards   = new Card[5];
+        players      = new Player[numOfAI + 1];
+        pot          = new Pot(_potPanel, numOfAI + 1);
+        timerSetting = timerValue;
 		
 		dealerNum 	= -1;
 		sBlindNum	= -1;
@@ -309,7 +347,6 @@ public class Game extends JPanel {
      */
     public class PlayThread extends Thread {
         Action    minAction   = null;
-        TurnTimer timer       = new TurnTimer(60);
         int       startIndex  = -1;
         int       index       = -1;
         boolean   keepPlaying = true;
@@ -468,6 +505,12 @@ public class Game extends JPanel {
         private void userTurn(Action minAction) {
             addUserActionListeners(minAction);
 
+            TurnTimer timer = null;
+            if(timerSetting > 0) {
+                timer = new TurnTimer(timerSetting);
+                timer.start();
+            }
+
             while(!userAction) { // loop until change
                 try{
                     Thread.sleep(500);
@@ -475,7 +518,13 @@ public class Game extends JPanel {
                     Thread.currentThread().interrupt();
                 }
             }
+
             userAction = false;
+
+            if( timer != null && !timer.isInterrupted() ) {
+                timer.interrupt();
+                _timer.setText("Time: --");
+            }
         }
 
         /**
@@ -591,15 +640,73 @@ public class Game extends JPanel {
                 }
             });
         }
+    }
 
-        /**
-         * Enabled or disable buttons based on passed in boolean.
-         * @param state Boolean value to set setEnabled of buttons to.
-         */
-        private void setButtons(boolean state) {
-            _betButton.setEnabled(state);
-            _checkButton.setEnabled(state);
-            _foldButton.setEnabled(state);
+    /**
+     * Thread that lets the user know how much time they have left in their turn
+     */
+    public class TurnTimer extends Thread {
+        private int timer = 0;
+    
+        public TurnTimer(int count) {
+            timer = count;
+        }
+    
+        public void run() {
+            while(timer > 0) {
+                if(timer >= 10) {
+                    _timer.setText("Time: " + timer);
+                } else {
+                    _timer.setText("Time: 0" + timer);
+                }
+
+                if(timer == 1) {
+                    try {
+                        Thread.sleep(500);
+                    } catch(InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+
+                    // disable buttons - technically user only has timer - 0.5 seconds to make decision
+                    setButtons(false);
+
+                    try {
+                        Thread.sleep(500);
+                    } catch(InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                } else {
+                    try {
+                        Thread.sleep(1000);
+                    } catch(InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
+
+                timer--;
+            }
+
+            _timer.setText("FOLD");
+            try {
+                Thread.sleep(2000);
+            } catch(InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+
+            playerAction = new Action(-1);
+
+            pot.bet(players[0], -1);
+
+            userAction = true;
+
+            // print user action
+            gameLogging.writeActionFile(playerAction, players[0]);
+            printGameConsole(players[0].getName() + " " + playerAction.toString());
+            return;
         }
     }
 
@@ -678,7 +785,16 @@ public class Game extends JPanel {
         _centeredPanel.add(_playerPanel, BorderLayout.PAGE_START);
         _centeredPanel.add(_actionPanel, BorderLayout.PAGE_END);
 
+        _timer = new JLabel();
+        _timer.setBackground(POKER_GREEN);
+        _timer.setForeground(WHITE);
+        _timer.setFont(new Font("Courier", Font.PLAIN, 40));
+        _timer.setHorizontalAlignment(SwingConstants.CENTER);
+        _timer.setVerticalAlignment(SwingConstants.CENTER);
+        _timer.setText("Time: --");
+
         _userPanel.add(_centeredPanel);
+        _userPanel.add(_timer);
 
         return _userPanel;
     }
@@ -864,6 +980,16 @@ public class Game extends JPanel {
         revalidate();
         repaint();
     }
+
+    /**
+         * Enabled or disable buttons based on passed in boolean.
+         * @param state Boolean value to set setEnabled of buttons to.
+         */
+        public void setButtons(boolean state) {
+            _betButton.setEnabled(state);
+            _checkButton.setEnabled(state);
+            _foldButton.setEnabled(state);
+        }
 
     /**
      * Iterate through array of AI players and display the card stored 
