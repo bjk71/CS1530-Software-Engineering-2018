@@ -61,7 +61,7 @@ public class GameUtils{
 
             Card[] hand = new Card[allAvailableCards.size()];
             hand = allAvailableCards.toArray(hand);
-            p.setCards(hand, false);
+            p.setCards(hand, updateDisplay);
         }
 
         //Determine best hand

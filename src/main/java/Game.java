@@ -704,7 +704,6 @@ public class Game extends JPanel {
             userAction = true;
 
             // print user action
-            System.out.println("Times Up!");
             gameLogging.writeActionFile(playerAction, players[0]);
             printGameConsole(players[0].getName() + " " + playerAction.toString());
             return;
