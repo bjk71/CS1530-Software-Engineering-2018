@@ -7,7 +7,7 @@ public class PotPanel extends JPanel {
     private final Color POKER_GREEN = new Color(71, 113, 72);
     private final Color WHITE       = Color.WHITE;
     private final Font  COURIER     = new Font("Courier", Font.PLAIN, 22);
-    private final int   MAXIMUM_SIDEPOTS = 7;
+    private final int   MAXIMUM_SIDEPOTS = 8;
 
     private JLabel[] _potLabel = new JLabel[MAXIMUM_SIDEPOTS];
     private int[]    value     = new int[MAXIMUM_SIDEPOTS];
