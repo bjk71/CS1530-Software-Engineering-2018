@@ -78,8 +78,6 @@ public class Game extends JPanel implements Serializable {
     }
 
     
-    
-    
     private void initalizeStartGrid(){    
         JPanel             _startTitle        = new JPanel();
         JPanel             _playerName        = new JPanel();
@@ -123,7 +121,7 @@ public class Game extends JPanel implements Serializable {
         _titleLabel.setFont(new Font("Courier", Font.PLAIN, 60));
         _titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         _titleLabel.setVerticalAlignment(SwingConstants.CENTER);
-        _titleLabel.setText("Welcome to Pocket Rockets Poker!");
+        _titleLabel.setText("Start a New Game!");
         
         _playerNameLabel.setForeground(WHITE);
         _playerNameLabel.setFont(new Font("Courier", Font.PLAIN, 40));
