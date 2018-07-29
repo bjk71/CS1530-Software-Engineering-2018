@@ -112,6 +112,7 @@ public class GameUtils{
             }
 
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
+            displayWinningHand(playersWithBestHand, communityCards, 1);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -150,6 +151,7 @@ public class GameUtils{
             }
 
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
+            displayWinningHand(playersWithBestHand, communityCards, 2);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -201,6 +203,7 @@ public class GameUtils{
             }
 
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
+            displayWinningHand(playersWithBestHand, communityCards, 3);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -271,6 +274,7 @@ public class GameUtils{
             }
 
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
+            displayWinningHand(playersWithBestHand, communityCards, 4);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -302,6 +306,7 @@ public class GameUtils{
             }
 
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
+            displayWinningHand(playersWithBestHand, communityCards, 5);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -350,6 +355,7 @@ public class GameUtils{
             }
 
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
+            displayWinningHand(playersWithBestHand, communityCards, 6);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -410,6 +416,7 @@ public class GameUtils{
             }
 
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
+            displayWinningHand(playersWithBestHand, communityCards, 7);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -468,6 +475,7 @@ public class GameUtils{
             }
 
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
+            displayWinningHand(playersWithBestHand, communityCards, 8);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -537,6 +545,7 @@ public class GameUtils{
             }
 
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
+            displayWinningHand(playersWithBestHand, communityCards, 9);
             return buildResultsString(playersWithBestHand, bestHand);
         }
         
@@ -843,8 +852,30 @@ public class GameUtils{
         return resultStrBuilder.toString();
     }
 
-    private void displayWinningHand(ArrayList<Player> winners,  CommunityCardsPanel _communityPanel, String winningHand){
-        //TODO: This
+    //Sets inWinningHand attribute of the cards that make up the winning hand to true
+    private void displayWinningHand(ArrayList<Player> winners, Card[] communityCards, int winningHandPower){
+        //TODO: Call each function with setInWinningHand to be true?
+        if(winningHandPower == 1){ //Royal/Straight Flush
+
+        } else if(winningHandPower == 2){ //Four of a kind
+
+        } else if(winningHandPower == 3){ //Full House
+
+        } else if(winningHandPower == 4){ //Flush
+
+        } else if(winningHandPower == 5){ //Straight
+
+        } else if(winningHandPower == 6){ //Three of a Kind
+
+        } else if(winningHandPower == 7){ //Two Pair
+
+        } else if(winningHandPower == 8){ //One Pair
+
+        } else if(winningHandPower == 9){ //High Card
+
+        } else {
+            //This should never happen
+        }
     }
 
     //Divide up the pot among the winner(s), and set it back to 0
