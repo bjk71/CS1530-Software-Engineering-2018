@@ -68,6 +68,10 @@ public class CommunityCardsPanel extends JPanel{
         }
     }
 
+    public void showWinningCards(){
+        //TODO: This
+    }
+
     /* Private methods */
 
     private void displayCards() {

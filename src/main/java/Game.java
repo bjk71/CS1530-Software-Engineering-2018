@@ -879,6 +879,7 @@ public class Game extends JPanel implements Serializable {
         _results.setHorizontalAlignment(SwingConstants.CENTER);
 
         printGameConsole(result);
+        //TODO: "Show" users hand as well
         showAICards();
     }
 

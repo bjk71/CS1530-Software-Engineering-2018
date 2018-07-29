@@ -122,6 +122,7 @@ public class PlayerPanel extends JPanel {
         JLabel[] _cardLabels  = new JLabel[2];
         Image[]  resizedCards = new Image[2];
         
+        //TODO: Check if the cards are inWinningHand
         if(showCards) {
             resizedCards[0] = playerHand[0].getFace().getScaledInstance(75, 105,  java.awt.Image.SCALE_SMOOTH);
             resizedCards[1] = playerHand[1].getFace().getScaledInstance(75, 105,  java.awt.Image.SCALE_SMOOTH);

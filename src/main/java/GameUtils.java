@@ -25,10 +25,27 @@ public class GameUtils{
         return returnList;
     }
   
+    /**
+     * Given the players' and community cards, determine who should win (via what hand), update
+     * the necessary displays and call distributePot with the provided pot value
+     * @param thePlayers       The array of Players who can win the provided pot
+     * @param _communityPanel  The panel containing the community cards
+     * @param pot              int value of the pot 
+     * @return                Result string saying who won and with what hand
+     */
     public String determineBestHand(Player[] thePlayers, CommunityCardsPanel _communityPanel, int pot){
         return determineBestHand(thePlayers, _communityPanel, pot, true);
     }
     
+    /**
+     * Given the players' and community cards, determine who should win (via what hand), update
+     * the necessary displays (if told to) and call distributePot with the provided pot value
+     * @param thePlayers       The array of Players who can win the provided pot
+     * @param _communityPanel  The panel containing the community cards
+     * @param pot              int value of the pot
+     * @param updateDisplay    boolean telling whether or not to update the display panels
+     * @return                Result string saying who won and with what hand
+     */
     public String determineBestHand(Player[] thePlayers, CommunityCardsPanel _communityPanel, int pot, boolean updateDisplay){
         ArrayList<Player> remainingPlayers = new ArrayList<Player>();
         ArrayList<Player> playersWithBestHand = new ArrayList<Player>();
@@ -526,11 +543,12 @@ public class GameUtils{
         return "No Winner!!"; //This shoud be impossible
     }
 
+    //Determines highest value within passed in array of cards
     private int[] determineHighCard(Card[] hand){
         return this.determineHighCard(hand, "");
     }
 
-    //Determines highest value within passed in array of cards
+    //Determines highest value within passed in array of cards (of specified suit)
     private int[] determineHighCard(Card[] hand, String suit){
         int[] returnArr = new int[7];
         for(int i = 0; i < hand.length; i++){
@@ -792,7 +810,12 @@ public class GameUtils{
         return returnArr;
     }
 
-    //Makes the display string describing the outcome of the game
+    /**
+     * Makes the result string describing the outcome of the game (who won and how)
+     * @param winners      ArrayList of players that won
+     * @param winningHand  String containing a description of the winning hand
+     * @return            The result string
+     */
     public String buildResultsString(ArrayList<Player> winners, String winningHand){
         StringBuilder resultStrBuilder = new StringBuilder();
         String deliminator = "";
@@ -818,6 +841,10 @@ public class GameUtils{
         }
 
         return resultStrBuilder.toString();
+    }
+
+    private void displayWinningHand(ArrayList<Player> winners,  CommunityCardsPanel _communityPanel, String winningHand){
+
     }
 
     //Divide up the pot among the winner(s), and set it back to 0
