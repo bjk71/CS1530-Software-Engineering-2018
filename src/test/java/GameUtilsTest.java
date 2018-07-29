@@ -31,7 +31,7 @@ public class GameUtilsTest {
         
         tableCards = new Card[] {ac, kc, qc};
 
-        returnedResult = utils.determineBestHand(players, tableCards, 0, false);
+        returnedResult = utils.determineBestHand(players, tableCards, 0, false, false);
         expectedResult = players[0].getName() + " has won as the last man Standing!";
 
         assertEquals(expectedResult, returnedResult);
@@ -62,7 +62,7 @@ public class GameUtilsTest {
         players[1].setCards(new Card[] {h7,h5}, false);
         players[2].setCards(new Card[] {s7,s5}, false);
         
-        returnedResult = utils.determineBestHand(players, tableCards, 0, false);
+        returnedResult = utils.determineBestHand(players, tableCards, 0, false, false);
         expectedResult = utils.buildResultsString(new ArrayList<Player> (Arrays.asList(players[0])), "a Royal Flush!!!");
 
         assertEquals(expectedResult, returnedResult);
@@ -93,7 +93,7 @@ public class GameUtilsTest {
         players[1].setCards(new Card[] {h7,h5}, false);
         players[2].setCards(new Card[] {s7,s5}, false);
 
-        returnedResult = utils.determineBestHand(players, tableCards, 0, false);
+        returnedResult = utils.determineBestHand(players, tableCards, 0, false, false);
         expectedResult = utils.buildResultsString(new ArrayList<Player> (Arrays.asList(players)), "a Royal Flush!!!");
 
         assertEquals(expectedResult, returnedResult);
@@ -124,7 +124,7 @@ public class GameUtilsTest {
         players[1].setCards(new Card[] {h7,h8}, false);
         players[2].setCards(new Card[] {s7,s8}, false);
 
-        returnedResult = utils.determineBestHand(players, tableCards, 0, false);
+        returnedResult = utils.determineBestHand(players, tableCards, 0, false, false);
         expectedResult = utils.buildResultsString(new ArrayList<Player> (Arrays.asList(players[0])), "a 5's High Straight Flush!!");
 
         assertEquals(expectedResult, returnedResult);
@@ -155,7 +155,7 @@ public class GameUtilsTest {
         players[1].setCards(new Card[] {h7,h8}, false);
         players[2].setCards(new Card[] {s7,s8}, false);
 
-        returnedResult = utils.determineBestHand(players, tableCards, 0, false);
+        returnedResult = utils.determineBestHand(players, tableCards, 0, false, false);
         expectedResult = utils.buildResultsString(new ArrayList<Player> (Arrays.asList(players)), "a 5's High Straight Flush!!");
 
         assertEquals(expectedResult, returnedResult);
@@ -186,7 +186,7 @@ public class GameUtilsTest {
         players[1].setCards(new Card[] {h7,c3}, false);
         players[2].setCards(new Card[] {s7,c4}, false);
 
-        returnedResult = utils.determineBestHand(players, tableCards, 0, false);
+        returnedResult = utils.determineBestHand(players, tableCards, 0, false, false);
         expectedResult = utils.buildResultsString(new ArrayList<Player> (Arrays.asList(players[0])), "four 8's!!");
 
         assertEquals(expectedResult, returnedResult);
@@ -217,7 +217,7 @@ public class GameUtilsTest {
         players[1].setCards(new Card[] {h7,c3}, false);
         players[2].setCards(new Card[] {s7,c4}, false);
 
-        returnedResult = utils.determineBestHand(players, tableCards, 0, false);
+        returnedResult = utils.determineBestHand(players, tableCards, 0, false, false);
         expectedResult = utils.buildResultsString(new ArrayList<Player> (Arrays.asList(players)), "four 8's!!");
 
         assertEquals(expectedResult, returnedResult);
@@ -248,7 +248,7 @@ public class GameUtilsTest {
         players[1].setCards(new Card[] {cj,c3}, false);
         players[2].setCards(new Card[] {c9,c5}, false);
 
-        returnedResult = utils.determineBestHand(players, tableCards, 0, false);
+        returnedResult = utils.determineBestHand(players, tableCards, 0, false, false);
         expectedResult = utils.buildResultsString(new ArrayList<Player> (Arrays.asList(players[0])), "a full house, 8's full of 7's!!");
 
         assertEquals(expectedResult, returnedResult);
@@ -279,7 +279,7 @@ public class GameUtilsTest {
         players[1].setCards(new Card[] {cj,c3}, false);
         players[2].setCards(new Card[] {c9,c5}, false);
 
-        returnedResult = utils.determineBestHand(players, tableCards, 0, false);
+        returnedResult = utils.determineBestHand(players, tableCards, 0, false, false);
         expectedResult = utils.buildResultsString(new ArrayList<Player> (Arrays.asList(players)), "a full house, 8's full of 7's!!");
 
         assertEquals(expectedResult, returnedResult);
@@ -310,7 +310,7 @@ public class GameUtilsTest {
         players[1].setCards(new Card[] {s8,d7}, false);
         players[2].setCards(new Card[] {c4,c2}, false);
 
-        returnedResult = utils.determineBestHand(players, tableCards, 0, false);
+        returnedResult = utils.determineBestHand(players, tableCards, 0, false, false);
         expectedResult = utils.buildResultsString(new ArrayList<Player> (Arrays.asList(players[2])), "a King's High Flush!");
 
         assertEquals(expectedResult, returnedResult);
@@ -341,7 +341,7 @@ public class GameUtilsTest {
         players[1].setCards(new Card[] {s8,d7}, false);
         players[2].setCards(new Card[] {h7,c2}, false);
 
-        returnedResult = utils.determineBestHand(players, tableCards, 0, false);
+        returnedResult = utils.determineBestHand(players, tableCards, 0, false, false);
         expectedResult = utils.buildResultsString(new ArrayList<Player> (Arrays.asList(players)), "a King's High Flush!");
 
         assertEquals(expectedResult, returnedResult);
@@ -372,7 +372,7 @@ public class GameUtilsTest {
         players[1].setCards(new Card[] {s3,h2}, false);
         players[2].setCards(new Card[] {h3,s2}, false);
 
-        returnedResult = utils.determineBestHand(players, tableCards, 0, false);
+        returnedResult = utils.determineBestHand(players, tableCards, 0, false, false);
         expectedResult = utils.buildResultsString(new ArrayList<Player> (Arrays.asList(players[0])), "an Ace High.");
 
         assertEquals(expectedResult, returnedResult);
@@ -403,7 +403,7 @@ public class GameUtilsTest {
         players[1].setCards(new Card[] {s3,h2}, false);
         players[2].setCards(new Card[] {h3,s2}, false);
 
-        returnedResult = utils.determineBestHand(players, tableCards, 0, false);
+        returnedResult = utils.determineBestHand(players, tableCards, 0, false, false);
         expectedResult = utils.buildResultsString(new ArrayList<Player> (Arrays.asList(players)), "an Ace High.");
 
         assertEquals(expectedResult, returnedResult);

@@ -31,10 +31,11 @@ public class GameUtils{
      * @param thePlayers      The array of Players who can win the provided pot
      * @param communityCards  The array of Cards containing the community cards
      * @param pot             int value of the pot 
+     * @param mainPot         boolean telling whether the pot value represents the main pot or a side pot
      * @return                Result string saying who won and with what hand
      */
-    public String determineBestHand(Player[] thePlayers, Card[] communityCards, int pot){
-        return determineBestHand(thePlayers, communityCards, pot, true);
+    public String determineBestHand(Player[] thePlayers, Card[] communityCards, int pot, boolean mainPot){
+        return determineBestHand(thePlayers, communityCards, pot, mainPot, true);
     }
     
     /**
@@ -43,10 +44,11 @@ public class GameUtils{
      * @param thePlayers      The array of Players who can win the provided pot
      * @param communityCards  The array of Cards containing the community cards
      * @param pot             int value of the pot
+     * @param mainPot         boolean telling whether the pot value represents the main pot or a side pot
      * @param updateDisplay   boolean telling whether or not to update the display panels
      * @return                Result string saying who won and with what hand
      */
-    public String determineBestHand(Player[] thePlayers, Card[] communityCards, int pot, boolean updateDisplay){
+    public String determineBestHand(Player[] thePlayers, Card[] communityCards, int pot, boolean mainPot, boolean updateDisplay){
         ArrayList<Player> remainingPlayers = new ArrayList<Player>();
         ArrayList<Player> playersWithBestHand = new ArrayList<Player>();
         int highestHighCard = 0;
@@ -86,7 +88,7 @@ public class GameUtils{
         for(Player p : remainingPlayers){
             suit = containsFlush(p.getFullHand());
             if(!suit.equals("")){
-                int highCard = containsStraight(p.getFullHand(), suit);
+                int highCard = containsStraight(p.getFullHand(), suit, false);
                 if(highCard >= highestHighCard){
                     if(highCard > highestHighCard){
                         highestHighCard =  highCard;
@@ -111,15 +113,19 @@ public class GameUtils{
                 bestHand = "a " + highestHighCard + "'s High Straight Flush!!";
             }
 
+            if(mainPot){
+                displayWinningHand(playersWithBestHand, 1);
+            }
+
+            clearFullHand(remainingPlayers);
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
-            displayWinningHand(playersWithBestHand, communityCards, 1);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
         //Four of a kind?-------------------------------------------------------------------------------
         highestHighCard = 0;
         for(Player p : remainingPlayers){
-            int[] highCards = containsNOfAKind(p.getFullHand(), 4);
+            int[] highCards = containsNOfAKind(p.getFullHand(), 4, false);
             if(highCards[0] >= highestHighCard){
                 if(highCards[0] > highestHighCard){
                     highestHighCard =  highCards[0];
@@ -150,8 +156,12 @@ public class GameUtils{
                 bestHand = "four " + highestHighCard + "'s!!";
             }
 
+            if(mainPot){
+                displayWinningHand(playersWithBestHand, 2);
+            }
+
+            clearFullHand(remainingPlayers);
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
-            displayWinningHand(playersWithBestHand, communityCards, 2);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -159,7 +169,7 @@ public class GameUtils{
         highestHighCard = 0;
         highestHighCard2 = 0;
         for(Player p : remainingPlayers){
-            int[] highCards = containsFullHouse(p.getFullHand());
+            int[] highCards = containsFullHouse(p.getFullHand(), false);
             if(highCards[0] >= highestHighCard){
                 if(highCards[0] > highestHighCard){
                     highestHighCard =  highCards[0];
@@ -202,8 +212,12 @@ public class GameUtils{
                 bestHand += highestHighCard2 + "'s!!";
             }
 
+            if(mainPot){
+                displayWinningHand(playersWithBestHand, 3);
+            }
+
+            clearFullHand(remainingPlayers);
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
-            displayWinningHand(playersWithBestHand, communityCards, 3);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -214,7 +228,7 @@ public class GameUtils{
         for(Player p : remainingPlayers){
             suit = containsFlush(p.getFullHand());
             if(!suit.equals("")){
-                int[] highCards = determineHighCard(p.getFullHand(), suit);
+                int[] highCards = determineHighCard(p.getFullHand(), suit, false);
                 if(highCards[0] >= highestHighCard){
                     if(highCards[0] > highestHighCard){
                         highestHighCard =  highCards[0];
@@ -273,15 +287,19 @@ public class GameUtils{
                 bestHand = "a " + highestHighCard + "'s High Flush!";
             }
 
+            if(mainPot){
+                displayWinningHand(playersWithBestHand, 4);
+            }
+
+            clearFullHand(remainingPlayers);
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
-            displayWinningHand(playersWithBestHand, communityCards, 4);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
         //Straight?-------------------------------------------------------------------------------------
         highestHighCard = 0;
         for(Player p : remainingPlayers){
-            int highCard = containsStraight(p.getFullHand());
+            int highCard = containsStraight(p.getFullHand(), false);
             if(highCard >= highestHighCard){
                 if(highCard > highestHighCard){
                     highestHighCard =  highCard;
@@ -305,8 +323,12 @@ public class GameUtils{
                 bestHand = "a " + highestHighCard + "'s High Straight!";
             }
 
+            if(mainPot){
+                displayWinningHand(playersWithBestHand, 5);
+            }
+
+            clearFullHand(remainingPlayers);
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
-            displayWinningHand(playersWithBestHand, communityCards, 5);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -315,7 +337,7 @@ public class GameUtils{
         highestHighCard2 = 0;
         highestHighCard3 = 0;
         for(Player p : remainingPlayers){
-            int[] highCards = containsNOfAKind(p.getFullHand(), 3);
+            int[] highCards = containsNOfAKind(p.getFullHand(), 3, false);
             if(highCards[0] >= highestHighCard){
                 if(highCards[0] > highestHighCard){
                     highestHighCard =  highCards[0];
@@ -353,9 +375,13 @@ public class GameUtils{
             } else {
                 bestHand = "three " + highestHighCard + "'s!";
             }
+            
+            if(mainPot){
+                displayWinningHand(playersWithBestHand, 6);
+            }
 
+            clearFullHand(remainingPlayers);
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
-            displayWinningHand(playersWithBestHand, communityCards, 6);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -364,7 +390,7 @@ public class GameUtils{
         highestHighCard2 = 0;
         highestHighCard3 = 0;
         for(Player p : remainingPlayers){
-            int[] highCards = containsTwoPair(p.getFullHand());
+            int[] highCards = containsTwoPair(p.getFullHand(), false);
             if(highCards[0] >= highestHighCard){
                 if(highCards[0] > highestHighCard){
                     highestHighCard =  highCards[0];
@@ -415,8 +441,12 @@ public class GameUtils{
                 bestHand += highestHighCard2 + "'s.";
             }
 
+            if(mainPot){
+                displayWinningHand(playersWithBestHand, 7);
+            }
+
+            clearFullHand(remainingPlayers);
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
-            displayWinningHand(playersWithBestHand, communityCards, 7);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -426,7 +456,7 @@ public class GameUtils{
         highestHighCard3 = 0;
         highestHighCard4 = 0;
         for(Player p : remainingPlayers){
-            int[] highCards = containsNOfAKind(p.getFullHand(), 2);
+            int[] highCards = containsNOfAKind(p.getFullHand(), 2, false);
             if(highCards[0] >= highestHighCard){
                 if(highCards[0] > highestHighCard){
                     highestHighCard =  highCards[0];
@@ -474,8 +504,12 @@ public class GameUtils{
                 bestHand = "two " + highestHighCard + "'s.";
             }
 
+            if(mainPot){
+                displayWinningHand(playersWithBestHand, 8);
+            }
+
+            clearFullHand(remainingPlayers);
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
-            displayWinningHand(playersWithBestHand, communityCards, 8);
             return buildResultsString(playersWithBestHand, bestHand);
         }
 
@@ -486,7 +520,7 @@ public class GameUtils{
         highestHighCard4 = 0;
         highestHighCard5 = 0;
         for(Player p : remainingPlayers){
-            int[] highCards = determineHighCard(p.getFullHand());
+            int[] highCards = determineHighCard(p.getFullHand(), false);
             if(highCards[0] >= highestHighCard){
                 if(highCards[0] > highestHighCard){
                     highestHighCard =  highCards[0];
@@ -544,8 +578,12 @@ public class GameUtils{
                 bestHand = "a " + highestHighCard + "'s High.";
             }
 
+            if(mainPot){
+                displayWinningHand(playersWithBestHand, 9);
+            }
+
+            clearFullHand(remainingPlayers);
             distributePot(playersWithBestHand, thePlayers, pot, updateDisplay);
-            displayWinningHand(playersWithBestHand, communityCards, 9);
             return buildResultsString(playersWithBestHand, bestHand);
         }
         
@@ -553,12 +591,12 @@ public class GameUtils{
     }
 
     //Determines highest value within passed in array of cards
-    private int[] determineHighCard(Card[] hand){
-        return this.determineHighCard(hand, "");
+    private int[] determineHighCard(Card[] hand, boolean setInWinningHand){
+        return this.determineHighCard(hand, "", setInWinningHand);
     }
 
     //Determines highest value within passed in array of cards (of specified suit)
-    private int[] determineHighCard(Card[] hand, String suit){
+    private int[] determineHighCard(Card[] hand, String suit, boolean setInWinningHand){
         int[] returnArr = new int[7];
         for(int i = 0; i < hand.length; i++){
             Card card = hand[i];
@@ -628,13 +666,13 @@ public class GameUtils{
     }
 
     //Determines if passed in array of cards contains a Straight, returns high card value if it does, -1 if not
-    private int containsStraight(Card[] hand){
-        return this.containsStraight(hand, "");
+    private int containsStraight(Card[] hand, boolean setInWinningHand){
+        return this.containsStraight(hand, "", setInWinningHand);
     }
 
     //Determines if passed in array of cards contains a Straight of specified suit,
     //returns high card value if it does, -1 if not
-    private int containsStraight(Card[] hand, String suit){
+    private int containsStraight(Card[] hand, String suit, boolean setInWinningHand){
         int[] values = new int[14];
         int numInArow = 0;
         int returnVal = -2;
@@ -672,7 +710,7 @@ public class GameUtils{
 
     //Determines if passed in array of cards contains a full house, 
     //returns array containing {three of a kind, two of a kind} if it does, {-1, -1} if not
-    private int[] containsFullHouse(Card[] hand){
+    private int[] containsFullHouse(Card[] hand, boolean setInWinningHand){
         int[] values = new int[15];
         int[] returnArr = {-1, -1};
         for(Card card : hand){
@@ -710,7 +748,7 @@ public class GameUtils{
 
     //Determines if passed in array of cards contains two pairs, 
     //returns array containing {larger pair, smaller pair} if it does, {-1, -1} if not
-    private int[] containsTwoPair(Card[] hand){
+    private int[] containsTwoPair(Card[] hand, boolean setInWinningHand){
         int[] values = new int[15];
         int[] returnArr = new int[3];
         boolean contains = true;
@@ -765,7 +803,7 @@ public class GameUtils{
 
     //Determines if passed in array of cards contains a exactly N of any card, 
     //returns the cards value if it does, -1 if not
-    private int[] containsNOfAKind(Card[] hand, int N){
+    private int[] containsNOfAKind(Card[] hand, int N, boolean setInWinningHand){
         int retArrSize = 6 - N;
         int[] values = new int[15];
         int[] returnArr = new int[retArrSize];
@@ -854,28 +892,37 @@ public class GameUtils{
     }
 
     //Sets inWinningHand attribute of the cards that make up the winning hand to true
-    private void displayWinningHand(ArrayList<Player> winners, Card[] communityCards, int winningHandPower){
+    private void displayWinningHand(ArrayList<Player> winners, int winningHandPower){
         //TODO: Call each function with setInWinningHand to be true?
-        if(winningHandPower == 1){ //Royal/Straight Flush
+        for(Player p : winners){
+            if(winningHandPower == 1){ //Royal/Straight Flush
+                containsStraight(p.getFullHand(), containsFlush(p.getFullHand()), true);
+            } else if(winningHandPower == 2){ //Four of a kind
+                containsNOfAKind(p.getFullHand(), 4, true);
+            } else if(winningHandPower == 3){ //Full House
+                containsFullHouse(p.getFullHand(), true);
+            } else if(winningHandPower == 4){ //Flush
+                determineHighCard(p.getFullHand(), containsFlush(p.getFullHand()), true);
+            } else if(winningHandPower == 5){ //Straight
+                containsStraight(p.getFullHand(), true);
+            } else if(winningHandPower == 6){ //Three of a Kind
+                containsNOfAKind(p.getFullHand(), 3, true);
+            } else if(winningHandPower == 7){ //Two Pair
+                containsTwoPair(p.getFullHand(), true);
+            } else if(winningHandPower == 8){ //One Pair
+                containsNOfAKind(p.getFullHand(), 2, true);
+            } else if(winningHandPower == 9){ //High Card
+                determineHighCard(p.getFullHand(), true);
+            } else {
+                //This should never happen
+            }
+        }
+    }
 
-        } else if(winningHandPower == 2){ //Four of a kind
-
-        } else if(winningHandPower == 3){ //Full House
-
-        } else if(winningHandPower == 4){ //Flush
-
-        } else if(winningHandPower == 5){ //Straight
-
-        } else if(winningHandPower == 6){ //Three of a Kind
-
-        } else if(winningHandPower == 7){ //Two Pair
-
-        } else if(winningHandPower == 8){ //One Pair
-
-        } else if(winningHandPower == 9){ //High Card
-
-        } else {
-            //This should never happen
+    //When finished determining best hand, clear fullHand attribute of player for next round
+    private void clearFullHand(ArrayList<Player> thePlayers){
+        for(Player p : thePlayers){
+            p.setFullHand(null);
         }
     }
 
