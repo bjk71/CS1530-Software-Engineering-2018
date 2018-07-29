@@ -28,25 +28,25 @@ public class GameUtils{
     /**
      * Given the players' and community cards, determine who should win (via what hand), update
      * the necessary displays and call distributePot with the provided pot value
-     * @param thePlayers       The array of Players who can win the provided pot
-     * @param _communityPanel  The panel containing the community cards
-     * @param pot              int value of the pot 
+     * @param thePlayers      The array of Players who can win the provided pot
+     * @param communityCards  The array of Cards containing the community cards
+     * @param pot             int value of the pot 
      * @return                Result string saying who won and with what hand
      */
-    public String determineBestHand(Player[] thePlayers, CommunityCardsPanel _communityPanel, int pot){
-        return determineBestHand(thePlayers, _communityPanel, pot, true);
+    public String determineBestHand(Player[] thePlayers, Card[] communityCards, int pot){
+        return determineBestHand(thePlayers, communityCards, pot, true);
     }
     
     /**
      * Given the players' and community cards, determine who should win (via what hand), update
      * the necessary displays (if told to) and call distributePot with the provided pot value
-     * @param thePlayers       The array of Players who can win the provided pot
-     * @param _communityPanel  The panel containing the community cards
-     * @param pot              int value of the pot
-     * @param updateDisplay    boolean telling whether or not to update the display panels
+     * @param thePlayers      The array of Players who can win the provided pot
+     * @param communityCards  The array of Cards containing the community cards
+     * @param pot             int value of the pot
+     * @param updateDisplay   boolean telling whether or not to update the display panels
      * @return                Result string saying who won and with what hand
      */
-    public String determineBestHand(Player[] thePlayers, CommunityCardsPanel _communityPanel, int pot, boolean updateDisplay){
+    public String determineBestHand(Player[] thePlayers, Card[] communityCards, int pot, boolean updateDisplay){
         ArrayList<Player> remainingPlayers = new ArrayList<Player>();
         ArrayList<Player> playersWithBestHand = new ArrayList<Player>();
         int highestHighCard = 0;
@@ -74,7 +74,7 @@ public class GameUtils{
         for(Player p : remainingPlayers){
             ArrayList<Card> allAvailableCards = new ArrayList<Card>();
             allAvailableCards.addAll(Arrays.asList(p.getCards()));
-            allAvailableCards.addAll(Arrays.asList(_communityPanel.getCards()));
+            allAvailableCards.addAll(Arrays.asList(communityCards));
 
             Card[] hand = new Card[allAvailableCards.size()];
             hand = allAvailableCards.toArray(hand);
@@ -844,7 +844,7 @@ public class GameUtils{
     }
 
     private void displayWinningHand(ArrayList<Player> winners,  CommunityCardsPanel _communityPanel, String winningHand){
-
+        //TODO: This
     }
 
     //Divide up the pot among the winner(s), and set it back to 0
