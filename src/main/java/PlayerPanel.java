@@ -2,6 +2,7 @@ import java.awt.*;
 import java.io.*;
 import javax.swing.*;
 import javax.imageio.*;
+import javax.swing.border.Border;
 
 // TODO: make font size adjust based on number of players, allow user font size to
 // be larger
@@ -140,6 +141,23 @@ public class PlayerPanel extends JPanel {
 
         _cardLabels[0].setMinimumSize(new Dimension(75, 105));
         _cardLabels[1].setMinimumSize(new Dimension(75, 105));
+
+        if(playerHand[0].isInWinningHand() || playerHand[1].isInWinningHand()){
+            Border raisedbevel = BorderFactory.createRaisedBevelBorder();
+            Border loweredbevel = BorderFactory.createLoweredBevelBorder();
+            Border greenline = BorderFactory.createLineBorder(POKER_GREEN, 8);
+            Border whiteline = BorderFactory.createLineBorder(Color.white);
+
+            Border compound = BorderFactory.createCompoundBorder(raisedbevel, whiteline);
+            compound = BorderFactory.createCompoundBorder(compound, loweredbevel);
+            compound = BorderFactory.createCompoundBorder(compound, greenline);
+
+            if(playerHand[0].isInWinningHand()){
+                _cardLabels[0].setBorder(compound);
+            } else {
+                _cardLabels[1].setBorder(compound);
+            }
+        }
 
         _bottomPanel.setBackground(POKER_GREEN);
         _bottomPanel.add(_cardLabels[0]);
