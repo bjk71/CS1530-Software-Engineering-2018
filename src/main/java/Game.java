@@ -861,7 +861,7 @@ public class Game extends JPanel implements Serializable {
                 for(int j = 0; j < playersInPot.length; j++) {
                     playerArray[j] = players[playersInPot[j]];
                 }
-                new GameUtils().determineBestHand(playerArray, tableCards, pot.clearPot(i));
+                new GameUtils().determineBestHand(playerArray, _communityPanel, pot.clearPot(i));
             }
 
             try { // show remaining table cards
@@ -871,7 +871,7 @@ public class Game extends JPanel implements Serializable {
             } catch(Exception e) {}
         }
 
-        String result   = new GameUtils().determineBestHand(players, tableCards, pot.clearPot(0));
+        String result   = new GameUtils().determineBestHand(players, _communityPanel, pot.clearPot(0));
         JLabel _results = new JLabel(result);
 
         _results.setForeground(WHITE);

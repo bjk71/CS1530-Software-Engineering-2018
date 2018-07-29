@@ -25,11 +25,11 @@ public class GameUtils{
         return returnList;
     }
   
-    public String determineBestHand(Player[] thePlayers, Card[] communityCards, int pot){
-        return determineBestHand(thePlayers, communityCards, pot, true);
+    public String determineBestHand(Player[] thePlayers, CommunityCardsPanel _communityPanel, int pot){
+        return determineBestHand(thePlayers, _communityPanel, pot, true);
     }
     
-    public String determineBestHand(Player[] thePlayers, Card[] communityCards, int pot, boolean updateDisplay){
+    public String determineBestHand(Player[] thePlayers, CommunityCardsPanel _communityPanel, int pot, boolean updateDisplay){
         ArrayList<Player> remainingPlayers = new ArrayList<Player>();
         ArrayList<Player> playersWithBestHand = new ArrayList<Player>();
         int highestHighCard = 0;
@@ -57,7 +57,7 @@ public class GameUtils{
         for(Player p : remainingPlayers){
             ArrayList<Card> allAvailableCards = new ArrayList<Card>();
             allAvailableCards.addAll(Arrays.asList(p.getCards()));
-            allAvailableCards.addAll(Arrays.asList(communityCards));
+            allAvailableCards.addAll(Arrays.asList(_communityPanel.getCards()));
 
             Card[] hand = new Card[allAvailableCards.size()];
             hand = allAvailableCards.toArray(hand);
