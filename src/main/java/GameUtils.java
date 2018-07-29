@@ -119,7 +119,7 @@ public class GameUtils{
         //Four of a kind?-------------------------------------------------------------------------------
         highestHighCard = 0;
         for(Player p : remainingPlayers){
-            int[] highCards = containsNOfAKind(p.getFullHand(), 4, 2);
+            int[] highCards = containsNOfAKind(p.getFullHand(), 4);
             if(highCards[0] >= highestHighCard){
                 if(highCards[0] > highestHighCard){
                     highestHighCard =  highCards[0];
@@ -315,7 +315,7 @@ public class GameUtils{
         highestHighCard2 = 0;
         highestHighCard3 = 0;
         for(Player p : remainingPlayers){
-            int[] highCards = containsNOfAKind(p.getFullHand(), 3, 3);
+            int[] highCards = containsNOfAKind(p.getFullHand(), 3);
             if(highCards[0] >= highestHighCard){
                 if(highCards[0] > highestHighCard){
                     highestHighCard =  highCards[0];
@@ -426,7 +426,7 @@ public class GameUtils{
         highestHighCard3 = 0;
         highestHighCard4 = 0;
         for(Player p : remainingPlayers){
-            int[] highCards = containsNOfAKind(p.getFullHand(), 2, 4);
+            int[] highCards = containsNOfAKind(p.getFullHand(), 2);
             if(highCards[0] >= highestHighCard){
                 if(highCards[0] > highestHighCard){
                     highestHighCard =  highCards[0];
@@ -765,7 +765,8 @@ public class GameUtils{
 
     //Determines if passed in array of cards contains a exactly N of any card, 
     //returns the cards value if it does, -1 if not
-    private int[] containsNOfAKind(Card[] hand, int N, int retArrSize){
+    private int[] containsNOfAKind(Card[] hand, int N){
+        int retArrSize = 6 - N;
         int[] values = new int[15];
         int[] returnArr = new int[retArrSize];
         ArrayList<Integer> usedVals = new ArrayList<Integer>();

@@ -881,8 +881,8 @@ public class Game extends JPanel implements Serializable {
         printGameConsole(result);
 
         //***TESTING***
-        //_communityPanel.getCards()[0].toggleInWinningHand();
-        //players[0].getCards()[0].toggleInWinningHand();
+        //_communityPanel.getCards()[0].setInWinningHand(true);
+        //players[0].getCards()[0].setInWinningHand(true);
         _communityPanel.showWinningCards();
         showAICards();
     }

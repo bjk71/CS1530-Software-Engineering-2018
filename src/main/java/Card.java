@@ -42,8 +42,8 @@ public class Card implements Serializable {
 		return this.suit;
 	}
 
-	public void toggleInWinningHand(){
-		this.inWinningHand = !this.inWinningHand;
+	public void setInWinningHand(Boolean inWinningHand){
+		this.inWinningHand = inWinningHand;
 	}
 	
 	public Boolean isInWinningHand(){
