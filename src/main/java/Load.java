@@ -50,7 +50,7 @@ public class Load extends JPanel {
         _titleLabel.setFont(new Font("Courier", Font.PLAIN, 60));
         _titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         _titleLabel.setVerticalAlignment(SwingConstants.CENTER);
-        _titleLabel.setText("Load a Previous Game from a Save File!");
+        _titleLabel.setText("Load a Previous Game!");
 
         _gameLabel.setForeground(WHITE);
         _gameLabel.setFont(new Font("Courier", Font.PLAIN, 40));
