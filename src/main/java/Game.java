@@ -61,7 +61,7 @@ public class Game extends JPanel implements Serializable {
 
 
     public Game() {
-        initalizeStartGrid();
+        initializeStartGrid();
         setVisible(true);
     }
     
@@ -83,7 +83,7 @@ public class Game extends JPanel implements Serializable {
     }
 
     
-    private void initalizeStartGrid(){    
+    private void initializeStartGrid(){    
         JPanel             _startTitle        = new JPanel();
         JPanel             _playerName        = new JPanel();
         JPanel             _numOpponents      = new JPanel();
@@ -1038,10 +1038,14 @@ public class Game extends JPanel implements Serializable {
                 repaint();
 
                 // writeHandFile();
-
+				
+				if(players[0].getCash() == 0) {
+					loser();
+				}
                 if(playersRemaining() > 1) {
                     // playGameSwitch(1);
-                } else { // find winner
+                } 
+				else { // find winner
                     Player winner = null;
                     for(int i =0; i < players.length; i++) {
                         if(players[i].getCash() > 0) {
@@ -1088,7 +1092,7 @@ public class Game extends JPanel implements Serializable {
             public void actionPerformed(ActionEvent e) {
                 _this.removeAll();
 
-                initalizeStartGrid();
+                initializeStartGrid();
             }
         });
 
@@ -1099,6 +1103,37 @@ public class Game extends JPanel implements Serializable {
         revalidate();
         repaint();
     }
+	
+	private void loser() {
+		JLabel _loserLabel = new JLabel();
+        JButton _newgameButton = new JButton();
+
+        JPanel _this = this;
+
+        this.removeAll();
+
+        _loserLabel.setBackground(POKER_GREEN);
+        _loserLabel.setFont(new Font("Courier", Font.PLAIN, 60));
+        _loserLabel.setText("You have lost the game!");
+
+        _newgameButton.setFont(new Font("Courier", Font.PLAIN, 30));
+        _newgameButton.setMaximumSize(new Dimension(400, 100));
+        _newgameButton.setText("New game");
+        _newgameButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                _this.removeAll();
+
+                initializeStartGrid();
+            }
+        });
+
+        this.setLayout(new BorderLayout());
+        this.add(_loserLabel, BorderLayout.PAGE_START);
+        this.add(_newgameButton, BorderLayout.CENTER);
+
+        revalidate();
+        repaint(); 
+	}
 
     /**
          * Enabled or disable buttons based on passed in boolean.
