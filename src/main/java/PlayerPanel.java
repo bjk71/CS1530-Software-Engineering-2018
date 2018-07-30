@@ -154,7 +154,8 @@ public class PlayerPanel extends JPanel {
 
             if(playerHand[0].isInWinningHand()){
                 _cardLabels[0].setBorder(compound);
-            } else {
+            } 
+            if(playerHand[1].isInWinningHand()){
                 _cardLabels[1].setBorder(compound);
             }
         }

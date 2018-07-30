@@ -75,8 +75,8 @@ public class GameUtils{
         //Rather than always having to check to arrays, combine community cards with each players'
         for(Player p : remainingPlayers){
             ArrayList<Card> allAvailableCards = new ArrayList<Card>();
-            allAvailableCards.addAll(Arrays.asList(p.getCards()));
             allAvailableCards.addAll(Arrays.asList(communityCards));
+            allAvailableCards.addAll(Arrays.asList(p.getCards()));
 
             Card[] hand = new Card[allAvailableCards.size()];
             hand = allAvailableCards.toArray(hand);
@@ -598,6 +598,7 @@ public class GameUtils{
     //Determines highest value within passed in array of cards (of specified suit)
     private int[] determineHighCard(Card[] hand, String suit, boolean setInWinningHand){
         int[] returnArr = new int[7];
+        boolean contains = true;
         for(int i = 0; i < hand.length; i++){
             Card card = hand[i];
             if( suit.equals("") || suit.equals(card.getSuit()) ){
@@ -630,7 +631,57 @@ public class GameUtils{
         //Make sure at least 5 valid card values are being returned, else return all values -1
         for(int i = 0; i < 5; i++){
             if(returnArr[i] == 0){
-                return new int[]{-1, -1, -1, -1, -1};
+                contains = false;
+            }
+        }
+
+        if(!contains){
+            returnArr = new int[]{-1, -1, -1, -1, -1};
+        } else {
+            int[] tempArr = new int[5];
+            for(int i = 0; i < tempArr.length; i++){
+                tempArr[i] = returnArr[i];
+            }
+
+            returnArr = tempArr;
+        }
+
+        if(contains && setInWinningHand){
+            for(int i = 0; i < returnArr.length; i++){
+                String returnVal = "";
+                if(returnArr[i] == 14){
+                    returnVal = "A";
+                } else if(returnArr[i] == 13){
+                    returnVal = "K";
+                } else if(returnArr[i] == 12){
+                    returnVal = "Q";
+                } else if(returnArr[i] == 11){
+                    returnVal = "J";
+                } else {
+                    returnVal = returnArr[i] + "";
+                }
+
+                ArrayList<Card> cardsWithCurrentValue = new ArrayList<Card>();
+                for(int j = 0; j < hand.length; j++){
+                    if( hand[j].getValue().equals(returnVal) && ( suit.equals("") || suit.equals(hand[j].getSuit()) ) ){
+                        cardsWithCurrentValue.add(hand[j]);
+                    }
+                }
+
+                if(cardsWithCurrentValue.size() == 1){
+                    cardsWithCurrentValue.get(0).setInWinningHand(true);
+                } else {
+                    boolean alreadyMarked = false;
+                    for(Card c : cardsWithCurrentValue){
+                        if(c.isInWinningHand()){
+                            alreadyMarked = true;
+                        }
+                    }
+
+                    if(!alreadyMarked){
+                        cardsWithCurrentValue.get(0).setInWinningHand(true);
+                    }
+                }
             }
         }
         
@@ -705,7 +756,48 @@ public class GameUtils{
             }
         }
 
-        return returnVal + 1; //To offest the array starting at 0, returning a 10 means high card is 10, not jack
+        returnVal = returnVal + 1; //To offest the array starting at 0, returning a 10 means high card is 10, not jack
+
+        if ( returnVal > 0 && setInWinningHand) {
+            for(int i = returnVal; i > returnVal - 5; i--){
+                String highVal = "";
+                if(i == 14){
+                    highVal = "A";
+                } else if(i == 13){
+                    highVal = "K";
+                } else if(i == 12){
+                    highVal = "Q";
+                } else if(i == 11){
+                    highVal = "J";
+                } else {
+                    highVal = i + "";
+                }
+
+                ArrayList<Card> cardsWithCurrentValue = new ArrayList<Card>();
+                for(int j = 0; j < hand.length; j++){
+                    if( hand[j].getValue().equals(highVal) && ( suit.equals("") || suit.equals(hand[j].getSuit()) ) ){
+                        cardsWithCurrentValue.add(hand[j]);
+                    }
+                }
+
+                if(cardsWithCurrentValue.size() == 1){
+                    cardsWithCurrentValue.get(0).setInWinningHand(true);
+                } else {
+                    boolean alreadyMarked = false;
+                    for(Card c : cardsWithCurrentValue){
+                        if(c.isInWinningHand()){
+                            alreadyMarked = true;
+                        }
+                    }
+
+                    if(!alreadyMarked){
+                        cardsWithCurrentValue.get(0).setInWinningHand(true);
+                    }
+                }
+            }
+        }
+
+        return returnVal;
     }
 
     //Determines if passed in array of cards contains a full house, 
@@ -742,7 +834,57 @@ public class GameUtils{
         if(returnArr[0] == -1 || returnArr[1] == -1){
             returnArr[0] = -1;
             returnArr[1] = -1;
+        } else if (setInWinningHand){
+            for(int i = 0; i < returnArr.length; i++){
+                String returnVal = "";
+                if(returnArr[i] == 14){
+                    returnVal = "A";
+                } else if(returnArr[i] == 13){
+                    returnVal = "K";
+                } else if(returnArr[i] == 12){
+                    returnVal = "Q";
+                } else if(returnArr[i] == 11){
+                    returnVal = "J";
+                } else {
+                    returnVal = returnArr[i] + "";
+                }
+
+                ArrayList<Card> cardsWithCurrentValue = new ArrayList<Card>();
+                for(int j = 0; j < hand.length; j++){
+                    if(hand[j].getValue().equals(returnVal)){
+                        cardsWithCurrentValue.add(hand[j]);
+                    }
+                }
+
+                if( i == 0 || (i != 0 && cardsWithCurrentValue.size() == 2) ){
+                    for(Card c : cardsWithCurrentValue){
+                        c.setInWinningHand(true);
+                    }
+                } else {
+                    int alreadyMarked = 0;
+                    for(Card c : cardsWithCurrentValue){
+                        if(c.isInWinningHand()){
+                            alreadyMarked++;
+                        }
+                    }
+
+                    if(alreadyMarked == 0){
+                        cardsWithCurrentValue.get(0).setInWinningHand(true);
+                        cardsWithCurrentValue.get(1).setInWinningHand(true);
+                    } else if(alreadyMarked == 1){
+                        for(Card c : cardsWithCurrentValue){
+                            if( alreadyMarked == 1 && !c.isInWinningHand()){
+                                c.setInWinningHand(true);
+                                alreadyMarked++;
+                            }
+                        }
+                    } else if(alreadyMarked > 2){
+                        System.out.println("Error in displaying cards in winning hand!");
+                    }
+                }
+            }
         }
+
         return returnArr;
     }
 
@@ -795,6 +937,49 @@ public class GameUtils{
         if(!contains){
             for(int i = 0; i < returnArr.length; i++){
                 returnArr[i] = -1;
+            }
+        } else if (setInWinningHand){
+            for(int i = 0; i < returnArr.length; i++){
+                String returnVal = "";
+                if(returnArr[i] == 14){
+                    returnVal = "A";
+                } else if(returnArr[i] == 13){
+                    returnVal = "K";
+                } else if(returnArr[i] == 12){
+                    returnVal = "Q";
+                } else if(returnArr[i] == 11){
+                    returnVal = "J";
+                } else {
+                    returnVal = returnArr[i] + "";
+                }
+
+                ArrayList<Card> cardsWithCurrentValue = new ArrayList<Card>();
+                for(int j = 0; j < hand.length; j++){
+                    if(hand[j].getValue().equals(returnVal)){
+                        cardsWithCurrentValue.add(hand[j]);
+                    }
+                }
+
+                if(i == 0 || i == 1){
+                    for(Card c : cardsWithCurrentValue){
+                        c.setInWinningHand(true);
+                    }
+                } else {
+                    if(cardsWithCurrentValue.size() == 1){
+                        cardsWithCurrentValue.get(0).setInWinningHand(true);
+                    } else {
+                        boolean alreadyMarked = false;
+                        for(Card c : cardsWithCurrentValue){
+                            if(c.isInWinningHand()){
+                                alreadyMarked = true;
+                            }
+                        }
+
+                        if(!alreadyMarked){
+                            cardsWithCurrentValue.get(0).setInWinningHand(true);
+                        }
+                    }
+                }
             }
         }
 
@@ -853,6 +1038,49 @@ public class GameUtils{
             for(int i = 0; i < returnArr.length; i++){
                 returnArr[i] = -1;
             }
+        } else if (setInWinningHand){
+            for(int i = 0; i < returnArr.length; i++){
+                String returnVal = "";
+                if(returnArr[i] == 14){
+                    returnVal = "A";
+                } else if(returnArr[i] == 13){
+                    returnVal = "K";
+                } else if(returnArr[i] == 12){
+                    returnVal = "Q";
+                } else if(returnArr[i] == 11){
+                    returnVal = "J";
+                } else {
+                    returnVal = returnArr[i] + "";
+                }
+
+                ArrayList<Card> cardsWithCurrentValue = new ArrayList<Card>();
+                for(int j = 0; j < hand.length; j++){
+                    if(hand[j].getValue().equals(returnVal)){
+                        cardsWithCurrentValue.add(hand[j]);
+                    }
+                }
+
+                if(i == 0){
+                    for(Card c : cardsWithCurrentValue){
+                        c.setInWinningHand(true);
+                    }
+                } else {
+                    if(cardsWithCurrentValue.size() == 1){
+                        cardsWithCurrentValue.get(0).setInWinningHand(true);
+                    } else {
+                        boolean alreadyMarked = false;
+                        for(Card c : cardsWithCurrentValue){
+                            if(c.isInWinningHand()){
+                                alreadyMarked = true;
+                            }
+                        }
+
+                        if(!alreadyMarked){
+                            cardsWithCurrentValue.get(0).setInWinningHand(true);
+                        }
+                    }
+                }
+            }
         }
 
         return returnArr;
@@ -893,7 +1121,6 @@ public class GameUtils{
 
     //Sets inWinningHand attribute of the cards that make up the winning hand to true
     private void displayWinningHand(ArrayList<Player> winners, int winningHandPower){
-        //TODO: Call each function with setInWinningHand to be true?
         for(Player p : winners){
             if(winningHandPower == 1){ //Royal/Straight Flush
                 containsStraight(p.getFullHand(), containsFlush(p.getFullHand()), true);

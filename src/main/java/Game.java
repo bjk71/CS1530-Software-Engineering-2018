@@ -877,17 +877,9 @@ public class Game extends JPanel implements Serializable {
         }
 
         result += new GameUtils().determineBestHand(players, tableCards, pot.clearPot(0), true);
-        JLabel _results = new JLabel(result);
-
-        _results.setForeground(WHITE);
-        _results.setFont(new Font("Courier", Font.PLAIN, 28));
-        _results.setHorizontalAlignment(SwingConstants.CENTER);
-
         printGameConsole(result);
 
-        //***TESTING***
-        //_communityPanel.getCards()[0].setInWinningHand(true);
-        //players[0].getCards()[0].setInWinningHand(true);
+        //Display cards that made up winning hand (as well as show the opponents' cards in general)
         _communityPanel.showWinningCards();
         showAICards();
     }
