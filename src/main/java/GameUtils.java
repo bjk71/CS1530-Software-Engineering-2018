@@ -646,6 +646,7 @@ public class GameUtils{
             returnArr = tempArr;
         }
 
+        //Set inWinningHand attribute of cards that make up winning hand to be true if told to
         if(contains && setInWinningHand){
             for(int i = 0; i < returnArr.length; i++){
                 String returnVal = "";
@@ -668,6 +669,7 @@ public class GameUtils{
                     }
                 }
 
+                //Set inWinningHand attribute as long as there isn't already a card with the same value set
                 if(cardsWithCurrentValue.size() == 1){
                     cardsWithCurrentValue.get(0).setInWinningHand(true);
                 } else {
@@ -713,6 +715,7 @@ public class GameUtils{
         } else if(suits[3] >= 5){
             return "S";
         }
+
         return "";
     }
 
@@ -744,6 +747,7 @@ public class GameUtils{
             }
         }
 
+
         for(int i = 0; i < 14; i++){
             if(values[i] == 1){
                 numInArow++;
@@ -758,7 +762,7 @@ public class GameUtils{
 
         returnVal = returnVal + 1; //To offest the array starting at 0, returning a 10 means high card is 10, not jack
 
-        if ( returnVal > 0 && setInWinningHand) {
+        if ( returnVal > 0 && setInWinningHand ) { //Set inWinningHand attribute of cards that make up winning hand to be true if told to
             for(int i = returnVal; i > returnVal - 5; i--){
                 String highVal = "";
                 if(i == 14){
@@ -780,6 +784,7 @@ public class GameUtils{
                     }
                 }
 
+                //Set inWinningHand attribute as long as there isn't already a card with the same value set
                 if(cardsWithCurrentValue.size() == 1){
                     cardsWithCurrentValue.get(0).setInWinningHand(true);
                 } else {
@@ -819,6 +824,7 @@ public class GameUtils{
             }
         }
 
+        //Determine which values (if any) meet requirements for a full house
         for(int i = 2; i < 15; i++){
             if(values[i] == 3){
                 returnArr[0] = i;
@@ -831,10 +837,11 @@ public class GameUtils{
             }
         }
 
+        //Make sure both values are set, if not, it doesn't contain -> {-1,-1}
         if(returnArr[0] == -1 || returnArr[1] == -1){
             returnArr[0] = -1;
             returnArr[1] = -1;
-        } else if (setInWinningHand){
+        } else if (setInWinningHand){ //Set inWinningHand attribute of cards that make up winning hand to be true if told to
             for(int i = 0; i < returnArr.length; i++){
                 String returnVal = "";
                 if(returnArr[i] == 14){
@@ -856,6 +863,8 @@ public class GameUtils{
                     }
                 }
 
+                //Set inWinningHand attribute for the 3 of a kind and 2 of a kind value (as long as theres only 2)
+                //else, check to make sure only 2 cards get/are set
                 if( i == 0 || (i != 0 && cardsWithCurrentValue.size() == 2) ){
                     for(Card c : cardsWithCurrentValue){
                         c.setInWinningHand(true);
@@ -938,7 +947,7 @@ public class GameUtils{
             for(int i = 0; i < returnArr.length; i++){
                 returnArr[i] = -1;
             }
-        } else if (setInWinningHand){
+        } else if (setInWinningHand){ //Set inWinningHand attribute of cards that make up winning hand to be true if told to
             for(int i = 0; i < returnArr.length; i++){
                 String returnVal = "";
                 if(returnArr[i] == 14){
@@ -960,6 +969,8 @@ public class GameUtils{
                     }
                 }
 
+                //Set inWinningHand attribute for the 2 pairs and the kicker as long as 
+                //there isn't already a card with the same value set
                 if(i == 0 || i == 1){
                     for(Card c : cardsWithCurrentValue){
                         c.setInWinningHand(true);
@@ -1038,7 +1049,7 @@ public class GameUtils{
             for(int i = 0; i < returnArr.length; i++){
                 returnArr[i] = -1;
             }
-        } else if (setInWinningHand){
+        } else if (setInWinningHand){ //Set inWinningHand attribute of cards that make up winning hand to be true if told to
             for(int i = 0; i < returnArr.length; i++){
                 String returnVal = "";
                 if(returnArr[i] == 14){
@@ -1060,6 +1071,8 @@ public class GameUtils{
                     }
                 }
 
+                //Set inWinningHand attribute for the N of a kind value (as long as theres only 2) and the kicker(s) 
+                //as long as there isn't already a card with the same value set
                 if(i == 0){
                     for(Card c : cardsWithCurrentValue){
                         c.setInWinningHand(true);
@@ -1090,7 +1103,7 @@ public class GameUtils{
      * Makes the result string describing the outcome of the game (who won and how)
      * @param winners      ArrayList of players that won
      * @param winningHand  String containing a description of the winning hand
-     * @return            The result string
+     * @return             The result string
      */
     public String buildResultsString(ArrayList<Player> winners, String winningHand){
         StringBuilder resultStrBuilder = new StringBuilder();
@@ -1119,7 +1132,7 @@ public class GameUtils{
         return resultStrBuilder.toString();
     }
 
-    //Sets inWinningHand attribute of the cards that make up the winning hand to true
+    //Sets inWinningHand attribute of the cards that make up the winning hand to be true
     private void displayWinningHand(ArrayList<Player> winners, int winningHandPower){
         for(Player p : winners){
             if(winningHandPower == 1){ //Royal/Straight Flush
