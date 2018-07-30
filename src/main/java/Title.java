@@ -33,7 +33,7 @@ public class Title extends JPanel {
 
         try {
             Image img = ImageIO.read(this.getClass().getResource("/royalflush.png"));
-            _imgLabel = new JLabel(new ImageIcon(img.getScaledInstance(600, 460, java.awt.Image.SCALE_SMOOTH)));
+            _imgLabel = new JLabel(new ImageIcon(img.getScaledInstance(360, 273, java.awt.Image.SCALE_SMOOTH)));
         } catch (IOException ioex) {
             System.exit(1);
         }
