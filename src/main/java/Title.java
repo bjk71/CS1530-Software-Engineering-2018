@@ -42,7 +42,7 @@ public class Title extends JPanel {
         _imgLabel.setVerticalAlignment(JLabel.BOTTOM);
 
         _quoteLabel.setForeground(WHITE);
-        _quoteLabel.setFont(new Font("Courier", Font.ITALIC, 36));
+        _quoteLabel.setFont(new Font(Font.SERIF, Font.ITALIC, 36));
         _quoteLabel.setHorizontalAlignment(JLabel.CENTER);
         _quoteLabel.setVerticalAlignment(JLabel.TOP);
         _quoteLabel.setText("\"If you can't beat them, bluff them\"");
@@ -50,7 +50,7 @@ public class Title extends JPanel {
         _panel.add(_quoteLabel);
 
         _titleLabel.setForeground(WHITE);
-        _titleLabel.setFont(new Font("Courier", Font.PLAIN, 60));
+        _titleLabel.setFont(new Font(Font.SERIF, Font.PLAIN, 60));
         _titleLabel.setHorizontalAlignment(JLabel.CENTER);
         _titleLabel.setVerticalAlignment(JLabel.BOTTOM);
         _titleLabel.setText("Welcome to Pocket Rockets Poker!");
