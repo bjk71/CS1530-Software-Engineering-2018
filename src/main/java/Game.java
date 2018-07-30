@@ -6,6 +6,8 @@ import java.util.*;
 import javax.imageio.*;
 import java.awt.event.*;
 
+import javax.swing.text.DefaultCaret;
+
 public class Game extends JPanel implements Serializable {
     private static final long serialVersionUID = 42L;
 
@@ -44,6 +46,10 @@ public class Game extends JPanel implements Serializable {
     private JLabel      _gameLogLabel   = new JLabel();
     private JPanel      _userPanel      = new JPanel();
     private PotPanel    _potPanel       = new PotPanel();
+    public  InfoPanel   _infoPanel      = new InfoPanel();
+
+    private JTextArea   _scrollTextArea = new JTextArea();
+
 
     // Action panel components
     private JPanel   _actionPanel    = new JPanel();
@@ -52,7 +58,6 @@ public class Game extends JPanel implements Serializable {
     private JButton  _foldButton     = new JButton();
     private JSpinner _betSpinner     = null;
     private JButton  _nextHandButton = null;
-    private JLabel   _timer          = null;
 
 
     public Game() {
@@ -311,7 +316,36 @@ public class Game extends JPanel implements Serializable {
         _aiPlayersPanel.add(_top, BorderLayout.PAGE_START);
         _middlePanel.add(_potPanel, BorderLayout.LINE_START);
         _middlePanel.add(_communityPanel, BorderLayout.CENTER);
-        _middlePanel.add(_userPanel, BorderLayout.LINE_END);
+
+        // check to add timer panel
+        if(timerSetting > 0) {
+            JPanel _holderPanel   = new JPanel();
+            JPanel _centeredPanel = new JPanel();
+
+            _centeredPanel.setBackground(POKER_GREEN);
+            _centeredPanel.setLayout(new GridBagLayout());
+
+            _centeredPanel.add(_infoPanel);
+
+            _holderPanel.setLayout(new BorderLayout());
+            _holderPanel.add(_userPanel, BorderLayout.CENTER);
+            _holderPanel.add(_centeredPanel, BorderLayout.LINE_END);
+
+            _middlePanel.add(_holderPanel, BorderLayout.LINE_END);
+        } else {
+            JPanel _tempPanel    = new JPanel();
+            JPanel _paddingPanel = new JPanel();
+
+            _paddingPanel.setBackground(POKER_GREEN);
+            _paddingPanel.setPreferredSize(new Dimension(150, Integer.MAX_VALUE));
+
+            _tempPanel.setLayout(new BorderLayout());
+            _tempPanel.add(_userPanel, BorderLayout.CENTER);
+            _tempPanel.add(_paddingPanel, BorderLayout.LINE_END);
+
+            _middlePanel.add(_tempPanel, BorderLayout.LINE_END);
+        }
+
 
         _gameLogLabel.setText("<html>Game Log:<br/></html>");
         _gameLogLabel.setForeground(Color.WHITE);
@@ -319,7 +353,14 @@ public class Game extends JPanel implements Serializable {
         _gameLogLabel.setOpaque(true);
         _gameLogLabel.setVerticalAlignment(SwingConstants.TOP);
 
-        _scrollPane = new JScrollPane(_gameLogLabel);
+        _scrollPane = new JScrollPane(_scrollTextArea);
+
+        _scrollTextArea.setBackground(POKER_DARK);
+        _scrollTextArea.setForeground(Color.WHITE);
+        _scrollTextArea.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        _scrollTextArea.setEditable(false);
+
+        // _scrollPane = new JScrollPane(_gameLogLabel);
         _scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         _scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         _scrollPane.setBounds(0, 0, 500, 250);
@@ -373,7 +414,11 @@ public class Game extends JPanel implements Serializable {
                         break;
                     }
 
-                    printGameConsole("<br>Round " + i + ":");
+                    if(i > 0) {
+                        printGameConsole("\n");
+                    }
+
+                    printGameConsole("Round " + (i+1) + ":");
 
                     if(i == 0) {
                         //initialize pot
@@ -411,6 +456,10 @@ public class Game extends JPanel implements Serializable {
                     // TODO: let big blind get chance to check first round
 
                     while(index != pot.getSetBet()) {
+                        // JScrollBar _scrollBar = _scrollPane.getVerticalScrollBar();
+                        // _scrollBar.setValue(_scrollBar.getMaximum());
+
+
                         if(players[index].isPlayingHand()) {
                             if(index == 0) {
                                 userTurn(minAction);
@@ -420,18 +469,26 @@ public class Game extends JPanel implements Serializable {
                             } else {
                                 minAction = aiTurn(minAction, index);
                             }
+
+                            // _scrollBar.setValue(_scrollBar.getMaximum());
                         }
                         index++;
                         if(index >= players.length) {
                             index = 0;
                         }
                         
+                        
                         // sleep to watch user bets take place
                         try{
+                            // _scrollBar.setValue(_scrollBar.getMaximum());
+                            // _scrollPane.revalidate();
+                            // _scrollPane.repaint();
                             Thread.sleep(500);
                         } catch(InterruptedException ex){
                             Thread.currentThread().interrupt();
                         }
+                        // _scrollBar.setValue(_scrollBar.getMaximum());
+
                     }
                 }
 
@@ -544,7 +601,7 @@ public class Game extends JPanel implements Serializable {
 
             if( timer != null && !timer.isInterrupted() ) {
                 timer.interrupt();
-                _timer.setText("Time: --");
+                _infoPanel.setTimerText("Time: --");
             }
         }
 
@@ -677,9 +734,9 @@ public class Game extends JPanel implements Serializable {
         public void run() {
             while(timer > 0) {
                 if(timer >= 10) {
-                    _timer.setText("Time: " + timer);
+                    _infoPanel.setTimerText("Time: " + timer);
                 } else {
-                    _timer.setText("Time: 0" + timer);
+                    _infoPanel.setTimerText("Time: 0" + timer);
                 }
 
                 if(timer == 1) {
@@ -711,7 +768,8 @@ public class Game extends JPanel implements Serializable {
                 timer--;
             }
 
-            _timer.setText("FOLD");
+            _infoPanel.setTimerText("FOLD");
+
             try {
                 Thread.sleep(2000);
             } catch(InterruptedException ex) {
@@ -750,6 +808,7 @@ public class Game extends JPanel implements Serializable {
         nextHand = false;
     }
 
+
     /**
      * Add user panel components.
      * @return Created panel to be added to container.
@@ -766,7 +825,7 @@ public class Game extends JPanel implements Serializable {
         players[0].setPlayerPanel(_playerPanel); // Save panel to Player object
 
         _userPanel.setBackground(POKER_GREEN);
-        _userPanel.setPreferredSize(new Dimension(600, Integer.MAX_VALUE));
+        _userPanel.setPreferredSize(new Dimension(400, Integer.MAX_VALUE));
         _userPanel.setLayout(new GridBagLayout());
 
         _centeredPanel.setLayout(new BorderLayout());
@@ -807,16 +866,7 @@ public class Game extends JPanel implements Serializable {
         _centeredPanel.add(_playerPanel, BorderLayout.PAGE_START);
         _centeredPanel.add(_actionPanel, BorderLayout.PAGE_END);
 
-        _timer = new JLabel();
-        _timer.setBackground(POKER_GREEN);
-        _timer.setForeground(WHITE);
-        _timer.setFont(new Font("Courier", Font.PLAIN, 40));
-        _timer.setHorizontalAlignment(SwingConstants.CENTER);
-        _timer.setVerticalAlignment(SwingConstants.CENTER);
-        _timer.setText("Time: --");
-
         _userPanel.add(_centeredPanel);
-        _userPanel.add(_timer);
 
         return _userPanel;
     }
@@ -876,7 +926,7 @@ public class Game extends JPanel implements Serializable {
         _results.setFont(new Font("Courier", Font.PLAIN, 28));
         _results.setHorizontalAlignment(SwingConstants.CENTER);
 
-        printGameConsole(result);
+        printGameConsole(result + "\n\n");
         showAICards();
     }
 
@@ -954,7 +1004,35 @@ public class Game extends JPanel implements Serializable {
                 _middlePanel.removeAll();
                 _middlePanel.add(_potPanel, BorderLayout.LINE_START);
                 _middlePanel.add(_communityPanel, BorderLayout.CENTER);
-                _middlePanel.add(_userPanel, BorderLayout.LINE_END);
+                
+                // check to add timer panel
+                if(timerSetting > 0) {
+                    JPanel _holderPanel   = new JPanel();
+                    JPanel _centeredPanel = new JPanel();
+
+                    _centeredPanel.setBackground(POKER_GREEN);
+                    _centeredPanel.setLayout(new GridBagLayout());
+
+                    _centeredPanel.add(_infoPanel);
+
+                    _holderPanel.setLayout(new BorderLayout());
+                    _holderPanel.add(_userPanel, BorderLayout.CENTER);
+                    _holderPanel.add(_centeredPanel, BorderLayout.LINE_END);
+
+                    _middlePanel.add(_holderPanel, BorderLayout.LINE_END);
+                } else {
+                    JPanel _tempPanel    = new JPanel();
+                    JPanel _paddingPanel = new JPanel();
+
+                    _paddingPanel.setBackground(POKER_GREEN);
+                    _paddingPanel.setPreferredSize(new Dimension(150, Integer.MAX_VALUE));
+
+                    _tempPanel.setLayout(new BorderLayout());
+                    _tempPanel.add(_userPanel, BorderLayout.CENTER);
+                    _tempPanel.add(_paddingPanel, BorderLayout.LINE_END);
+
+                    _middlePanel.add(_tempPanel, BorderLayout.LINE_END);
+                }
 
                 revalidate();
                 repaint();
@@ -1186,21 +1264,15 @@ public class Game extends JPanel implements Serializable {
      * @param line String to format and print.
      */
     private void printGameConsole(String line) {
-        String        currentText = _gameLogLabel.getText().replace("</html>", "<br/>");
-        StringBuilder lineBuilder = new StringBuilder(currentText);
         JScrollBar    _scrollBar  = _scrollPane.getVerticalScrollBar();
-    
-        lineBuilder.append(line);
-        lineBuilder.append("</html>");
-    
-        _gameLogLabel.setText(lineBuilder.toString());
-        
-        _scrollPane.revalidate();
-        _scrollPane.repaint();
-    
-        revalidate();
-        repaint();
-    
+
+        _scrollBar  = _scrollPane.getVerticalScrollBar();
+
+        DefaultCaret caret = (DefaultCaret)_scrollTextArea.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+
+        _scrollTextArea.append(line + "\n");
+
         _scrollBar.setValue(_scrollBar.getMaximum());
     }
 }

@@ -22,7 +22,6 @@ public class Title extends JPanel {
     }
 
     private void initComponents() {
-        
         JLabel _titleLabel = new JLabel();
         JLabel _quoteLabel = new JLabel();
         JLabel _imgLabel   = null;
@@ -63,5 +62,4 @@ public class Title extends JPanel {
         revalidate();
         repaint();
     }
-
 }
