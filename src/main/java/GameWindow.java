@@ -4,12 +4,13 @@ import javax.swing.*;
 import java.io.*;
 
 public class GameWindow {
-    
-    public static JFrame     _frame   = new JFrame("CS1530 Poker Game");
-    public static Title      _title   = new Title();
-    public static Game       _game    = null;
-    public static Load       _load    = null;
-    public static boolean    gameOpen = false;
+    private static final Color POKER_GREEN = new Color(71, 113, 72);
+
+    public static JFrame  _frame   = new JFrame("CS1530 Poker Game");
+    public static Title   _title   = new Title();
+    public static Game    _game    = null;
+    public static Load    _load    = null;
+    public static boolean gameOpen = false;
 
     public static void main(String[] args) {
         JMenuBar  _menuBar  = new JMenuBar();
@@ -50,10 +51,53 @@ public class GameWindow {
         _menuBar.add(_menuFile);
         _menuBar.add(_menuGame);
 
+        _title.add(createGameButtons(), BorderLayout.PAGE_END);
+
         _frame.setJMenuBar(_menuBar);
         _frame.add(_title);
         
         _frame.setVisible(true);
+    }
+
+    /**
+     * Create a padded panel and add New/Load Game buttons to it.
+     * @return JPanel containing new buttons.
+     */
+    private static JPanel createGameButtons() {
+        JPanel  _thisPanel      = new JPanel();
+        JPanel  _buttonPanel    = new JPanel();
+        JPanel  _paddingPanel   = new JPanel();
+        JButton _newGameButton  = new JButton("New Game");
+        JButton _loadGameButton = new JButton("Load Game");
+        JButton _extiGameButton = new JButton("Exit");
+
+        _newGameButton.addActionListener(new NewGameListener());
+        _newGameButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 30));
+        _newGameButton.setPreferredSize(new Dimension(250, 100));
+
+        _loadGameButton.addActionListener(new LoadGameListener());
+        _loadGameButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 30));
+        _loadGameButton.setPreferredSize(new Dimension(250, 100));
+
+        _extiGameButton.addActionListener(new ExitListener());
+        _extiGameButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+        _extiGameButton.setPreferredSize(new Dimension(70, 35));
+
+        _buttonPanel.setBackground(POKER_GREEN);
+        _buttonPanel.add(_newGameButton);
+        _buttonPanel.add(_loadGameButton);
+
+        _paddingPanel.setBackground(POKER_GREEN);
+        _paddingPanel.setPreferredSize(new Dimension(50, 50));
+        _paddingPanel.add(_extiGameButton);
+
+        _thisPanel.setBackground(POKER_GREEN);
+        _thisPanel.setLayout(new GridLayout(2, 1));
+
+        _thisPanel.add(_buttonPanel);
+        _thisPanel.add(_paddingPanel);
+        
+        return _thisPanel;
     }
 
     private static class ExitListener implements ActionListener {
