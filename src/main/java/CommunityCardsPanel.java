@@ -1,5 +1,6 @@
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.border.Border;
 
 public class CommunityCardsPanel extends JPanel{
     private final Color POKER_GREEN = new Color(71, 113, 72);
@@ -66,6 +67,31 @@ public class CommunityCardsPanel extends JPanel{
             dealRiver();
             dealtRiver = true;
         }
+    }
+
+    /**
+     * Displays border around cards in the winning hand
+     */
+    public void showWinningCards(){
+        for(int i = 0; i < communityCards.length; i++){
+            if(communityCards[i].isInWinningHand()){
+                Image resizedCard = null;
+                Border raisedbevel = BorderFactory.createRaisedBevelBorder();
+                Border loweredbevel = BorderFactory.createLoweredBevelBorder();
+                Border greenline = BorderFactory.createLineBorder(POKER_GREEN, 10);
+                Border whiteline = BorderFactory.createLineBorder(Color.white, 3);
+
+                Border compound = BorderFactory.createCompoundBorder(raisedbevel, whiteline);
+                compound = BorderFactory.createCompoundBorder(compound, loweredbevel);
+                compound = BorderFactory.createCompoundBorder(compound, greenline);
+
+                resizedCard = communityCards[i].getFace().getScaledInstance(100, 140, java.awt.Image.SCALE_SMOOTH);
+                this._cardLabels[i] = new JLabel(new ImageIcon(resizedCard));
+                this._cardLabels[i].setBorder(compound);
+            }
+        }
+
+        displayCards();
     }
 
     /* Private methods */

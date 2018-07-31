@@ -13,7 +13,6 @@ public class Player implements Serializable {
 	private boolean inHand;
 	private boolean[] activePot;
 
-	//TODO: Better fix than this
 	private Card[]  fullHand; //For determining best hand, stores 2 card hand and community cards
 
 	private JPanel  _cardLoc;

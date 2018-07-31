@@ -896,6 +896,7 @@ public class Game extends JPanel implements Serializable {
     }
 
     private void endOfHand() {
+        String result = "";
         // check for sidepots
         if(pot.numberOfPots() > 1) {
             // re-enable players who started a sidepot
@@ -909,8 +910,12 @@ public class Game extends JPanel implements Serializable {
                 for(int j = 0; j < playersInPot.length; j++) {
                     playerArray[j] = players[playersInPot[j]];
                 }
-                new GameUtils().determineBestHand(playerArray, tableCards, pot.clearPot(i));
+                result = "Side Pot " + i + ": ";
+                result += new GameUtils().determineBestHand(playerArray, tableCards, pot.clearPot(i), false);
+                printGameConsole(result);
             }
+
+            result = "Main Pot: ";
 
             try { // show remaining table cards
                 _communityPanel.deal();
@@ -919,14 +924,11 @@ public class Game extends JPanel implements Serializable {
             } catch(Exception e) {}
         }
 
-        String result   = new GameUtils().determineBestHand(players, tableCards, pot.clearPot(0));
-        JLabel _results = new JLabel(result);
-
-        _results.setForeground(WHITE);
-        _results.setFont(new Font("Courier", Font.PLAIN, 28));
-        _results.setHorizontalAlignment(SwingConstants.CENTER);
-
+        result += new GameUtils().determineBestHand(players, tableCards, pot.clearPot(0), true);
         printGameConsole(result + "\n\n");
+
+        //Display cards that made up winning hand (as well as show the opponents' cards in general)
+        _communityPanel.showWinningCards();
         showAICards();
     }
 
