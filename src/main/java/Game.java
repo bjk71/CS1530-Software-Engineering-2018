@@ -2,6 +2,7 @@ import java.awt.*;
 import javax.swing.*;
 
 import java.io.*;
+import java.time.chrono.JapaneseChronology;
 import java.util.*;
 import javax.imageio.*;
 import java.awt.event.*;
@@ -26,7 +27,6 @@ public class Game extends JPanel implements Serializable {
     private Card[]   tableCards   = null;
     private Card     cardBack     = null;
     private Logging  gameLogging  = null;
-    private Random   random       = new Random();
     
     private Action  playerAction = null;
     private boolean userAction   = false;
@@ -88,10 +88,12 @@ public class Game extends JPanel implements Serializable {
         JPanel             _playerName        = new JPanel();
         JPanel             _numOpponents      = new JPanel();
         JPanel             _timerMode         = new JPanel();
+        JPanel             _trainingMode      = new JPanel();
         JPanel             _startButton       = new JPanel();
         JPanel             _playerNamePanel   = new JPanel();
         JPanel             _numOpponentsPanel = new JPanel();
         JPanel             _timerModePanel    = new JPanel();
+        JPanel             _trainingModePanel = new JPanel();
 
         JLabel             _titleLabel        = new JLabel();        
         JButton            _startGame         = new JButton();
@@ -101,26 +103,32 @@ public class Game extends JPanel implements Serializable {
         JComboBox<Integer> _numOpp            = new JComboBox<>();
         JLabel             _timerLabel        = new JLabel();
         JComboBox<String>  _timerOptions      = new JComboBox<>();
+        JLabel             _trainingLabel     = new JLabel();
+        JComboBox<String>  _trainingOptions   = new JComboBox<>();
 
 
         _playerNamePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         _numOpponentsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         _timerModePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        _trainingModePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-        setLayout(new GridLayout(5,1));
+        setLayout(new GridLayout(6,1));
         
         _playerName.setLayout(new GridLayout(1, 2, 50, 100));
         _numOpponents.setLayout(new GridLayout(1, 2, 50, 100));
         _timerMode.setLayout(new GridLayout(1, 2, 50, 100));
+        _trainingMode.setLayout(new GridLayout(1, 2, 50, 100));
         
         _startTitle.setBackground(POKER_GREEN);
         _playerName.setBackground(POKER_GREEN);
         _numOpponents.setBackground(POKER_GREEN);
         _timerMode.setBackground(POKER_GREEN);
+        _trainingMode.setBackground(POKER_GREEN);
         _startButton.setBackground(POKER_GREEN);
         _playerNamePanel.setBackground(POKER_GREEN);
         _numOpponentsPanel.setBackground(POKER_GREEN);
         _timerModePanel.setBackground(POKER_GREEN);
+        _trainingModePanel.setBackground(POKER_GREEN);
         
         _titleLabel.setForeground(WHITE);
         _titleLabel.setFont(new Font("Courier", Font.PLAIN, 60));
@@ -163,6 +171,17 @@ public class Game extends JPanel implements Serializable {
         _timerOptions.setPreferredSize(new Dimension( 215, 50 ));
         _timerOptions.setFont(new Font("Courier", Font.PLAIN, 30));
         _timerModePanel.add(_timerOptions);
+
+        _trainingLabel.setForeground(WHITE);
+        _trainingLabel.setFont(new Font("Courier", Font.PLAIN, 40));
+        _trainingLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        _trainingLabel.setVerticalAlignment(SwingConstants.TOP);
+        _trainingLabel.setText("Training Mode:");
+
+        _trainingOptions.setModel(new DefaultComboBoxModel<>(new String[] { "No", "Yes" }));        
+        _trainingOptions.setPreferredSize(new Dimension( 215, 50 ));
+        _trainingOptions.setFont(new Font("Courier", Font.PLAIN, 30));
+        _trainingModePanel.add(_trainingOptions);        
         
         _startGame.setText("Start Game");
         _startGame.setFont(new Font("Courier", Font.PLAIN, 30));
@@ -171,10 +190,12 @@ public class Game extends JPanel implements Serializable {
         _startGame.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 //TODO: REGEX user input
-                String name         = _playerNameInput.getText();
-                int    numOpponents = (int) _numOpp.getSelectedItem();
-                String timerSelect  = (String) _timerOptions.getSelectedItem();
-                int    timerValue;
+                String  name            = _playerNameInput.getText();
+                int     numOpponents    = (int) _numOpp.getSelectedItem();
+                String  timerSelect     = (String) _timerOptions.getSelectedItem();
+                String  trainingSelect  = (String) _trainingOptions.getSelectedItem();
+                int     timerValue;
+                boolean trainingMode;
                 if ( timerSelect.equals("15 Seconds") ) {
                     timerValue = 15;
                 } else if ( timerSelect.equals("30 Seconds") ) {
@@ -184,9 +205,14 @@ public class Game extends JPanel implements Serializable {
                 } else {
                     timerValue = -1;
                 }
+                if ( trainingSelect.equals("Yes")){
+                    trainingMode = true;
+                } else {
+                    trainingMode = false;
+                }
 
                 removeAll();
-                createNewGame(name, numOpponents, timerValue);
+                createNewGame(name, numOpponents, timerValue, trainingMode);
             }
         });
         
@@ -197,6 +223,8 @@ public class Game extends JPanel implements Serializable {
         _numOpponents.add(_numOpponentsPanel);
         _timerMode.add(_timerLabel);
         _timerMode.add(_timerModePanel);
+        _trainingMode.add(_trainingLabel);
+        _trainingMode.add(_trainingModePanel);
 
         _startButton.add(_startGame);
         
@@ -204,6 +232,7 @@ public class Game extends JPanel implements Serializable {
         add(_playerName);
         add(_numOpponents);
         add(_timerMode);
+        add(_trainingMode);
         add(_startButton);       
 
         revalidate();
@@ -216,7 +245,7 @@ public class Game extends JPanel implements Serializable {
      * @param numOfAI    Number of AI players to initialize.
      * @param timerValue No timer-mode if -1, else time limit in seconds
      */
-    private void createNewGame(String userName, int numOfAI, int timerValue) {
+    private void createNewGame(String userName, int numOfAI, int timerValue, boolean trainingMode) {
         JPanel     _top          = new JPanel();
         JPanel     _bot          = new JPanel();
         JLabel     _tableLabel   = new JLabel("Pot: ");
