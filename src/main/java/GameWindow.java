@@ -1,8 +1,23 @@
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import java.io.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Dimension;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JFrame;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import java.awt.GridLayout;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 
+/**
+ * Driver class for Poker UI Swing Application.
+ */
 public class GameWindow {
     private static final Color POKER_GREEN = new Color(71, 113, 72);
 
@@ -188,9 +203,11 @@ public class GameWindow {
             {
                 if (_load != null) {
                     _game = _load.updateGame();
+                    _frame.remove(_load);
                 }
-                
-                _frame.remove(_game);
+                if (_game != null){
+                    _frame.remove(_game);
+                }
                 _frame.add(_title);
                 _frame.validate();
                 _frame.repaint();    
