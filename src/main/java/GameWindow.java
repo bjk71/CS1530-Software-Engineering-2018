@@ -13,6 +13,12 @@ public class GameWindow {
     public static boolean gameOpen = false;
 
     public static void main(String[] args) {
+        try {
+            // Set cross-platform Java L&F (also called "Metal")
+            UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"); 
+        } catch (Exception e) {}
+
+
         JMenuBar  _menuBar  = new JMenuBar();
         JMenu     _menuFile = new JMenu("File");
         JMenu     _menuGame = new JMenu("Game");
