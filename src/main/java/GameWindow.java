@@ -7,6 +7,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JOptionPane;
 import java.awt.GridLayout;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -143,9 +144,35 @@ public class GameWindow {
 
                 gameOpen = true;
             } else {
-                // TODO
-                // Are you sure you want to leave the current game?
-                
+                int response = JOptionPane.showConfirmDialog(null, "Do you want to leave the current game?", "Yes",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+                if (response == JOptionPane.YES_OPTION) {
+                    // exit current game
+                    if (_load != null) {
+                        _game = _load.updateGame();
+                        _frame.remove(_load);
+                    }
+                    if (_game != null){
+                        _frame.remove(_game);
+                    }
+                    _frame.add(_title);
+                    _frame.validate();
+                    _frame.repaint();    
+
+                    gameOpen = false;
+
+                    // start new game
+                    _load = null;
+                    _game = new Game();
+                    
+                    _frame.remove(_title);
+                    _frame.add(_game, BorderLayout.NORTH);
+                    _frame.validate();
+                    _frame.repaint();
+
+                    gameOpen = true;
+                }
             }
         }
     }
@@ -163,12 +190,35 @@ public class GameWindow {
                 _frame.repaint();
 
                 gameOpen = true;
-                
-
             } else {
-                // TODO
-                // Are you sure you want to leave the current game?
-                
+                int response = JOptionPane.showConfirmDialog(null, "Do you want to leave the current game?", "Yes",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+                if (response == JOptionPane.YES_OPTION) {
+                    // exit current game
+                    if (_load != null) {
+                        _game = _load.updateGame();
+                        _frame.remove(_load);
+                    }
+                    if (_game != null){
+                        _frame.remove(_game);
+                    }
+                    _frame.add(_title);
+                    _frame.validate();
+                    _frame.repaint();    
+
+                    gameOpen = false;
+
+                    // load game screen
+                    _load = new Load(_frame);
+
+                    _frame.remove(_title);
+                    _frame.add(_load, BorderLayout.NORTH);
+                    _frame.validate();
+                    _frame.repaint();
+
+                    gameOpen = true;
+                }
             }
         }
     }
