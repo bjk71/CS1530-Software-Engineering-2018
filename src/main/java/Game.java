@@ -1128,8 +1128,11 @@ public class Game extends JPanel implements Serializable {
         _newGameButton.setVerticalAlignment(SwingConstants.CENTER);
         _newGameButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                _this.removeAll();
-
+                
+				_this.removeAll();
+				
+				
+				
                 initializeStartGrid();
             }
         });
@@ -1140,7 +1143,7 @@ public class Game extends JPanel implements Serializable {
 		_buttonPanel.setBackground(POKER_GREEN);
 		_imgPanel.setBackground(POKER_GREEN);
 		
-        add(_loserLabel, BorderLayout.PAGE_START);
+        add(_winnerLabel, BorderLayout.PAGE_START);
 		add(_imgPanel);
         add(_panel, BorderLayout.CENTER);
 		add(_buttonPanel);
@@ -1201,8 +1204,14 @@ public class Game extends JPanel implements Serializable {
         _newGameButton.setVerticalAlignment(SwingConstants.CENTER);
         _newGameButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
+				
+				//for(int i = 0; i < players.length; i++) {
+				//	players[i].removeAll();
+				//}
+				//GameWindow.ExitGameListener();
+				
                 _this.removeAll();
-
+				
                 initializeStartGrid();
             }
         });
