@@ -11,7 +11,6 @@ public class Player implements Serializable {
 	private PlayerPanel playerPanel;
 	private int     index;
 	private boolean inHand;
-	private boolean[] activePot;
 
 	private Card[]  fullHand; //For determining best hand, stores 2 card hand and community cards
 
@@ -20,11 +19,10 @@ public class Player implements Serializable {
 	public Player(String name, Card[] cards, int role, int cash, int index){
 		this.name   = name;
 		this.cards  = cards;
-		this.role	= role;
+		this.role	  = role;
 		this.cash   = cash;
 		this.index  = index;
 		this.inHand = true;
-		this.activePot = new boolean[MAXIMUM_SIDEPOTS];
 	}
 
 	/**
@@ -63,14 +61,6 @@ public class Player implements Serializable {
 		return this.fullHand;
 	}
 
-	public void setActivePot(int num, boolean b){
-		this.activePot[num] = b;
-	}
-
-	public boolean getActivePot(int num){
-		return this.activePot[num];
-	}
-
 	public void setPlayerPanel(PlayerPanel panel) {
 		this.playerPanel = panel;
 	}
@@ -100,7 +90,6 @@ public class Player implements Serializable {
 		if(updateDisplay){
 			setLabel();
 		}
-		
 	}
 
 	public boolean isPlayingHand() {
