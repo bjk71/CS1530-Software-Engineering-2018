@@ -2,7 +2,6 @@ import java.awt.*;
 import javax.swing.*;
 
 import java.io.*;
-import java.time.chrono.JapaneseChronology;
 import java.util.*;
 import javax.imageio.*;
 import java.awt.event.*;
@@ -318,6 +317,9 @@ public class Game extends JPanel implements Serializable {
                 players[i] = new Player(userName, playerHand, playerRole, playerStart, i);
                 
                 _userPanel = userPanel();
+                if (trainingGame) {     //Pre-flop hand strength
+                    _infoPanel.setRelativeLabel(new GameUtils().getHandStrength(players[PLAYER_INDEX].getCards()));;
+                }
 
 				gameLogging.writeCardsFile(players[i]);
             } else { // Initialize AI player
@@ -494,7 +496,7 @@ public class Game extends JPanel implements Serializable {
 
                         if(players[index].isPlayingHand()) {
                             if(index == PLAYER_INDEX) {
-                                userTurn(minAction);
+                                userTurn(minAction, i);
                                 if(playerAction.isGreater(minAction)) {
                                     minAction = playerAction;
                                 }
@@ -612,7 +614,7 @@ public class Game extends JPanel implements Serializable {
             return minAction;
         }
 
-        private void userTurn(Action minAction) {
+        private void userTurn(Action minAction, int roundNum) {
             addUserActionListeners(minAction);
 
             TurnTimer timer = null;
@@ -638,6 +640,7 @@ public class Game extends JPanel implements Serializable {
             if( timer != null && !timer.isInterrupted() ) {
                 timer.interrupt();
                 _infoPanel.setTimerText("Time: --");
+                _infoPanel.setOddsLabel("Pot Odds: --");
             }
         }
 
@@ -1015,8 +1018,11 @@ public class Game extends JPanel implements Serializable {
                             players[i].setRole(0);
                         }
 
-                        if(i == 0) {
+                        if(i == PLAYER_INDEX) {
                             players[i].getPlayerPanel().showCards(true);
+                            if (trainingGame) {     //Pre-flop hand strength
+                                _infoPanel.setRelativeLabel(new GameUtils().getHandStrength(players[PLAYER_INDEX].getCards()));;
+                            }
 
                             _userPanel = userPanel();
                         } else {

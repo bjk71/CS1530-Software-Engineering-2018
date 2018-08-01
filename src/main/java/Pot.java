@@ -129,6 +129,7 @@ public class Pot implements Serializable {
      * @param players Array of players, used to record who is in hand to start.
      */
     public void newHand(Player[] players) {
+        this.value = 0;
         numOfSidePots = 0;
         activePot     = 0;
 

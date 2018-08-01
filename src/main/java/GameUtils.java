@@ -1,7 +1,14 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * Utilies for Poker game, includes:
+ *              - Determining winning hand
+ *              - Evaluating hand strength
+ *              - Calculating pot odds 
+ */
 public class GameUtils {
+    private static final int MAX_RANK = 169;
     /**
      * Return up to nine random names for AI players. Checks against playerName to ensure uniqueness.
      * @param  numOfAI    The number of AI player names to return.
@@ -1188,10 +1195,15 @@ public class GameUtils {
      * 
      */
     public String getPotOdds(int pot, int bet) {
-        int gcm = gcm (pot, bet);
-        if (bet == 0) {
+        System.out.println("DEBUG: " + pot);
+        System.out.println("DEBUG: " + bet);
+        
+        int gcm;
+        if (bet == 0) {     //if no bet facing you, default to 1
             bet = 1;
         }
+        gcm = gcm (pot, bet);
+        
         return "Pot Odds: " + (pot/gcm) + " : " + (bet/gcm);
     }
 
@@ -1204,5 +1216,950 @@ public class GameUtils {
     private int gcm(int a, int b) {
         return b == 0 ? a : gcm(b, a % b);
     }
+
+    /**
+     * Gets a string representation of the strength
+     * of a hand. Hands are ranked on a scale of 
+     * 1 to 169, according to http://www.preflophands.com/
+     */
+    public String getHandStrength(Card[] hand) {
+        int rank;
+        String handName;
+        String a, b;
+        String ret = "";
+
+        //Make 1st card highesst
+        if (hand[0].compareTo(hand[1]) < 0 ) {
+            Card temp = hand[0];
+            hand[0] = hand[1];
+            hand[1] = temp;
+        }
+
+        a = hand[0].getValue();
+        b = hand[1].getValue();
+
+        if (areSuited(hand[0], hand[1])) {      //Suited
+            switch (a) {
+                case "A":
+                    switch (b) {
+                        case "K":
+                            rank = 4;    
+                            handName = "Big Slick in a Suit";
+                            break;
+                        case "Q":
+                            rank = 6;
+                            handName = "Anthony & Cleopatra";
+                            break;
+                        case "J":
+                            rank = 8;
+                            handName = "Black Jack";
+                            break;
+                        case "10":
+                            rank = 12;
+                            handName = "Bookends";
+                            break;
+                        case "9":
+                            rank = 19;
+                            handName = "Driving The Truck";
+                            break;
+                        case "8":
+                            rank = 24;
+                            handName = "Dead Man's Hand";
+                            break;
+                        case "7":
+                            rank = 30;
+                            handName = "Red Baron";
+                            break;
+                        case "6":
+                            rank = 34;
+                            handName = "Mile High";
+                            break;
+                        case "5":
+                            rank = 28;
+                            handName = "High Five";
+                            break;
+                        case "4":
+                            rank = 32;
+                            handName = "Sharp Tops";
+                            break;
+                        case "3":
+                            rank = 33;
+                            handName = "Ash Tray";
+                            break;
+                        case "2":
+                            rank = 39;
+                            handName = "Hunting Season";
+                            break;
+                        default:
+                            rank = -1;
+                            handName = "Unknown";
+                            break;
+                    }
+                    break;
+                case "K":
+                    switch (b) {
+                        case "Q":
+                            rank = 7;
+                            handName = "Royal Couple";
+                            break;
+                        case "J":
+                            rank = 9;
+                            handName = "King John";
+                            break;
+                        case "10":
+                            rank = 14;
+                            handName = "Katie";
+                            break;
+                        case "9":
+                            rank = 22;
+                            handName = "Canine";
+                            break;
+                        case "8":
+                            rank = 37;
+                            handName = "The Feast";
+                            break;
+                        case "7":
+                            rank = 44;
+                            handName = "King Salmon";
+                            break;
+                        case "6":
+                            rank = 53;
+                            handName = "The Concubine";
+                            break;
+                        case "5":
+                            rank = 55;
+                            handName = "King of Nickels";
+                            break;
+                        case "4":
+                            rank = 58;
+                            handName = "Fork";
+                            break;
+                        case "3":
+                            rank = 59;
+                            handName = "King Crab";
+                            break;
+                        case "2":
+                            rank = 60;
+                            handName = "White Men Can't Jump";
+                            break;
+                        default:
+                            rank = -1;
+                            handName = "Unknown";
+                            break;
+                    }
+                    break;
+                case "Q":
+                    switch (b) {
+                        case "J":
+                            rank = 13;
+                            handName = "Maverick";
+                            break;
+                        case "10":
+                            rank = 15;
+                            handName = "Gratitude";
+                            break;
+                        case "9":
+                            rank = 25;
+                            handName = "Quinine";
+                            break;
+                        case "8":
+                            rank = 43;
+                            handName = "Kuwait";
+                            break;
+                        case "7":
+                            rank = 61;
+                            handName = "Computer Hand";
+                            break;
+                        case "6":
+                            rank = 66;
+                            handName = "Nesquik";
+                            break;
+                        case "5":
+                            rank = 69;
+                            handName = "Granny Mae";
+                            break;
+                        case "4":
+                            rank = 71;
+                            handName = "Housework";
+                            break;
+                        case "3":
+                            rank = 72;
+                            handName = "San Francisco Busboy";
+                            break;
+                        case "2":
+                            rank = 75;
+                            handName = "Windsor Waiter";
+                            break;
+                        default:
+                            rank = -1;
+                            handName = "Unknown";
+                            break;
+                    }
+                    break;
+                case "J":
+                    switch (b) {
+                        case "10":
+                            rank = 16;
+                            handName = "Morgan";
+                            break;
+                        case "9":
+                            rank = 26;
+                            handName = "Jeanine";
+                            break;
+                        case "8":
+                            rank = 41;
+                            handName = "Jeffrey Dalmer";
+                            break;
+                        case "7":
+                            rank = 64;
+                            handName = "Dice Hand";
+                            break;
+                        case "6":
+                            rank = 79;
+                            handName = "Railroad";
+                            break;
+                        case "5":
+                            rank = 82;
+                            handName = "Jackson Five";
+                            break;
+                        case "4":
+                            rank = 86;
+                            handName = "Flat Tire";
+                            break;
+                        case "3":
+                            rank = 87;
+                            handName = "J-Lo";
+                            break;
+                        case "2":
+                            rank = 89;
+                            handName = "The Jew";
+                            break;
+                        default:
+                            rank = -1;
+                            handName = "Unknown";
+                            break;
+                    }
+                    break;
+                case "10":
+                    switch (b) {
+                        case "9":
+                            rank = 23;
+                            handName = "Count Down";
+                            break;
+                        case "8":
+                            rank = 38;
+                            handName = "Tetris";
+                            break;
+                        case "7":
+                            rank = 57;
+                            handName = "Split";
+                            break;
+                        case "6":
+                            rank = 74;
+                            handName = "Driver's License";
+                            break;
+                        case "5":
+                            rank = 93;
+                            handName = "Dimestore";
+                            break;
+                        case "4":
+                            rank = 95;
+                            handName = "Roger That";
+                            break;
+                        case "3":
+                            rank = 96;
+                            handName = "Hot Waitress";
+                            break;
+                        case "2":
+                            rank = 98;
+                            handName = "Terminator II";
+                            break;
+                        default:
+                            rank = -1;
+                            handName = "Unknown";
+                            break;
+                    }
+                    break;        
+            case "9":
+                switch (b) {
+                    case "8":
+                        rank = 40;
+                        handName = "Oldsmobile";
+                        break;
+                    case "7":
+                        rank = 54;
+                        handName = "Grapefruit";
+                        break;
+                    case "6":
+                        rank = 68;
+                        handName = "Overtime";
+                        break;
+                    case "5":
+                        rank = 88;
+                        handName = "Hard Working";
+                        break;
+                    case "4":
+                        rank = 106;
+                        handName = "San Francisco";
+                        break;
+                    case "3":
+                        rank = 107;
+                        handName = "Jack Benny";
+                        break;
+                    case "2":
+                        rank = 111;
+                        handName = "Twiggy";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;        
+            case "8":
+                switch (b) {
+                    case "7":
+                        rank = 48;
+                        handName = "RPM";
+                        break;
+                    case "6":
+                        rank = 62;
+                        handName = "Jagr";
+                        break;
+                    case "5":
+                        rank = 78;
+                        handName = "Finky Dinky";
+                        break;
+                    case "4":
+                        rank = 94;
+                        handName = "Big Brother";
+                        break;
+                    case "3":
+                        rank = 116;
+                        handName = "Raquel Welch";
+                        break;
+                    case "2":
+                        rank = 118;
+                        handName = "Fat Lady & a Duck";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;
+            case "7":
+                switch (b) {
+                    case "6":
+                        rank = 56;
+                        handName = "America";
+                        break;
+                    case "5":
+                        rank = 67;
+                        handName = "Heinz 57 Sauce";
+                        break;
+                    case "4":
+                        rank = 85;
+                        handName = "Barn Owl";
+                        break;
+                    case "3":
+                        rank = 103;
+                        handName = "Dutch Waiter";
+                        break;
+                    case "2":
+                        rank = 120;
+                        handName = "Beer";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;
+            case "6":
+                switch (b) {
+                    case "5":
+                        rank = 63;
+                        handName = "Bus Pass";
+                        break;
+                    case "4":
+                        rank = 70;
+                        handName = "Revolution";
+                        break;
+                    case "3":
+                        rank = 90;
+                        handName = "JFK";
+                        break;
+                    case "2":
+                        rank = 110;
+                        handName = "Aimsworth";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;
+            case "5":
+                switch (b) {
+                    case "4":
+                        rank = 65;
+                        handName = "Colt";
+                        break;
+                    case "3":
+                        rank = 77;
+                        handName = "Juggernaut";
+                        break;
+                    case "2":
+                        rank = 92;
+                        handName = "Quarter";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;
+            case "4":
+                switch (b) {
+                    case "3":
+                        rank = 84;
+                        handName = "Waltz Time";
+                        break;
+                    case "2":
+                        rank = 97;
+                        handName = "Lumberjack";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;
+            case "3":
+                switch (b) {
+                    case "2":
+                        rank = 105;
+                        handName = "Jordan";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;
+            default:
+                rank = -1;
+                handName = "Unknown";
+                break;
+            }
+        } else {                    //Off-suit
+            switch (a) {
+                case "A":
+                    switch (b) {
+                        case "A":
+                            rank = 1;
+                            handName = "Pocket Rockets";
+                            break;
+                        case "K":
+                            rank = 11;    
+                            handName = "Big Slick";
+                            break;
+                        case "Q":
+                            rank = 18;
+                            handName = "Big Chick";
+                            break;
+                        case "J":
+                            rank = 27;
+                            handName = "Ace Jack-off";
+                            break;
+                        case "10":
+                            rank = 42;
+                            handName = "Bookends";
+                            break;
+                        case "9":
+                            rank = 76;
+                            handName = "Jesus";
+                            break;
+                        case "8":
+                            rank = 91;
+                            handName = "Dead Man's Hand";
+                            break;
+                        case "7":
+                            rank = 102;
+                            handName = "Red Baron";
+                            break;
+                        case "6":
+                            rank = 113;
+                            handName = "Mile High";
+                            break;
+                        case "5":
+                            rank = 101;
+                            handName = "High Five";
+                            break;
+                        case "4":
+                            rank = 104;
+                            handName = "Crashing Airlines";
+                            break;
+                        case "3":
+                            rank = 109;
+                            handName = "Baskin Robbins";
+                            break;
+                        case "2":
+                            rank = 117;
+                            handName = "Arizona";
+                            break;
+                        default:
+                            rank = -1;
+                            handName = "Unknown";
+                            break;
+                    }
+                    break;
+                case "K":
+                    switch (b) {
+                        case "K":
+                            rank = 2;
+                            handName = "Cowboys";
+                            break;
+                        case "Q":
+                            rank = 20;
+                            handName = "Othello";
+                            break;
+                        case "J":
+                            rank = 31;
+                            handName = "Kojax";
+                            break;
+                        case "10":
+                            rank = 45;
+                            handName = "Woodcutter";
+                            break;
+                        case "9":
+                            rank = 81;
+                            handName = "Sawmill";
+                            break;
+                        case "8":
+                            rank = 112;
+                            handName = "Kokomo";
+                            break;
+                        case "7":
+                            rank = 122;
+                            handName = "King Salmon";
+                            break;
+                        case "6":
+                            rank = 125;
+                            handName = "The Concubine";
+                            break;
+                        case "5":
+                            rank = 128;
+                            handName = "Rotten Cowboy";
+                            break;
+                        case "4":
+                            rank = 132;
+                            handName = "Fork";
+                            break;
+                        case "3":
+                            rank = 133;
+                            handName = "Commander Crab";
+                            break;
+                        case "2":
+                            rank = 135;
+                            handName = "Big Fritz";
+                            break;
+                        default:
+                            rank = -1;
+                            handName = "Unknown";
+                            break;
+                    }
+                    break;
+                case "Q":
+                    switch (b) {
+                        case "Q":
+                            rank = 3;
+                            handName = "West Hollywood";
+                            break;
+                        case "J":
+                            rank = 35;
+                            handName = "Fred & Ethel";
+                            break;
+                        case "10":
+                            rank = 49;
+                            handName = "Greyhound";
+                            break;
+                        case "9":
+                            rank = 83;
+                            handName = "Quinine";
+                            break;
+                        case "8":
+                            rank = 115;
+                            handName = "Kuwait";
+                            break;
+                        case "7":
+                            rank = 131;
+                            handName = "Computer Hand";
+                            break;
+                        case "6":
+                            rank = 137;
+                            handName = "Quix";
+                            break;
+                        case "5":
+                            rank = 141;
+                            handName = "Granny Mae";
+                            break;
+                        case "4":
+                            rank = 143;
+                            handName = "Housework";
+                            break;
+                        case "3":
+                            rank = 144;
+                            handName = "San Francisco Busboy";
+                            break;
+                        case "2":
+                            rank = 146;
+                            handName = "The Vesty";
+                            break;
+                        default:
+                            rank = -1;
+                            handName = "Unknown";
+                            break;
+                    }
+                    break;
+                case "J":
+                    switch (b) {
+                        case "J":
+                            rank = 5;
+                            handName = "Jokers";
+                            break;
+                        case "10":
+                            rank = 47;
+                            handName = "Morgan";
+                            break;
+                        case "9":
+                            rank = 80;
+                            handName = "Emergency";
+                            break;
+                        case "8":
+                            rank = 108;
+                            handName = "Jeffrey Dalmer";
+                            break;
+                        case "7":
+                            rank = 129;
+                            handName = "Dice";
+                            break;
+                        case "6":
+                            rank = 147;
+                            handName = "Jack Sikma";
+                            break;
+                        case "5":
+                            rank = 149;
+                            handName = "Motown";
+                            break;
+                        case "4":
+                            rank = 152;
+                            handName = "Kid Grenade";
+                            break;
+                        case "3":
+                            rank = 153;
+                            handName = "Fortran";
+                            break;
+                        case "2":
+                            rank = 155;
+                            handName = "Bennifer";
+                            break;
+                        default:
+                            rank = -1;
+                            handName = "Unknown";
+                            break;
+                    }
+                    break;
+                case "10":
+                    switch (b) {
+                        case "10":
+                            rank = 10;
+                            handName = "Twenty Miles";
+                            break;
+                        case "9":
+                            rank = 73;
+                            handName = "Mobile Hand";
+                            break;
+                        case "8":
+                            rank = 100;
+                            handName = "Tetris";
+                            break;
+                        case "7":
+                            rank = 124;
+                            handName = "Bowling";
+                            break;
+                        case "6":
+                            rank = 140;
+                            handName = "Sweet Sixteen";
+                            break;
+                        case "5":
+                            rank = 157;
+                            handName = "Nickels & Dimes";
+                            break;
+                        case "4":
+                            rank = 158;
+                            handName = "Over & Out";
+                            break;
+                        case "3":
+                            rank = 160;
+                            handName = "Hot Waitress";
+                            break;
+                        case "2":
+                            rank = 162;
+                            handName = "Texas Dolly";
+                            break;
+                        default:
+                            rank = -1;
+                            handName = "Unknown";
+                            break;
+                    }
+                    break;        
+            case "9":
+                switch (b) {
+                    case "9":
+                        rank = 17;
+                        handName = "Wayne Gretzky";
+                        break;
+                    case "8":
+                        rank = 99;
+                        handName = "Oldsmobile";
+                        break;
+                    case "7":
+                        rank = 119;
+                        handName = "Grapefruit";
+                        break;
+                    case "6":
+                        rank = 134;
+                        handName = "Percy";
+                        break;
+                    case "5":
+                        rank = 150;
+                        handName = "Dolly Parton";
+                        break;
+                    case "4":
+                        rank = 164;
+                        handName = "Joe Montana Banana";
+                        break;
+                    case "3":
+                        rank = 165;
+                        handName = "Jack Benny";
+                        break;
+                    case "2":
+                        rank = 166;
+                        handName = "Twiggy";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;        
+            case "8":
+                switch (b) {
+                    case "8":
+                        rank = 21;
+                        handName = "Snowmen";
+                        break;
+                    case "7":
+                        rank = 114;
+                        handName = "Tahoe";
+                        break;
+                    case "6":
+                        rank = 126;
+                        handName = "Maxwell Smart";
+                        break;
+                    case "5":
+                        rank = 139;
+                        handName = "The Scag";
+                        break;
+                    case "4":
+                        rank = 156;
+                        handName = "George Orwell";
+                        break;
+                    case "3":
+                        rank = 167;
+                        handName = "Sven";
+                        break;
+                    case "2":
+                        rank = 168;
+                        handName = "Fat Lady & a Duck";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;
+            case "7":
+                switch (b) {
+                    case "7":
+                        rank = 29;
+                        handName = "Saturn";
+                        break;
+                    case "6":
+                        rank = 121;
+                        handName = "Union Oil";
+                        break;
+                    case "5":
+                        rank = 130;
+                        handName = "Filipino Slick";
+                        break;
+                    case "4":
+                        rank = 145;
+                        handName = "Cambodian Slick";
+                        break;
+                    case "3":
+                        rank = 161;
+                        handName = "Rusty Trombone";
+                        break;
+                    case "2":
+                        rank = 169;
+                        handName = "Death";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;
+            case "6":
+                switch (b) {
+                    case "6":
+                        rank = 36;
+                        handName = "Kicks";
+                        break;
+                    case "5":
+                        rank = 123;
+                        handName = "Ken Warren";
+                        break;
+                    case "4":
+                        rank = 136;
+                        handName = "The Question";
+                        break;
+                    case "3":
+                        rank = 148;
+                        handName = "Blocky";
+                        break;
+                    case "2":
+                        rank = 163;
+                        handName = "Bed & Breakfast";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;
+            case "5":
+                switch (b) {
+                    case "5":
+                        rank = 46;
+                        handName = "Presto";
+                        break;
+                    case "4":
+                        rank = 127;
+                        handName = "Colt 45";
+                        break;
+                    case "3":
+                        rank = 138;
+                        handName = "Bully Johnson";
+                        break;
+                    case "2":
+                        rank = 151;
+                        handName = "Quarter";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;
+            case "4":
+                switch (b) {
+                    case "4":
+                        rank = 50;
+                        handName = "Sail Boats";
+                        break;
+                    case "3":
+                        rank = 142;
+                        handName = "Waltz Time";
+                        break;
+                    case "2":
+                        rank = 154;
+                        handName = "The Answer";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;
+            case "3":
+                switch (b) {
+                    case "3":
+                        rank = 51;
+                        handName = "City Parks";
+                        break;
+                    case "2":
+                        rank = 159;
+                        handName = "Can of Corn";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;
+            case "2":
+                switch (b) {
+                    case "2":
+                        rank = 52;
+                        handName = "Quackers";
+                        break;
+                    default:
+                        rank = -1;
+                        handName = "Unknown";
+                        break;
+                }
+                break;
+            default:
+                rank = -1;
+                handName = "Unknown";
+                break;
+            }
+        }
+
+        ret += "<html><p>";
+        ret += "<center>" + handName + "</center>";
+        ret += "<br />";
+        ret += "<center>Hand Strength : " + rank + " / " + MAX_RANK + "</center>";
+        ret += "</html>";
+
+        return ret;
+    } 
+
+
+    /**
+     * Determines if two cards have the same suit
+     * @param a     1st Card
+     * @param b     2nd Card
+     * @return      boolean:    true if same suit
+     */
+    private boolean areSuited(Card a, Card b) {
+        return a.getSuit().equals(b.getSuit());
+    }
+
+    /**
+     * Determines if two cards have the same value
+     * @param a     1st Card
+     * @param b     2nd Card
+     * @return      boolean:    true if same val
+     */
+    private boolean areRanked(Card a, Card b) {
+        return a.getValue().equals(b.getValue());
+    }
+
+
 
 }
