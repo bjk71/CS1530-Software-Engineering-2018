@@ -677,6 +677,8 @@ public class Game extends JPanel implements Serializable {
             });
 
             if(minAction.getValue() == 0) {
+                _checkButton.setText("Check");
+
                 _checkButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         playerAction = new Action(0);
@@ -696,7 +698,24 @@ public class Game extends JPanel implements Serializable {
 
                 _checkButton.setEnabled(true);
             } else {
-                _checkButton.setEnabled(false);
+                _checkButton.setText("Call");
+
+                _checkButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        playerAction = new Action(minimumBet);
+
+                        pot.bet(players[0], minimumBet);
+                        
+                        userAction = true;
+
+                        // disable buttons
+                        setButtons(false);
+
+                        // print user action
+                        gameLogging.writeActionFile(playerAction, players[0]);
+                        printGameConsole(players[0].getName() + " " + playerAction.toString() + ", total " + new Action(pot.getPlayerBet(0)).getValue());
+                    }
+                });
 
                 revalidate();
                 repaint(); 
