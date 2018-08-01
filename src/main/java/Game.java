@@ -454,9 +454,6 @@ public class Game extends JPanel implements Serializable {
                     }
 
                     index = startIndex;
-                    System.out.println("start index: " + startIndex);
-
-                    // TODO: let big blind get chance to check first round
 
                     while(index != pot.getSetBet()) {
                         if(players[index].isPlayingHand()) {
