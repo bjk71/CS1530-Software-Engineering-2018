@@ -1,12 +1,15 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.io.*;
 
 public class GameWindow {
-    
+    private static final Color POKER_GREEN = new Color(71, 113, 72);
+
     public static JFrame  _frame   = new JFrame("CS1530 Poker Game");
     public static Title   _title   = new Title();
     public static Game    _game    = null;
+    public static Load    _load    = null;
     public static boolean gameOpen = false;
 
     public static void main(String[] args) {
@@ -20,9 +23,11 @@ public class GameWindow {
         JMenuItem _exitGame = new JMenuItem("Exit Game");
 
         ActionListener newGameListener  = new NewGameListener();
+        ActionListener loadGameListener = new LoadGameListener();
+        ActionListener saveGameListener = new SaveGameListener();
         ActionListener exitGameListener = new ExitGameListener();
         
-        new GameWindow();
+       
 
         _frame.setSize(1600, 900);
         _frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -32,6 +37,8 @@ public class GameWindow {
 
         _fileExit.addActionListener(new ExitListener());
         _newGame.addActionListener(newGameListener);
+        _loadGame.addActionListener(loadGameListener);
+        _saveGame.addActionListener(saveGameListener);
         _exitGame.addActionListener(exitGameListener);
 
         _menuFile.add(_fileExit);
@@ -44,10 +51,53 @@ public class GameWindow {
         _menuBar.add(_menuFile);
         _menuBar.add(_menuGame);
 
+        _title.add(createGameButtons(), BorderLayout.PAGE_END);
+
         _frame.setJMenuBar(_menuBar);
         _frame.add(_title);
         
         _frame.setVisible(true);
+    }
+
+    /**
+     * Create a padded panel and add New/Load Game buttons to it.
+     * @return JPanel containing new buttons.
+     */
+    private static JPanel createGameButtons() {
+        JPanel  _thisPanel      = new JPanel();
+        JPanel  _buttonPanel    = new JPanel();
+        JPanel  _paddingPanel   = new JPanel();
+        JButton _newGameButton  = new JButton("New Game");
+        JButton _loadGameButton = new JButton("Load Game");
+        JButton _extiGameButton = new JButton("Exit");
+
+        _newGameButton.addActionListener(new NewGameListener());
+        _newGameButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 30));
+        _newGameButton.setPreferredSize(new Dimension(250, 100));
+
+        _loadGameButton.addActionListener(new LoadGameListener());
+        _loadGameButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 30));
+        _loadGameButton.setPreferredSize(new Dimension(250, 100));
+
+        _extiGameButton.addActionListener(new ExitListener());
+        _extiGameButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+        _extiGameButton.setPreferredSize(new Dimension(70, 35));
+
+        _buttonPanel.setBackground(POKER_GREEN);
+        _buttonPanel.add(_newGameButton);
+        _buttonPanel.add(_loadGameButton);
+
+        _paddingPanel.setBackground(POKER_GREEN);
+        _paddingPanel.setPreferredSize(new Dimension(50, 50));
+        _paddingPanel.add(_extiGameButton);
+
+        _thisPanel.setBackground(POKER_GREEN);
+        _thisPanel.setLayout(new GridLayout(2, 1));
+
+        _thisPanel.add(_buttonPanel);
+        _thisPanel.add(_paddingPanel);
+        
+        return _thisPanel;
     }
 
     private static class ExitListener implements ActionListener {
@@ -62,6 +112,7 @@ public class GameWindow {
         public void actionPerformed(ActionEvent e) {
             if(gameOpen == false)
             {
+                _load = null;
                 _game = new Game();
                 
                 _frame.remove(_title);
@@ -78,11 +129,67 @@ public class GameWindow {
         }
     }
 
+    private static class LoadGameListener implements ActionListener {
+    
+        public void actionPerformed(ActionEvent e) {
+            if(gameOpen == false)
+            {
+                _load = new Load(_frame);
+
+                _frame.remove(_title);
+                _frame.add(_load, BorderLayout.NORTH);
+                _frame.validate();
+                _frame.repaint();
+
+                gameOpen = true;
+                
+
+            } else {
+                // TODO
+                // Are you sure you want to leave the current game?
+                
+            }
+        }
+    }
+
+    private static class SaveGameListener implements ActionListener {
+    
+        public void actionPerformed(ActionEvent e) {
+            if(gameOpen == true)
+            {
+                if (_load != null){
+                    _game = _load.updateGame();
+                }
+                
+                try {
+                    FileOutputStream fos = new FileOutputStream("SaveGame.ser");
+                    ObjectOutputStream oos = new ObjectOutputStream(fos);
+                    // write object to file
+                    oos.writeObject(_game);
+                    // closing resources
+                    oos.close();
+                    fos.close();
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
+
+            } else {
+                // TODO
+                // Are you sure you want to leave the current game?
+                
+            }
+        }
+    }
+
     private static class ExitGameListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
             if(gameOpen == true)
             {
+                if (_load != null) {
+                    _game = _load.updateGame();
+                }
+                
                 _frame.remove(_game);
                 _frame.add(_title);
                 _frame.validate();
@@ -92,4 +199,18 @@ public class GameWindow {
             }
         }
     }
+	
+	public static void restartGame() {
+		
+		if (_load != null) {
+                    _game = _load.updateGame();
+                }
+                
+                _frame.remove(_game);
+                _frame.add(_title);
+                _frame.validate();
+                _frame.repaint(); 
+				
+				gameOpen = false;
+	}
 }

@@ -8,3 +8,13 @@
  apply plugin: 'application'
 
  mainClassName = "GameWindow"
+
+ repositories {
+    mavenCentral()
+ }
+
+ dependencies{
+     testCompile 'junit:junit:4.12'
+ }
+
+

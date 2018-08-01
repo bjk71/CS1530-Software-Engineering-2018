@@ -1,8 +1,10 @@
+import java.io.Serializable;
+
 /**
  * Stores integer value related to Player class bet. Positive value represents
  * a dollar amount, zero represents checking, and a negative value is folding.
  */
-public class Action {
+public class Action implements Serializable {
 
     private int value = 0;
     
@@ -51,6 +53,19 @@ public class Action {
             return 0;
         } else {
             return -1;
+        }
+    }
+
+    /**
+     * Return true if this action is greater than passed in action.
+     * @param  compare Value to compare <b>this</b> against.
+     * @return Boolean true if greater than <b>compare</b>.
+     */
+    public boolean isGreater(Action compare) {
+        if(this.value > compare.getValue()) {
+            return true;
+        } else {
+            return false;
         }
     }
 

@@ -7,9 +7,10 @@ public class PotPanel extends JPanel {
     private final Color POKER_GREEN = new Color(71, 113, 72);
     private final Color WHITE       = Color.WHITE;
     private final Font  COURIER     = new Font("Courier", Font.PLAIN, 22);
+    private final int   MAXIMUM_SIDEPOTS = 8;
 
-    private JLabel _potLabel = new JLabel();
-    private int    value = 0;
+    private JLabel[] _potLabel = new JLabel[MAXIMUM_SIDEPOTS];
+    private int[]    value     = new int[MAXIMUM_SIDEPOTS];
 
     /**
      * Initialize pot <b>value</b> to zero.
@@ -23,9 +24,33 @@ public class PotPanel extends JPanel {
      * @param value Dollar value to initialize pot to.
      */
     public PotPanel(int value) {
-        this.value = value;
+        this._potLabel[0] = new JLabel();
+        this.value[0]     = value;
 
-        updateLabel();
+        updateLabel(0);
+        showComponent();
+    }
+
+    public void setPots(int[] pots) {
+        for(int i = 0; i < pots.length; i++) {
+            if(pots[i] > 0) {
+                this._potLabel[i] = new JLabel();
+                this.value[i]     = pots[i];
+                updateLabel(i);
+            } else {
+                this._potLabel[i] = null;
+                this.value[i]     = 0;
+            }
+        }
+
+        showComponent();
+    }
+
+    public void addPot(int num, int value){
+        this._potLabel[num] = new JLabel();
+        this.value[num]     = value;
+
+        updateLabel(num);
         showComponent();
     }
 
@@ -33,24 +58,27 @@ public class PotPanel extends JPanel {
      * Update pot by positive or negative value <b>change</b>.
      * @return New pot total.
      */
-    public int adjustPot(int change) {
-        this.value += change;
+    public int adjustPot(int num, int change) {
+        try {
+            this.value[num] += change;
 
-        updateLabel();
+            updateLabel(num);
 
-        return this.value;
+        } catch(Exception e) {}
+
+        return this.value[num];
     }
 
     /**
      * Set pot <b>value</b> to zero and return amount cleared.
      * @return Integer value of total pot from last round.
      */
-    public int clearPot() {
-        int total = this.value;
+    public int clearPot(int num) {
+        int total = this.value[num];
 
-        this.value = 0;
+        this.value[num] = 0;
 
-        updateLabel();
+        updateLabel(num);
 
         return total;
     }
@@ -58,26 +86,39 @@ public class PotPanel extends JPanel {
     /* Private methods */
 
     /**
-     * Update pot label text.
+     * Update pot label text for pot at index <b>num</b>.
      */
-    private void updateLabel() {
-        this._potLabel.setText("Pot: $" + this.value);
+    private void updateLabel(int num) {
+        if(num == 0) {
+            this._potLabel[num].setText("Pot: $" + this.value[num] + "   ");
+        } else {
+            this._potLabel[num].setText("Side Pot " + num + ": $" + this.value[num] + "   ");
+        }
 
-        this.add(_potLabel);
+        this.revalidate();
+        this.repaint();
     }
 
     /**
      * Initialize and add components.
      */
     private void showComponent() {
-        this._potLabel.setBackground(POKER_GREEN);
-        this._potLabel.setForeground(WHITE);
-        this._potLabel.setFont(COURIER);
+        GridBagConstraints constraints = new GridBagConstraints();
 
         this.setBackground(POKER_GREEN);
         this.setLayout(new GridBagLayout());
         this.setPreferredSize(new Dimension(500, Integer.MAX_VALUE));
-        this.add(this._potLabel);
+        this.removeAll();
+
+        for(int i = 0; i < _potLabel.length; i++) {
+            try {
+                this._potLabel[i].setBackground(POKER_GREEN);
+                this._potLabel[i].setForeground(WHITE);
+                this._potLabel[i].setFont(COURIER);   
+                constraints.gridy = i;     
+                this.add(this._potLabel[i], constraints);
+            } catch (Exception e) {}
+        }
 
         this.revalidate();
         this.repaint();

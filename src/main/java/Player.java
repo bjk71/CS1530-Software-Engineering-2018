@@ -1,23 +1,38 @@
 import javax.swing.*;
+import java.io.Serializable;
 
-public class Player{
+public class Player implements Serializable {
+	private final int MAXIMUM_SIDEPOTS = 8;
+
 	private String  name;
 	private Card[]  cards;
 	private int 	role;
 	private int     cash;
 	private PlayerPanel playerPanel;
-	private boolean isUser;
+	private int     index;
 	private boolean inHand;
+	private boolean[] activePot;
+
+	//TODO: Better fix than this
+	private Card[]  fullHand; //For determining best hand, stores 2 card hand and community cards
 
 	private JPanel  _cardLoc;
 	
-	public Player(String name, Card[] cards, int role, int cash, boolean isUser){
+	public Player(String name, Card[] cards, int role, int cash, int index){
 		this.name   = name;
 		this.cards  = cards;
 		this.role	= role;
 		this.cash   = cash;
-		this.isUser = isUser;
+		this.index  = index;
 		this.inHand = true;
+		this.activePot = new boolean[MAXIMUM_SIDEPOTS];
+	}
+
+	/**
+     * Reinitialize Card images after loading from save file
+     */
+	public void reinitImages() {
+		this.playerPanel.reinitImages();
 	}
 	
 	public String getName(){
@@ -27,12 +42,34 @@ public class Player{
 	public Card[] getCards(){
 		return this.cards;
 	}
+	
+	public int getIndex() {
+		return this.index;
+	}
 
-	public void setCards(Card[] newHand){
+	public void setCards(Card[] newHand, boolean updateDisplay){
 		this.cards = newHand;
 
-		this.playerPanel.setPlayerCards(newHand);
-		this.playerPanel.showCards(false);
+		if(updateDisplay){
+			this.playerPanel.setPlayerCards(newHand);
+			this.playerPanel.showCards(false);
+		}
+	}
+
+	public void setFullHand(Card[] hand){
+		this.fullHand = hand;
+	}
+
+	public Card[] getFullHand(){
+		return this.fullHand;
+	}
+
+	public void setActivePot(int num, boolean b){
+		this.activePot[num] = b;
+	}
+
+	public boolean getActivePot(int num){
+		return this.activePot[num];
 	}
 
 	public void setPlayerPanel(PlayerPanel panel) {
@@ -55,13 +92,16 @@ public class Player{
 		return this.cash;
 	}
 
-	public void adjustCash(int amount) {
+	public void adjustCash(int amount, boolean updateDisplay){
 		this.cash += amount;
 		if(this.cash < 0){
 			this.inHand = false;
 		}
 
-		setLabel();
+		if(updateDisplay){
+			setLabel();
+		}
+		
 	}
 
 	public boolean isPlayingHand() {
