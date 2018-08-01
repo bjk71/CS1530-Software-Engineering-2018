@@ -436,6 +436,7 @@ public class Game extends JPanel implements Serializable {
         int       startIndex  = -1;
         int       index       = -1;
         boolean   keepPlaying = true;
+        boolean   firstHand   = false;
 
         public void run() {
             while(keepPlaying) {
@@ -473,6 +474,8 @@ public class Game extends JPanel implements Serializable {
                         // print blind actions
                         printGameConsole(players[sBlindNum].getName() + " played $" + sBlindVal + " ante");
                         printGameConsole(players[bBlindNum].getName() + " played $" + bBlindVal + " ante");
+
+                        firstHand = true;
                     } else {
                         startIndex = sBlindNum;
                         minAction  = new Action(0);
@@ -485,15 +488,8 @@ public class Game extends JPanel implements Serializable {
                     }
 
                     index = startIndex;
-                    System.out.println("start index: " + startIndex);
-
-                    // TODO: let big blind get chance to check first round
 
                     while(index != pot.getSetBet()) {
-                        // JScrollBar _scrollBar = _scrollPane.getVerticalScrollBar();
-                        // _scrollBar.setValue(_scrollBar.getMaximum());
-
-
                         if(players[index].isPlayingHand()) {
                             if(index == PLAYER_INDEX) {
                                 userTurn(minAction, i);
@@ -503,26 +499,47 @@ public class Game extends JPanel implements Serializable {
                             } else {
                                 minAction = aiTurn(minAction, index);
                             }
-
-                            // _scrollBar.setValue(_scrollBar.getMaximum());
                         }
                         index++;
                         if(index >= players.length) {
                             index = 0;
                         }
                         
-                        
                         // sleep to watch user bets take place
-                        try{
-                            // _scrollBar.setValue(_scrollBar.getMaximum());
-                            // _scrollPane.revalidate();
-                            // _scrollPane.repaint();
-                            Thread.sleep(500);
-                        } catch(InterruptedException ex){
-                            Thread.currentThread().interrupt();
+                        if(players[0].isPlayingHand()) {
+                            try{
+                                Thread.sleep(500);
+                            } catch(InterruptedException ex){
+                                Thread.currentThread().interrupt();
+                            }
                         }
-                        // _scrollBar.setValue(_scrollBar.getMaximum());
 
+                        // first round big blind can bet again
+                        if(index == pot.getSetBet() && firstHand && players[index].getRole() == 3) {
+                            Action startAction = minAction;
+
+                            if(players[index].isPlayingHand()) {
+                                if(index == 0) {
+                                    userTurn(minAction);
+                                    if(playerAction.isGreater(minAction)) {
+                                        minAction = playerAction;
+                                    }
+                                } else {
+                                    minAction = aiTurn(minAction, index);
+                                }
+                            }
+                            index++;
+                            if(index >= players.length) {
+                                index = 0;
+                            }
+
+                            firstHand = false;
+
+                            // if checked, break loop
+                            if(startAction.getValue() == minAction.getValue()) {
+                                break;
+                            }
+                        }
                     }
                 }
 

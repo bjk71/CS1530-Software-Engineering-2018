@@ -164,7 +164,7 @@ public class PlayerPanel extends JPanel {
         _bottomPanel.add(_cardLabels[0]);
         _bottomPanel.add(_cardLabels[1]);
 
-        this._cardPanel.add(imagePanel(52, getRoleImage(this.playerRole)));
+        this._cardPanel.add(imagePanel(50, getRoleImage(this.playerRole)));
         this._cardPanel.add(_bottomPanel);
 
         this.repaint();
@@ -217,13 +217,13 @@ public class PlayerPanel extends JPanel {
         try {
             switch(role) {
                 case 1:
-                    image = ImageIO.read(this.getClass().getResource("/Dealer.png"));
+                    image = ImageIO.read(this.getClass().getResource("/d.png")).getScaledInstance(40, 40,  java.awt.Image.SCALE_SMOOTH);
                     break;
                 case 2:
-                    image = ImageIO.read(this.getClass().getResource("/Small-Blind.png"));
+                    image = ImageIO.read(this.getClass().getResource("/sb.png")).getScaledInstance(40, 40,  java.awt.Image.SCALE_SMOOTH);
                     break;
                 case 3:
-                    image = ImageIO.read(this.getClass().getResource("/Big-Blind.png"));
+                    image = ImageIO.read(this.getClass().getResource("/bb.png")).getScaledInstance(40, 40,  java.awt.Image.SCALE_SMOOTH);
                     break;
             }
         } catch (IOException ioex) {
