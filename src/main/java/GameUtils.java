@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class GameUtils{
+public class GameUtils {
     /**
      * Return up to nine random names for AI players. Checks against playerName to ensure uniqueness.
      * @param  numOfAI    The number of AI player names to return.
@@ -1179,6 +1179,30 @@ public class GameUtils{
         }
 
         return;
+    }
+
+    /**
+     * Gets a string representation of the pot odds
+     * @param pot   Current value of pot
+     * @param bet   Minimum bet facing player
+     * 
+     */
+    public String getPotOdds(int pot, int bet) {
+        int gcm = gcm (pot, bet);
+        if (bet == 0) {
+            bet = 1;
+        }
+        return "Pot Odds: " + (pot/gcm) + " : " + (bet/gcm);
+    }
+
+    /**
+     * Returns the greatest common multiple of two integeres
+     * @param a     2nd Integer
+     * @param b     1st Integer
+     * @return      Greatest Common Multiple
+     */
+    private int gcm(int a, int b) {
+        return b == 0 ? a : gcm(b, a % b);
     }
 
 }

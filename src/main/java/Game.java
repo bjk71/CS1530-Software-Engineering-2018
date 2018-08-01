@@ -19,11 +19,13 @@ public class Game extends JPanel implements Serializable {
     private final int   bBlindVal    = 20;
     private final int   startingCash = 1000;
     private final int   playerStart  = 1000;
+    private final int   PLAYER_INDEX = 0;       //Index of Human Player
 
     private Player[] players      = null;
     private Deck     deck         = null;
     private Pot      pot          = null;
     private int      timerSetting = -1;
+    private boolean  trainingGame = false;
     private Card[]   tableCards   = null;
     private Card     cardBack     = null;
     private Logging  gameLogging  = null;
@@ -264,6 +266,7 @@ public class Game extends JPanel implements Serializable {
         players      = new Player[numOfAI + 1];
         pot          = new Pot(_potPanel, numOfAI + 1);
         timerSetting = timerValue;
+        trainingGame = trainingMode;
 		
 		dealerNum 	= -1;
 		sBlindNum	= -1;
@@ -311,7 +314,7 @@ public class Game extends JPanel implements Serializable {
             playerHand[0] = deck.draw();
             playerHand[1] = deck.draw();
 
-            if(i == 0) { // Initialize human player
+            if(i == PLAYER_INDEX) { // Initialize human player
                 players[i] = new Player(userName, playerHand, playerRole, playerStart, i);
                 
                 _userPanel = userPanel();
@@ -347,7 +350,7 @@ public class Game extends JPanel implements Serializable {
         _middlePanel.add(_communityPanel, BorderLayout.CENTER);
 
         // check to add timer panel
-        if(timerSetting > 0) {
+        if(timerSetting > 0 || trainingGame) {
             JPanel _holderPanel   = new JPanel();
             JPanel _centeredPanel = new JPanel();
 
@@ -490,7 +493,7 @@ public class Game extends JPanel implements Serializable {
 
 
                         if(players[index].isPlayingHand()) {
-                            if(index == 0) {
+                            if(index == PLAYER_INDEX) {
                                 userTurn(minAction);
                                 if(playerAction.isGreater(minAction)) {
                                     minAction = playerAction;
@@ -618,6 +621,10 @@ public class Game extends JPanel implements Serializable {
                 timer.start();
             }
 
+            if (trainingGame) {
+                _infoPanel.setOddsLabel(new GameUtils().getPotOdds(pot.getValue(), minAction.getValue()-pot.getPlayerBet(PLAYER_INDEX)));
+            }
+
             while(!userAction) { // loop until change
                 try{
                     Thread.sleep(500);
@@ -662,14 +669,14 @@ public class Game extends JPanel implements Serializable {
             // enable buttons
             setButtons(true);
 
-            System.out.printf("min action: %d, getPlayerBet: %d\n", minAction.getValue(), pot.getPlayerBet(0));
+            System.out.printf("min action: %d, getPlayerBet: %d\n", minAction.getValue(), pot.getPlayerBet(PLAYER_INDEX));
 
-            if(minAction.getValue() >= minBet && minAction.getValue() <= players[0].getCash()) {
-                minBet = minAction.getValue() - pot.getPlayerBet(0);
-            } else if(minAction.getValue() > players[0].getCash()) { // player doesn't have enough cash to call, must go all in
-                minBet = players[0].getCash();
+            if(minAction.getValue() >= minBet && minAction.getValue() <= players[PLAYER_INDEX].getCash()) {
+                minBet = minAction.getValue() - pot.getPlayerBet(PLAYER_INDEX);
+            } else if(minAction.getValue() > players[PLAYER_INDEX].getCash()) { // player doesn't have enough cash to call, must go all in
+                minBet = players[PLAYER_INDEX].getCash();
             }
-            betModel = new SpinnerNumberModel(minBet, minBet, players[0].getCash(), 10);
+            betModel = new SpinnerNumberModel(minBet, minBet, players[PLAYER_INDEX].getCash(), 10);
 
             _betSpinner.setModel(betModel);
             _betSpinner.requestFocus();
@@ -682,12 +689,12 @@ public class Game extends JPanel implements Serializable {
 
                     if(betAmount < minimumBet) {
                         _betSpinner.setValue(minAction.getValue());
-                    } else if(betAmount > players[0].getCash()) {
-                        _betSpinner.setValue(players[0].getCash());
+                    } else if(betAmount > players[PLAYER_INDEX].getCash()) {
+                        _betSpinner.setValue(players[PLAYER_INDEX].getCash());
                     }else {
-                        pot.bet(players[0], betAmount);
+                        pot.bet(players[PLAYER_INDEX], betAmount);
 
-                        playerAction = new Action(pot.getPlayerBet(0));
+                        playerAction = new Action(pot.getPlayerBet(PLAYER_INDEX));
 
                         userAction = true;
 
@@ -695,8 +702,8 @@ public class Game extends JPanel implements Serializable {
                         setButtons(false);
 
                         // print user action
-                        gameLogging.writeActionFile(playerAction, players[0]);
-                        printGameConsole(players[0].getName() + " " + new Action(betAmount).toString() + ", total " + playerAction.getValue());
+                        gameLogging.writeActionFile(playerAction, players[PLAYER_INDEX]);
+                        printGameConsole(players[PLAYER_INDEX].getName() + " " + new Action(betAmount).toString() + ", total " + playerAction.getValue());
 
                     }
                     
@@ -710,7 +717,7 @@ public class Game extends JPanel implements Serializable {
                     public void actionPerformed(ActionEvent e) {
                         playerAction = new Action(0);
 
-                        pot.bet(players[0], 0);
+                        pot.bet(players[PLAYER_INDEX], 0);
                         
                         userAction = true;
 
@@ -718,8 +725,8 @@ public class Game extends JPanel implements Serializable {
                         setButtons(false);
 
                         // print user action
-                        gameLogging.writeActionFile(playerAction, players[0]);
-                        printGameConsole(players[0].getName() + " " + playerAction.toString());
+                        gameLogging.writeActionFile(playerAction, players[PLAYER_INDEX]);
+                        printGameConsole(players[PLAYER_INDEX].getName() + " " + playerAction.toString());
                     }
                 });
 
@@ -735,7 +742,7 @@ public class Game extends JPanel implements Serializable {
                 public void actionPerformed(ActionEvent e) {
                     playerAction = new Action(-1);
 
-                    pot.bet(players[0], -1);
+                    pot.bet(players[PLAYER_INDEX], -1);
 
                     userAction = true;
 
@@ -743,8 +750,8 @@ public class Game extends JPanel implements Serializable {
                     setButtons(false);
 
                     // print user action
-                    gameLogging.writeActionFile(playerAction, players[0]);
-                    printGameConsole(players[0].getName() + " " + playerAction.toString());
+                    gameLogging.writeActionFile(playerAction, players[PLAYER_INDEX]);
+                    printGameConsole(players[PLAYER_INDEX].getName() + " " + playerAction.toString());
                 }
             });
         }
@@ -808,13 +815,13 @@ public class Game extends JPanel implements Serializable {
 
             playerAction = new Action(-1);
 
-            pot.bet(players[0], -1);
+            pot.bet(players[PLAYER_INDEX], -1);
 
             userAction = true;
 
             // print user action
-            gameLogging.writeActionFile(playerAction, players[0]);
-            printGameConsole(players[0].getName() + " " + playerAction.toString());
+            gameLogging.writeActionFile(playerAction, players[PLAYER_INDEX]);
+            printGameConsole(players[PLAYER_INDEX].getName() + " " + playerAction.toString());
             return;
         }
     }
@@ -846,12 +853,12 @@ public class Game extends JPanel implements Serializable {
         JPanel       _userPanel     = new JPanel();
         JPanel       _centeredPanel = new JPanel();
         JPanel       _btnPanel      = new JPanel(new FlowLayout());
-        PlayerPanel  _playerPanel   = new PlayerPanel(players[0], cardBack, true);
+        PlayerPanel  _playerPanel   = new PlayerPanel(players[PLAYER_INDEX], cardBack, true);
         SpinnerModel betModel       = new SpinnerNumberModel(20, 20, players[0].getCash(), 1);
         
         _betSpinner = new JSpinner(betModel);
 
-        players[0].setPlayerPanel(_playerPanel); // Save panel to Player object
+        players[PLAYER_INDEX].setPlayerPanel(_playerPanel); // Save panel to Player object
 
         _userPanel.setBackground(POKER_GREEN);
         _userPanel.setPreferredSize(new Dimension(400, Integer.MAX_VALUE));
@@ -1037,7 +1044,7 @@ public class Game extends JPanel implements Serializable {
                 _middlePanel.add(_communityPanel, BorderLayout.CENTER);
                 
                 // check to add timer panel
-                if(timerSetting > 0) {
+                if(timerSetting > 0 || trainingGame) {
                     JPanel _holderPanel   = new JPanel();
                     JPanel _centeredPanel = new JPanel();
 
@@ -1094,7 +1101,7 @@ public class Game extends JPanel implements Serializable {
         _actionPanel.add(_buttonPanel);
 
         //TODO: figure out why player hand gets hidden at end of turn, temp fix
-        players[0].getPlayerPanel().showCards(true);
+        players[PLAYER_INDEX].getPlayerPanel().showCards(true);
         
         revalidate();
         repaint();
