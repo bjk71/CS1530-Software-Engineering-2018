@@ -18,15 +18,16 @@ public class Game extends JPanel implements Serializable {
     private final int   bBlindVal    = 20;
     private final int   startingCash = 1000;
     private final int   playerStart  = 1000;
+    private final int   PLAYER_INDEX = 0;       //Index of Human Player
 
     private Player[] players      = null;
     private Deck     deck         = null;
     private Pot      pot          = null;
     private int      timerSetting = -1;
+    private boolean  trainingGame = false;
     private Card[]   tableCards   = null;
     private Card     cardBack     = null;
     private Logging  gameLogging  = null;
-    private Random   random       = new Random();
     
     private Action  playerAction = null;
     private boolean userAction   = false;
@@ -88,10 +89,12 @@ public class Game extends JPanel implements Serializable {
         JPanel             _playerName        = new JPanel();
         JPanel             _numOpponents      = new JPanel();
         JPanel             _timerMode         = new JPanel();
+        JPanel             _trainingMode      = new JPanel();
         JPanel             _startButton       = new JPanel();
         JPanel             _playerNamePanel   = new JPanel();
         JPanel             _numOpponentsPanel = new JPanel();
         JPanel             _timerModePanel    = new JPanel();
+        JPanel             _trainingModePanel = new JPanel();
 
         JLabel             _titleLabel        = new JLabel();        
         JButton            _startGame         = new JButton();
@@ -101,26 +104,32 @@ public class Game extends JPanel implements Serializable {
         JComboBox<Integer> _numOpp            = new JComboBox<>();
         JLabel             _timerLabel        = new JLabel();
         JComboBox<String>  _timerOptions      = new JComboBox<>();
+        JLabel             _trainingLabel     = new JLabel();
+        JComboBox<String>  _trainingOptions   = new JComboBox<>();
 
 
         _playerNamePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         _numOpponentsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         _timerModePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        _trainingModePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-        setLayout(new GridLayout(5,1));
+        setLayout(new GridLayout(6,1));
         
         _playerName.setLayout(new GridLayout(1, 2, 50, 100));
         _numOpponents.setLayout(new GridLayout(1, 2, 50, 100));
         _timerMode.setLayout(new GridLayout(1, 2, 50, 100));
+        _trainingMode.setLayout(new GridLayout(1, 2, 50, 100));
         
         _startTitle.setBackground(POKER_GREEN);
         _playerName.setBackground(POKER_GREEN);
         _numOpponents.setBackground(POKER_GREEN);
         _timerMode.setBackground(POKER_GREEN);
+        _trainingMode.setBackground(POKER_GREEN);
         _startButton.setBackground(POKER_GREEN);
         _playerNamePanel.setBackground(POKER_GREEN);
         _numOpponentsPanel.setBackground(POKER_GREEN);
         _timerModePanel.setBackground(POKER_GREEN);
+        _trainingModePanel.setBackground(POKER_GREEN);
         
         _titleLabel.setForeground(WHITE);
         _titleLabel.setFont(new Font("Courier", Font.PLAIN, 60));
@@ -163,6 +172,17 @@ public class Game extends JPanel implements Serializable {
         _timerOptions.setPreferredSize(new Dimension( 215, 50 ));
         _timerOptions.setFont(new Font("Courier", Font.PLAIN, 30));
         _timerModePanel.add(_timerOptions);
+
+        _trainingLabel.setForeground(WHITE);
+        _trainingLabel.setFont(new Font("Courier", Font.PLAIN, 40));
+        _trainingLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        _trainingLabel.setVerticalAlignment(SwingConstants.TOP);
+        _trainingLabel.setText("Training Mode:");
+
+        _trainingOptions.setModel(new DefaultComboBoxModel<>(new String[] { "No", "Yes" }));        
+        _trainingOptions.setPreferredSize(new Dimension( 215, 50 ));
+        _trainingOptions.setFont(new Font("Courier", Font.PLAIN, 30));
+        _trainingModePanel.add(_trainingOptions);        
         
         _startGame.setText("Start Game");
         _startGame.setFont(new Font("Courier", Font.PLAIN, 30));
@@ -171,10 +191,12 @@ public class Game extends JPanel implements Serializable {
         _startGame.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 //TODO: REGEX user input
-                String name         = _playerNameInput.getText();
-                int    numOpponents = (int) _numOpp.getSelectedItem();
-                String timerSelect  = (String) _timerOptions.getSelectedItem();
-                int    timerValue;
+                String  name            = _playerNameInput.getText();
+                int     numOpponents    = (int) _numOpp.getSelectedItem();
+                String  timerSelect     = (String) _timerOptions.getSelectedItem();
+                String  trainingSelect  = (String) _trainingOptions.getSelectedItem();
+                int     timerValue;
+                boolean trainingMode;
                 if ( timerSelect.equals("15 Seconds") ) {
                     timerValue = 15;
                 } else if ( timerSelect.equals("30 Seconds") ) {
@@ -184,9 +206,14 @@ public class Game extends JPanel implements Serializable {
                 } else {
                     timerValue = -1;
                 }
+                if ( trainingSelect.equals("Yes")){
+                    trainingMode = true;
+                } else {
+                    trainingMode = false;
+                }
 
                 removeAll();
-                createNewGame(name, numOpponents, timerValue);
+                createNewGame(name, numOpponents, timerValue, trainingMode);
             }
         });
         
@@ -197,6 +224,8 @@ public class Game extends JPanel implements Serializable {
         _numOpponents.add(_numOpponentsPanel);
         _timerMode.add(_timerLabel);
         _timerMode.add(_timerModePanel);
+        _trainingMode.add(_trainingLabel);
+        _trainingMode.add(_trainingModePanel);
 
         _startButton.add(_startGame);
         
@@ -204,6 +233,7 @@ public class Game extends JPanel implements Serializable {
         add(_playerName);
         add(_numOpponents);
         add(_timerMode);
+        add(_trainingMode);
         add(_startButton);       
 
         revalidate();
@@ -216,7 +246,7 @@ public class Game extends JPanel implements Serializable {
      * @param numOfAI    Number of AI players to initialize.
      * @param timerValue No timer-mode if -1, else time limit in seconds
      */
-    private void createNewGame(String userName, int numOfAI, int timerValue) {
+    private void createNewGame(String userName, int numOfAI, int timerValue, boolean trainingMode) {
         JPanel     _top          = new JPanel();
         JPanel     _bot          = new JPanel();
         JLabel     _tableLabel   = new JLabel("Pot: ");
@@ -235,6 +265,7 @@ public class Game extends JPanel implements Serializable {
         players      = new Player[numOfAI + 1];
         pot          = new Pot(_potPanel, numOfAI + 1);
         timerSetting = timerValue;
+        trainingGame = trainingMode;
 		
 		dealerNum 	= -1;
 		sBlindNum	= -1;
@@ -282,10 +313,13 @@ public class Game extends JPanel implements Serializable {
             playerHand[0] = deck.draw();
             playerHand[1] = deck.draw();
 
-            if(i == 0) { // Initialize human player
+            if(i == PLAYER_INDEX) { // Initialize human player
                 players[i] = new Player(userName, playerHand, playerRole, playerStart, i);
                 
                 _userPanel = userPanel();
+                if (trainingGame) {     //Pre-flop hand strength
+                    _infoPanel.setRelativeLabel(new GameUtils().getHandStrength(players[PLAYER_INDEX].getCards()));;
+                }
 
 				gameLogging.writeCardsFile(players[i]);
             } else { // Initialize AI player
@@ -318,7 +352,7 @@ public class Game extends JPanel implements Serializable {
         _middlePanel.add(_communityPanel, BorderLayout.CENTER);
 
         // check to add timer panel
-        if(timerSetting > 0) {
+        if(timerSetting > 0 || trainingGame) {
             JPanel _holderPanel   = new JPanel();
             JPanel _centeredPanel = new JPanel();
 
@@ -461,8 +495,8 @@ public class Game extends JPanel implements Serializable {
 
 
                         if(players[index].isPlayingHand()) {
-                            if(index == 0) {
-                                userTurn(minAction);
+                            if(index == PLAYER_INDEX) {
+                                userTurn(minAction, i);
                                 if(playerAction.isGreater(minAction)) {
                                     minAction = playerAction;
                                 }
@@ -580,13 +614,17 @@ public class Game extends JPanel implements Serializable {
             return minAction;
         }
 
-        private void userTurn(Action minAction) {
+        private void userTurn(Action minAction, int roundNum) {
             addUserActionListeners(minAction);
 
             TurnTimer timer = null;
             if(timerSetting > 0) {
                 timer = new TurnTimer(timerSetting);
                 timer.start();
+            }
+
+            if (trainingGame) {
+                _infoPanel.setOddsLabel(new GameUtils().getPotOdds(pot.getValue(), minAction.getValue()-pot.getPlayerBet(PLAYER_INDEX)));
             }
 
             while(!userAction) { // loop until change
@@ -602,6 +640,7 @@ public class Game extends JPanel implements Serializable {
             if( timer != null && !timer.isInterrupted() ) {
                 timer.interrupt();
                 _infoPanel.setTimerText("Time: --");
+                _infoPanel.setOddsLabel("Pot Odds: --");
             }
         }
 
@@ -633,14 +672,14 @@ public class Game extends JPanel implements Serializable {
             // enable buttons
             setButtons(true);
 
-            System.out.printf("min action: %d, getPlayerBet: %d\n", minAction.getValue(), pot.getPlayerBet(0));
+            System.out.printf("min action: %d, getPlayerBet: %d\n", minAction.getValue(), pot.getPlayerBet(PLAYER_INDEX));
 
-            if(minAction.getValue() >= minBet && minAction.getValue() <= players[0].getCash()) {
-                minBet = minAction.getValue() - pot.getPlayerBet(0);
-            } else if(minAction.getValue() > players[0].getCash()) { // player doesn't have enough cash to call, must go all in
-                minBet = players[0].getCash();
+            if(minAction.getValue() >= minBet && minAction.getValue() <= players[PLAYER_INDEX].getCash()) {
+                minBet = minAction.getValue() - pot.getPlayerBet(PLAYER_INDEX);
+            } else if(minAction.getValue() > players[PLAYER_INDEX].getCash()) { // player doesn't have enough cash to call, must go all in
+                minBet = players[PLAYER_INDEX].getCash();
             }
-            betModel = new SpinnerNumberModel(minBet, minBet, players[0].getCash(), 10);
+            betModel = new SpinnerNumberModel(minBet, minBet, players[PLAYER_INDEX].getCash(), 10);
 
             _betSpinner.setModel(betModel);
             _betSpinner.requestFocus();
@@ -653,12 +692,12 @@ public class Game extends JPanel implements Serializable {
 
                     if(betAmount < minimumBet) {
                         _betSpinner.setValue(minAction.getValue());
-                    } else if(betAmount > players[0].getCash()) {
-                        _betSpinner.setValue(players[0].getCash());
+                    } else if(betAmount > players[PLAYER_INDEX].getCash()) {
+                        _betSpinner.setValue(players[PLAYER_INDEX].getCash());
                     }else {
-                        pot.bet(players[0], betAmount);
+                        pot.bet(players[PLAYER_INDEX], betAmount);
 
-                        playerAction = new Action(pot.getPlayerBet(0));
+                        playerAction = new Action(pot.getPlayerBet(PLAYER_INDEX));
 
                         userAction = true;
 
@@ -666,8 +705,8 @@ public class Game extends JPanel implements Serializable {
                         setButtons(false);
 
                         // print user action
-                        gameLogging.writeActionFile(playerAction, players[0]);
-                        printGameConsole(players[0].getName() + " " + new Action(betAmount).toString() + ", total " + playerAction.getValue());
+                        gameLogging.writeActionFile(playerAction, players[PLAYER_INDEX]);
+                        printGameConsole(players[PLAYER_INDEX].getName() + " " + new Action(betAmount).toString() + ", total " + playerAction.getValue());
 
                     }
                     
@@ -683,7 +722,7 @@ public class Game extends JPanel implements Serializable {
                     public void actionPerformed(ActionEvent e) {
                         playerAction = new Action(0);
 
-                        pot.bet(players[0], 0);
+                        pot.bet(players[PLAYER_INDEX], 0);
                         
                         userAction = true;
 
@@ -691,8 +730,8 @@ public class Game extends JPanel implements Serializable {
                         setButtons(false);
 
                         // print user action
-                        gameLogging.writeActionFile(playerAction, players[0]);
-                        printGameConsole(players[0].getName() + " " + playerAction.toString());
+                        gameLogging.writeActionFile(playerAction, players[PLAYER_INDEX]);
+                        printGameConsole(players[PLAYER_INDEX].getName() + " " + playerAction.toString());
                     }
                 });
 
@@ -725,7 +764,7 @@ public class Game extends JPanel implements Serializable {
                 public void actionPerformed(ActionEvent e) {
                     playerAction = new Action(-1);
 
-                    pot.bet(players[0], -1);
+                    pot.bet(players[PLAYER_INDEX], -1);
 
                     userAction = true;
 
@@ -733,8 +772,8 @@ public class Game extends JPanel implements Serializable {
                     setButtons(false);
 
                     // print user action
-                    gameLogging.writeActionFile(playerAction, players[0]);
-                    printGameConsole(players[0].getName() + " " + playerAction.toString());
+                    gameLogging.writeActionFile(playerAction, players[PLAYER_INDEX]);
+                    printGameConsole(players[PLAYER_INDEX].getName() + " " + playerAction.toString());
                 }
             });
         }
@@ -798,13 +837,13 @@ public class Game extends JPanel implements Serializable {
 
             playerAction = new Action(-1);
 
-            pot.bet(players[0], -1);
+            pot.bet(players[PLAYER_INDEX], -1);
 
             userAction = true;
 
             // print user action
-            gameLogging.writeActionFile(playerAction, players[0]);
-            printGameConsole(players[0].getName() + " " + playerAction.toString());
+            gameLogging.writeActionFile(playerAction, players[PLAYER_INDEX]);
+            printGameConsole(players[PLAYER_INDEX].getName() + " " + playerAction.toString());
             return;
         }
     }
@@ -836,12 +875,12 @@ public class Game extends JPanel implements Serializable {
         JPanel       _userPanel     = new JPanel();
         JPanel       _centeredPanel = new JPanel();
         JPanel       _btnPanel      = new JPanel(new FlowLayout());
-        PlayerPanel  _playerPanel   = new PlayerPanel(players[0], cardBack, true);
+        PlayerPanel  _playerPanel   = new PlayerPanel(players[PLAYER_INDEX], cardBack, true);
         SpinnerModel betModel       = new SpinnerNumberModel(20, 20, players[0].getCash(), 1);
         
         _betSpinner = new JSpinner(betModel);
 
-        players[0].setPlayerPanel(_playerPanel); // Save panel to Player object
+        players[PLAYER_INDEX].setPlayerPanel(_playerPanel); // Save panel to Player object
 
         _userPanel.setBackground(POKER_GREEN);
         _userPanel.setPreferredSize(new Dimension(400, Integer.MAX_VALUE));
@@ -998,8 +1037,11 @@ public class Game extends JPanel implements Serializable {
                             players[i].setRole(0);
                         }
 
-                        if(i == 0) {
+                        if(i == PLAYER_INDEX) {
                             players[i].getPlayerPanel().showCards(true);
+                            if (trainingGame) {     //Pre-flop hand strength
+                                _infoPanel.setRelativeLabel(new GameUtils().getHandStrength(players[PLAYER_INDEX].getCards()));;
+                            }
 
                             _userPanel = userPanel();
                         } else {
@@ -1027,7 +1069,7 @@ public class Game extends JPanel implements Serializable {
                 _middlePanel.add(_communityPanel, BorderLayout.CENTER);
                 
                 // check to add timer panel
-                if(timerSetting > 0) {
+                if(timerSetting > 0 || trainingGame) {
                     JPanel _holderPanel   = new JPanel();
                     JPanel _centeredPanel = new JPanel();
 
@@ -1084,7 +1126,7 @@ public class Game extends JPanel implements Serializable {
         _actionPanel.add(_buttonPanel);
 
         //TODO: figure out why player hand gets hidden at end of turn, temp fix
-        players[0].getPlayerPanel().showCards(true);
+        players[PLAYER_INDEX].getPlayerPanel().showCards(true);
         
         revalidate();
         repaint();
