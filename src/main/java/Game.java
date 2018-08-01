@@ -1069,6 +1069,43 @@ public class Game extends JPanel implements Serializable {
         //TODO: figure out why player hand gets hidden at end of turn, temp fix
         players[0].getPlayerPanel().showCards(true);
         
+        if(playersRemaining() > 1) {
+            // playGameSwitch(1);
+        } else { // find winner
+            _nextHandButton.setText("End");
+        }
+
+        revalidate();
+        repaint();
+    }
+
+    private void winner(Player player) {
+        JLabel _winnerLabel = new JLabel();
+        JButton _newgameButton = new JButton();
+
+        JPanel _this = this;
+
+        this.removeAll();
+
+        _winnerLabel.setBackground(POKER_GREEN);
+        _winnerLabel.setFont(new Font("Courier", Font.PLAIN, 60));
+        _winnerLabel.setText(player.getName() + " has won the game!");
+
+        _newgameButton.setFont(new Font("Courier", Font.PLAIN, 30));
+        _newgameButton.setMaximumSize(new Dimension(400, 100));
+        _newgameButton.setText("New game");
+        _newgameButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                _this.removeAll();
+
+                // initalizeStartGrid();
+            }
+        });
+
+        this.setLayout(new BorderLayout());
+        this.add(_winnerLabel, BorderLayout.PAGE_START);
+        this.add(_newgameButton, BorderLayout.CENTER);
+
         revalidate();
         repaint();
     }
