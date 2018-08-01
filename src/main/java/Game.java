@@ -58,9 +58,6 @@ public class Game extends JPanel implements Serializable {
     private JButton  _foldButton     = new JButton();
     private JSpinner _betSpinner     = null;
     private JButton  _nextHandButton = null;
-	
-	//public static Loser		_loser	 = null;
-	//public static Winner	_winner  = null;
 
 
     public Game() {
