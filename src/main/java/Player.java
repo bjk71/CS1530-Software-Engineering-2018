@@ -19,7 +19,7 @@ public class Player implements Serializable {
 	public Player(String name, Card[] cards, int role, int cash, int index){
 		this.name   = name;
 		this.cards  = cards;
-		this.role	  = role;
+		this.role   = role;
 		this.cash   = cash;
 		this.index  = index;
 		this.inHand = true;
