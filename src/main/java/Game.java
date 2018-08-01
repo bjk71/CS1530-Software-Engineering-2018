@@ -431,7 +431,7 @@ public class Game extends JPanel implements Serializable {
                         //add blinds to pot
                         pot.bet(players[sBlindNum], sBlindVal);
                         pot.bet(players[bBlindNum], bBlindVal);
-                        
+						
                         startIndex = bBlindNum + 1;
                         if(startIndex == players.length) {
                             startIndex = 0;
@@ -1043,7 +1043,6 @@ public class Game extends JPanel implements Serializable {
                 // writeHandFile();
 				
 				if(players[0].getCash() == 0) {
-					System.out.println("loser thing 1");
 					loser();
 				}
                 if(playersRemaining() > 1) {
@@ -1054,10 +1053,8 @@ public class Game extends JPanel implements Serializable {
                     for(int i =0; i < players.length; i++) {
                         if(players[i].getCash() > 0) {
                             winner = players[i];
-
-							System.out.println("winner thing 1");
 							
-                            winner(winner);
+                            winner();
 
                         }
                     }
@@ -1079,7 +1076,7 @@ public class Game extends JPanel implements Serializable {
         repaint();
     }
 
-    private void winner(Player player) {
+    private void winner() {
 		
 		JPanel _this = this;
 
@@ -1096,6 +1093,7 @@ public class Game extends JPanel implements Serializable {
 		JButton 	_newGameButton 		= new JButton();
 		
 
+		//paints the new screen
 		setLayout(new GridLayout(4, 1));
 
         try {
@@ -1131,9 +1129,8 @@ public class Game extends JPanel implements Serializable {
                 
 				_this.removeAll();
 				
-				
-				
-                initializeStartGrid();
+				//calls restartGame class from GameWindow that acts the same way as the Exit button
+                GameWindow.restartGame();
             }
         });
 		_buttonPanel.add(_newGameButton);
@@ -1171,7 +1168,7 @@ public class Game extends JPanel implements Serializable {
         JLabel 		_imgLabel   		= null;
 		JButton 	_newGameButton 		= new JButton();
 		
-
+		//paints the new screen
 		setLayout(new GridLayout(4, 1));
 
         try {
@@ -1205,14 +1202,11 @@ public class Game extends JPanel implements Serializable {
         _newGameButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
 				
-				//for(int i = 0; i < players.length; i++) {
-				//	players[i].removeAll();
-				//}
-				//GameWindow.ExitGameListener();
-				
                 _this.removeAll();
 				
-                initializeStartGrid();
+				//calls restartGame class from GameWindow that acts the same way as the Exit button
+				GameWindow.restartGame();
+			
             }
         });
 		_buttonPanel.add(_newGameButton);

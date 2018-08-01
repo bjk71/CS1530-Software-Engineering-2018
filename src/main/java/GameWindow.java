@@ -199,4 +199,18 @@ public class GameWindow {
             }
         }
     }
+	
+	public static void restartGame() {
+		
+		if (_load != null) {
+                    _game = _load.updateGame();
+                }
+                
+                _frame.remove(_game);
+                _frame.add(_title);
+                _frame.validate();
+                _frame.repaint(); 
+				
+				gameOpen = false;
+	}
 }
