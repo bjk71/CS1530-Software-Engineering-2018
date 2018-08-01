@@ -1087,7 +1087,8 @@ public class Game extends JPanel implements Serializable {
 		JLabel 		_winnerLabel 		= new JLabel();
         JLabel 		_congratsLabel 		= new JLabel();
         JLabel 		_imgLabel   		= null;
-		JButton 	_newGameButton 		= new JButton();
+		JButton 	_mainMenuButton 	= new JButton();
+		JButton 	_exitButton 	= new JButton();
 		
 
 		//paints the new screen
@@ -1117,11 +1118,11 @@ public class Game extends JPanel implements Serializable {
         _winnerLabel.setVerticalAlignment(JLabel.BOTTOM);
         _winnerLabel.setText("You Have Won the Game!");
 
-		_newGameButton.setText("Start Game");
-        _newGameButton.setFont(new Font("Courier", Font.PLAIN, 30));
-        _newGameButton.setPreferredSize(new Dimension( 300, 100 ));
-        _newGameButton.setVerticalAlignment(SwingConstants.CENTER);
-        _newGameButton.addActionListener(new ActionListener(){
+		_mainMenuButton.setText("Main Menu");
+        _mainMenuButton.setFont(new Font("Courier", Font.PLAIN, 30));
+        _mainMenuButton.setPreferredSize(new Dimension( 300, 100 ));
+        _mainMenuButton.setVerticalAlignment(SwingConstants.CENTER);
+        _mainMenuButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
                 
 				_this.removeAll();
@@ -1130,7 +1131,19 @@ public class Game extends JPanel implements Serializable {
                 GameWindow.restartGame();
             }
         });
-		_buttonPanel.add(_newGameButton);
+		_buttonPanel.add(_mainMenuButton);
+		
+		_exitButton.setText("Exit");
+		_exitButton.setFont(new Font("Courier", Font.PLAIN, 30));
+        _exitButton.setPreferredSize(new Dimension( 300, 100 ));
+        _exitButton.setVerticalAlignment(SwingConstants.CENTER);
+        _exitButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+				
+                System.exit(0);
+            }
+        });
+		_buttonPanel.add(_exitButton);
 		
         setBackground(POKER_GREEN);
         _panel.setBackground(POKER_GREEN);
@@ -1163,7 +1176,8 @@ public class Game extends JPanel implements Serializable {
 		JLabel 		_loserLabel 		= new JLabel();
         JLabel 		_encourageLabel 	= new JLabel();
         JLabel 		_imgLabel   		= null;
-		JButton 	_newGameButton 		= new JButton();
+		JButton 	_mainMenuButton 	= new JButton();
+		JButton 	_exitButton 	= new JButton();
 		
 		//paints the new screen
 		setLayout(new GridLayout(4, 1));
@@ -1192,11 +1206,11 @@ public class Game extends JPanel implements Serializable {
         _loserLabel.setVerticalAlignment(JLabel.BOTTOM);
         _loserLabel.setText("You Have Lost the Game!");
 
-		_newGameButton.setText("Start Game");
-        _newGameButton.setFont(new Font("Courier", Font.PLAIN, 30));
-        _newGameButton.setPreferredSize(new Dimension( 300, 100 ));
-        _newGameButton.setVerticalAlignment(SwingConstants.CENTER);
-        _newGameButton.addActionListener(new ActionListener(){
+		_mainMenuButton.setText("Main Menu");
+        _mainMenuButton.setFont(new Font("Courier", Font.PLAIN, 30));
+        _mainMenuButton.setPreferredSize(new Dimension( 300, 100 ));
+        _mainMenuButton.setVerticalAlignment(SwingConstants.CENTER);
+        _mainMenuButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
 				
                 _this.removeAll();
@@ -1206,7 +1220,19 @@ public class Game extends JPanel implements Serializable {
 			
             }
         });
-		_buttonPanel.add(_newGameButton);
+		_buttonPanel.add(_mainMenuButton);
+		
+		_exitButton.setText("Exit");
+		_exitButton.setFont(new Font("Courier", Font.PLAIN, 30));
+        _exitButton.setPreferredSize(new Dimension( 300, 100 ));
+        _exitButton.setVerticalAlignment(SwingConstants.CENTER);
+        _exitButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+				
+                System.exit(0);
+            }
+        });
+		_buttonPanel.add(_exitButton);
 		
         setBackground(POKER_GREEN);
         _panel.setBackground(POKER_GREEN);
