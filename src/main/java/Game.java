@@ -62,7 +62,7 @@ public class Game extends JPanel implements Serializable {
 
 
     public Game() {
-        initalizeStartGrid();
+        initializeStartGrid();
         setVisible(true);
     }
     
@@ -84,7 +84,7 @@ public class Game extends JPanel implements Serializable {
     }
 
     
-    private void initalizeStartGrid(){    
+    private void initializeStartGrid(){    
         JPanel             _startTitle        = new JPanel();
         JPanel             _playerName        = new JPanel();
         JPanel             _numOpponents      = new JPanel();
@@ -463,7 +463,7 @@ public class Game extends JPanel implements Serializable {
                         //add blinds to pot
                         pot.bet(players[sBlindNum], sBlindVal);
                         pot.bet(players[bBlindNum], bBlindVal);
-                        
+						
                         startIndex = bBlindNum + 1;
                         if(startIndex == players.length) {
                             startIndex = 0;
@@ -546,7 +546,11 @@ public class Game extends JPanel implements Serializable {
                 endOfHand();
                 nextHand();
 
-                if(playersRemaining() > 1) {
+				if(players[0].getCash() == 0) {
+					_nextHandButton.setText("End");
+					keepPlaying = false;
+				}
+                else if(playersRemaining() > 1) {
                     keepPlaying = true;; // Start next hand
                 } else { // find winner
                     _nextHandButton.setText("End");
@@ -1118,16 +1122,20 @@ public class Game extends JPanel implements Serializable {
                 repaint();
 
                 // writeHandFile();
-
+				
+				if(players[0].getCash() == 0) {
+					loser();
+				}
                 if(playersRemaining() > 1) {
                     // playGameSwitch(1);
-                } else { // find winner
+                } 
+				else { // find winner
                     Player winner = null;
                     for(int i =0; i < players.length; i++) {
                         if(players[i].getCash() > 0) {
                             winner = players[i];
-
-                            winner(winner);
+							
+                            winner();
 
                         }
                     }
@@ -1145,40 +1153,194 @@ public class Game extends JPanel implements Serializable {
         //TODO: figure out why player hand gets hidden at end of turn, temp fix
         players[PLAYER_INDEX].getPlayerPanel().showCards(true);
         
+		if(players[0].getCash() == 0) {
+			_nextHandButton.setText("End");
+		}
+        else if(playersRemaining() > 1) {
+            // playGameSwitch(1);
+        } else { // find winner
+            _nextHandButton.setText("End");
+        }
+
         revalidate();
         repaint();
     }
 
-    private void winner(Player player) {
-        JLabel _winnerLabel = new JLabel();
-        JButton _newgameButton = new JButton();
+    private void winner() {
+		
+		JPanel _this = this;
 
+        this.removeAll();
+
+		JPanel		_panel				= new JPanel();
+		JPanel		_imgPanel			= new JPanel();
+		JPanel		_buttonPanel		= new JPanel();
+		
+		
+		JLabel 		_winnerLabel 		= new JLabel();
+        JLabel 		_congratsLabel 		= new JLabel();
+        JLabel 		_imgLabel   		= null;
+		JButton 	_mainMenuButton 	= new JButton();
+		JButton 	_exitButton 		= new JButton();
+		
+
+		//paints the new screen
+		setLayout(new GridLayout(4, 1));
+
+        try {
+            Image img = ImageIO.read(this.getClass().getResource("/Winner.png"));
+            _imgLabel = new JLabel(new ImageIcon(img.getScaledInstance(200, 200, java.awt.Image.SCALE_SMOOTH)));
+        } catch (IOException ioex) {
+            System.exit(1);
+        }
+
+        _imgLabel.setHorizontalAlignment(JLabel.CENTER);
+        _imgLabel.setVerticalAlignment(JLabel.BOTTOM);
+		_imgPanel.add(_imgLabel);
+
+        _congratsLabel.setForeground(WHITE);
+        _congratsLabel.setFont(new Font(Font.SERIF, Font.ITALIC, 36));
+        _congratsLabel.setHorizontalAlignment(JLabel.CENTER);
+        _congratsLabel.setVerticalAlignment(JLabel.TOP);
+        _congratsLabel.setText("You Did It!");
+        _panel.add(_congratsLabel);
+
+        _winnerLabel.setForeground(WHITE);
+        _winnerLabel.setFont(new Font(Font.SERIF, Font.PLAIN, 60));
+        _winnerLabel.setHorizontalAlignment(JLabel.CENTER);
+        _winnerLabel.setVerticalAlignment(JLabel.BOTTOM);
+        _winnerLabel.setText("You Have Won the Game!");
+
+		_mainMenuButton.setText("Main Menu");
+        _mainMenuButton.setFont(new Font("Courier", Font.PLAIN, 30));
+        _mainMenuButton.setPreferredSize(new Dimension( 300, 100 ));
+        _mainMenuButton.setVerticalAlignment(SwingConstants.CENTER);
+        _mainMenuButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                
+				_this.removeAll();
+				
+				//calls restartGame class from GameWindow that acts the same way as the Exit button
+                GameWindow.restartGame();
+            }
+        });
+		_buttonPanel.add(_mainMenuButton);
+		
+		_exitButton.setText("Exit");
+		_exitButton.setFont(new Font("Courier", Font.PLAIN, 30));
+        _exitButton.setPreferredSize(new Dimension( 300, 100 ));
+        _exitButton.setVerticalAlignment(SwingConstants.CENTER);
+        _exitButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+				
+                System.exit(0);
+            }
+        });
+		_buttonPanel.add(_exitButton);
+		
+        setBackground(POKER_GREEN);
+        _panel.setBackground(POKER_GREEN);
+		_buttonPanel.setBackground(POKER_GREEN);
+		_imgPanel.setBackground(POKER_GREEN);
+		
+        add(_winnerLabel, BorderLayout.PAGE_START);
+		add(_imgPanel);
+        add(_panel, BorderLayout.CENTER);
+		add(_buttonPanel);
+
+		
+		
+		
+        revalidate();
+        repaint();
+    }
+	
+	private void loser() {
+		
         JPanel _this = this;
 
         this.removeAll();
 
-        _winnerLabel.setBackground(POKER_GREEN);
-        _winnerLabel.setFont(new Font("Courier", Font.PLAIN, 60));
-        _winnerLabel.setText(player.getName() + " has won the game!");
+		JPanel		_panel				= new JPanel();
+		JPanel		_imgPanel			= new JPanel();
+		JPanel		_buttonPanel		= new JPanel();
+		
+		
+		JLabel 		_loserLabel 		= new JLabel();
+        JLabel 		_encourageLabel 	= new JLabel();
+        JLabel 		_imgLabel   		= null;
+		JButton 	_mainMenuButton 	= new JButton();
+		JButton 	_exitButton 		= new JButton();
+		
+		//paints the new screen
+		setLayout(new GridLayout(4, 1));
 
-        _newgameButton.setFont(new Font("Courier", Font.PLAIN, 30));
-        _newgameButton.setMaximumSize(new Dimension(400, 100));
-        _newgameButton.setText("New game");
-        _newgameButton.addActionListener(new ActionListener(){
+        try {
+            Image img = ImageIO.read(this.getClass().getResource("/Loser.png"));
+            _imgLabel = new JLabel(new ImageIcon(img.getScaledInstance(200, 200, java.awt.Image.SCALE_SMOOTH)));
+        } catch (IOException ioex) {
+            System.exit(1);
+        }
+
+        _imgLabel.setHorizontalAlignment(JLabel.CENTER);
+        _imgLabel.setVerticalAlignment(JLabel.BOTTOM);
+		_imgPanel.add(_imgLabel);
+
+        _encourageLabel.setForeground(WHITE);
+        _encourageLabel.setFont(new Font(Font.SERIF, Font.ITALIC, 36));
+        _encourageLabel.setHorizontalAlignment(JLabel.CENTER);
+        _encourageLabel.setVerticalAlignment(JLabel.TOP);
+        _encourageLabel.setText("Better Luck Next Time.");
+        _panel.add(_encourageLabel);
+
+        _loserLabel.setForeground(WHITE);
+        _loserLabel.setFont(new Font(Font.SERIF, Font.PLAIN, 60));
+        _loserLabel.setHorizontalAlignment(JLabel.CENTER);
+        _loserLabel.setVerticalAlignment(JLabel.BOTTOM);
+        _loserLabel.setText("You Have Lost the Game!");
+
+		_mainMenuButton.setText("Main Menu");
+        _mainMenuButton.setFont(new Font("Courier", Font.PLAIN, 30));
+        _mainMenuButton.setPreferredSize(new Dimension( 300, 100 ));
+        _mainMenuButton.setVerticalAlignment(SwingConstants.CENTER);
+        _mainMenuButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
+				
                 _this.removeAll();
-
-                initalizeStartGrid();
+				
+				//calls restartGame class from GameWindow that acts the same way as the Exit button
+				GameWindow.restartGame();
+			
             }
         });
+		_buttonPanel.add(_mainMenuButton);
+		
+		_exitButton.setText("Exit");
+		_exitButton.setFont(new Font("Courier", Font.PLAIN, 30));
+        _exitButton.setPreferredSize(new Dimension( 300, 100 ));
+        _exitButton.setVerticalAlignment(SwingConstants.CENTER);
+        _exitButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+				
+                System.exit(0);
+            }
+        });
+		_buttonPanel.add(_exitButton);
+		
+        setBackground(POKER_GREEN);
+        _panel.setBackground(POKER_GREEN);
+		_buttonPanel.setBackground(POKER_GREEN);
+		_imgPanel.setBackground(POKER_GREEN);
+		
+        add(_loserLabel, BorderLayout.PAGE_START);
+		add(_imgPanel);
+        add(_panel, BorderLayout.CENTER);
+		add(_buttonPanel);
 
-        this.setLayout(new BorderLayout());
-        this.add(_winnerLabel, BorderLayout.PAGE_START);
-        this.add(_newgameButton, BorderLayout.CENTER);
-
+		
         revalidate();
-        repaint();
-    }
+        repaint();	
+	}
 
     /**
          * Enabled or disable buttons based on passed in boolean.
