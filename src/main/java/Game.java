@@ -496,7 +496,6 @@ public class Game extends JPanel implements Serializable {
                 nextHand();
 
 				if(players[0].getCash() == 0) {
-					System.out.println("hello");
 					_nextHandButton.setText("End");
 					keepPlaying = false;
 				}
@@ -1075,7 +1074,6 @@ public class Game extends JPanel implements Serializable {
         players[0].getPlayerPanel().showCards(true);
         
 		if(players[0].getCash() == 0) {
-			System.out.println("hello2");
 			_nextHandButton.setText("End");
 		}
         else if(playersRemaining() > 1) {
