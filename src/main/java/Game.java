@@ -492,7 +492,7 @@ public class Game extends JPanel implements Serializable {
                     while(index != pot.getSetBet()) {
                         if(players[index].isPlayingHand()) {
                             if(index == PLAYER_INDEX) {
-                                userTurn(minAction, i);
+                                userTurn(minAction);
                                 if(playerAction.isGreater(minAction)) {
                                     minAction = playerAction;
                                 }
@@ -635,7 +635,7 @@ public class Game extends JPanel implements Serializable {
             return minAction;
         }
 
-        private void userTurn(Action minAction, int roundNum) {
+        private void userTurn(Action minAction) {
             addUserActionListeners(minAction);
 
             TurnTimer timer = null;
