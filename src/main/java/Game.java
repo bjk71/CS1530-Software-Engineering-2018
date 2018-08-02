@@ -492,7 +492,7 @@ public class Game extends JPanel implements Serializable {
                     while(index != pot.getSetBet()) {
                         if(players[index].isPlayingHand()) {
                             if(index == PLAYER_INDEX) {
-                                userTurn(minAction, i);
+                                userTurn(minAction);
                                 if(playerAction.isGreater(minAction)) {
                                     minAction = playerAction;
                                 }
@@ -505,13 +505,10 @@ public class Game extends JPanel implements Serializable {
                             index = 0;
                         }
                         
-                        // sleep to watch user bets take place
-                        if(players[0].isPlayingHand()) {
-                            try{
-                                Thread.sleep(500);
-                            } catch(InterruptedException ex){
-                                Thread.currentThread().interrupt();
-                            }
+                        try{
+                            Thread.sleep(300);
+                        } catch(InterruptedException ex){
+                            Thread.currentThread().interrupt();
                         }
 
                         // first round big blind can bet again
@@ -596,23 +593,26 @@ public class Game extends JPanel implements Serializable {
                     // ai has enough cash to call
                     if(aiPlayer.getCash() >= betRemaining) {
                         // decide using aiRandom
-                        if(aiRandom > 17) {
+                        if(aiRandom > 17 && aiPlayer.getCash() >= betRemaining + 20) {
                             aiAction.setValue(betRemaining + 20);
                         } else if(betRemaining > 100 && aiRandom < 14) {
                             // ai quits! too expensive
                             aiPlayer.setPlayingHand(false);
                             aiAction.setValue(-1);
-                        } else if(aiRandom == 0) {
+                        } else if(aiRandom == 0 && aiPlayer.getCash() >= betRemaining + 100) {
                             aiAction.setValue(betRemaining + 100);
                         } else {
                             aiAction.setValue(betRemaining);
                         }
                     } else {
-                        // ai doesn't have enough cash, fold
-                        // aiPlayer.setPlayingHand(false);
-                        // aiAction.setValue(-1);
-                        //TODO: revert logic
-                        aiAction.setValue(aiPlayer.getCash());
+                        // ai calls, all in
+                        if(aiRandom > 15) {
+                            aiAction.setValue(aiPlayer.getCash());
+                        } else {
+                            // ai doesn't have enough cash, fold
+                            aiPlayer.setPlayingHand(false);
+                            aiAction.setValue(-1);
+                        }
                     }
                 }
 
@@ -631,7 +631,7 @@ public class Game extends JPanel implements Serializable {
             return minAction;
         }
 
-        private void userTurn(Action minAction, int roundNum) {
+        private void userTurn(Action minAction) {
             addUserActionListeners(minAction);
 
             TurnTimer timer = null;

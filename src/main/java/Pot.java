@@ -15,6 +15,7 @@ public class Pot implements Serializable {
     private boolean[] causedSidepot;
     private boolean[] inHand;
     private boolean[] haveBetPot;
+    private boolean[] allInPlayers;
     private PotPanel  _potPanel;
 
     
@@ -32,6 +33,7 @@ public class Pot implements Serializable {
         this.pots          = new int[numOfPlayers];
         this.inPot         = new int[numOfPlayers];
         this.inHand        = new boolean[numOfPlayers];
+        this.allInPlayers  = new boolean[numOfPlayers];
     }
 	
 	public int getValue() {
@@ -84,9 +86,15 @@ public class Pot implements Serializable {
         this.betsThisHand[playerIndex] += amount;
 
         // check if player is all in
-        if(this.playerBets[playerIndex] < currBet || player.getCash() == 0) {
+        if(this.playerBets[playerIndex] < currBet && player.getCash() == 0) {
             // start checking for sidepots
             this.createSidepot(player);
+
+            allInPlayers[playerIndex] = true;
+        } else if(player.getCash() == 0) {
+            player.setPlayingHand(false);
+
+            allInPlayers[playerIndex] = true;
         }
 
         // handle sidepots
@@ -99,6 +107,10 @@ public class Pot implements Serializable {
         // System.out.printf("Player %d bet %d, for a total of %d; currBet = %d\n", playerIndex, amount, playerBets[playerIndex], currBet);
 
         if(this.playerBets[playerIndex] > this.currBet) {
+            if(playerAllIn()) {
+                createSidepot(this.setBet);
+            }
+
             this.setBet  = playerIndex;
             this.currBet = this.playerBets[playerIndex];
             System.out.printf(">> Updated setBet to index: %d, value: %d\n", playerIndex, this.currBet);
@@ -144,6 +156,9 @@ public class Pot implements Serializable {
 
         for(int i = 0; i < players.length; i++)
             inHand[i] = (players[i].getCash() > 0);
+
+        for(int i = 0; i < players.length; i++)
+            allInPlayers[i] = false;
     }
 
     /**
@@ -216,6 +231,69 @@ public class Pot implements Serializable {
         // System.out.println("pots => " + Arrays.toString(pots));
 
         // System.out.println("beforeRemainingBet => " + Arrays.toString(sidepotAmounts));
+
+        // add remaining bet to main pot
+        for(int i = 0; i < pots.length; i++) {
+            if(pots[i] == 0) {
+                int potTotal = 0;
+                for(int j = 0; j < remainingBet.length; j++) {
+                    potTotal += remainingBet[j];
+                }
+                pots[i] = potTotal;
+                break;
+            }
+        }
+
+        // increment sidepot counter variable
+        activePot++;
+
+        _potPanel.setPots(pots);
+    }
+
+    public void createSidepot(int playerIndex) {
+        // int playerIndex      = player.getIndex();
+        int[] sidepotAmounts = new int[numOfPlayers];
+        int[] remainingBet   = new int[numOfPlayers];
+
+        System.arraycopy(betsThisHand, 0, remainingBet, 0, betsThisHand.length);
+
+        // player.setPlayingHand(false);
+        this.causedSidepot[playerIndex] = true;
+
+        // record that all other players reach new sidepot
+        for(int i = 0; i < inPot.length; i++) {
+            if(i != playerIndex) {
+                if(inPot[i] == numOfSidePots && inHand[i]) {
+                    inPot[i]++;
+                }
+            }
+        }
+        numOfSidePots++;
+
+        sidepotAmounts = orderSidepotAmounts();
+
+        for(int i = 0; i < sidepotAmounts.length; i++) {
+            if(sidepotAmounts[i] > 0) {
+                int potTotal   = 0;
+                int takeForPot = sidepotAmounts[i];
+                if(i > 0) {
+                    takeForPot -= sidepotAmounts[i - 1];
+                }
+                // iterate through money each player has bet this hand and remove for sidepot
+                for(int j = 0; j < remainingBet.length; j++) {
+                    if(takeForPot <= remainingBet[j]) {
+                        potTotal        += takeForPot;
+                        remainingBet[j] -= takeForPot;
+                    } else {
+                        potTotal        += remainingBet[j];
+                        remainingBet[j] = 0;
+                    }
+                }
+                pots[i] = potTotal;
+            } else {
+                pots[i] = 0;
+            }
+        }
 
         // add remaining bet to main pot
         for(int i = 0; i < pots.length; i++) {
@@ -369,7 +447,18 @@ public class Pot implements Serializable {
     }
 
     public int numberOfPots() {
+        // return numOfSidePots;
         return numOfSidePots + 1;
+        // int numOfPots = 0;
+
+        // for(int i = 0; i < pots.length; i++) {
+        //     if(pots[i] > 0) {
+        //         numOfPots++;
+        //     } else {
+        //         break;
+        //     }
+        // }
+        // return numOfPots;
     }
 
     public void addAllInPlayers(Player[] players) {
@@ -388,5 +477,15 @@ public class Pot implements Serializable {
         this.value     += bet;
         this.pots[num] += bet;
         this._potPanel.adjustPot(num, bet);
-	}
+    }
+    
+    public boolean playerAllIn() {
+        for(int i = 0; i < allInPlayers.length; i++) {
+            if(allInPlayers[i]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
