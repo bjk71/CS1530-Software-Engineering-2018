@@ -506,12 +506,10 @@ public class Game extends JPanel implements Serializable {
                         }
                         
                         // sleep to watch user bets take place
-                        if(players[0].isPlayingHand()) {
-                            try{
-                                Thread.sleep(500);
-                            } catch(InterruptedException ex){
-                                Thread.currentThread().interrupt();
-                            }
+                        try{
+                            Thread.sleep(350);
+                        } catch(InterruptedException ex){
+                            Thread.currentThread().interrupt();
                         }
 
                         // first round big blind can bet again
