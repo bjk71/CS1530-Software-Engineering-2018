@@ -1249,13 +1249,9 @@ public class Game extends JPanel implements Serializable {
 		add(_imgPanel);
         add(_panel, BorderLayout.CENTER);
 		add(_buttonPanel);
-
-		
-		
 		
         revalidate();
         repaint();
-		
 	}
 
     /**
