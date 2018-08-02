@@ -1034,10 +1034,7 @@ public class Game extends JPanel implements Serializable {
 
                 _communityPanel = new CommunityCardsPanel(tableCards, cardBack);
 
-                System.out.printf("D: %d, S: %d, B: %d\n", dealerNum, sBlindNum, bBlindNum);
                 selectDealer();
-                System.out.printf("D: %d, S: %d, B: %d\n", dealerNum, sBlindNum, bBlindNum);
-
 
                 for(int i = 0; i < players.length; i++) {
                     Card[] playerHand = new Card[2];

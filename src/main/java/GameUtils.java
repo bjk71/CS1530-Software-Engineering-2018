@@ -1195,8 +1195,8 @@ public class GameUtils {
      * 
      */
     public String getPotOdds(int pot, int bet) {
-        System.out.println("DEBUG: " + pot);
-        System.out.println("DEBUG: " + bet);
+        // System.out.println("DEBUG: " + pot);
+        // System.out.println("DEBUG: " + bet);
         
         int gcm;
         if (bet == 0) {     //if no bet facing you, default to 1

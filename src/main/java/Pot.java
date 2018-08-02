@@ -101,7 +101,7 @@ public class Pot implements Serializable {
         if(this.playerBets[playerIndex] > this.currBet) {
             this.setBet  = playerIndex;
             this.currBet = this.playerBets[playerIndex];
-            System.out.printf(">> Updated setBet to index: %d, value: %d\n", playerIndex, this.currBet);
+            // System.out.printf(">> Updated setBet to index: %d, value: %d\n", playerIndex, this.currBet);
         }
 
         _potPanel.setPots(pots);
