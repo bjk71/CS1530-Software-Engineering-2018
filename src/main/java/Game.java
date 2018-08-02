@@ -495,7 +495,12 @@ public class Game extends JPanel implements Serializable {
                 endOfHand();
                 nextHand();
 
-                if(playersRemaining() > 1) {
+				if(players[0].getCash() == 0) {
+					System.out.println("hello");
+					_nextHandButton.setText("End");
+					keepPlaying = false;
+				}
+                else if(playersRemaining() > 1) {
                     keepPlaying = true;; // Start next hand
                 } else { // find winner
                     _nextHandButton.setText("End");
@@ -1069,7 +1074,11 @@ public class Game extends JPanel implements Serializable {
         //TODO: figure out why player hand gets hidden at end of turn, temp fix
         players[0].getPlayerPanel().showCards(true);
         
-        if(playersRemaining() > 1) {
+		if(players[0].getCash() == 0) {
+			System.out.println("hello2");
+			_nextHandButton.setText("End");
+		}
+        else if(playersRemaining() > 1) {
             // playGameSwitch(1);
         } else { // find winner
             _nextHandButton.setText("End");
@@ -1249,9 +1258,10 @@ public class Game extends JPanel implements Serializable {
 		add(_imgPanel);
         add(_panel, BorderLayout.CENTER);
 		add(_buttonPanel);
+
 		
         revalidate();
-        repaint();
+        repaint();	
 	}
 
     /**
