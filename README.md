@@ -2,6 +2,17 @@
 ### Pocket Rockets
 Ben Kurzyna, Zack Mattis, Dylan Miao, DJ Rowe
 
+### How to Run:
+
+1. Add src/main/resources as resource
+2. Navigate to src/main/java
+3. Compile all java files with "javac *.java"
+4. Run with "java GameWindow"
+
+Notes:
+App often has formatting issues in full screen. May need to restore window down.
+Project was meant to teach Agile Scrum.
+
 ### Issues & Branches
 
 An issue should be made for every change you want to make. When making an issue, tag it with the appropriate label. The labels are:
